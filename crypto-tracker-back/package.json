@@ -2,7 +2,7 @@
   "name": "crypto-tracker-back",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
     "start": "./node_modules/nodemon/bin/nodemon.js index.js --exec babel-node -e js"
   },
