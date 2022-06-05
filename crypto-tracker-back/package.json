@@ -1,0 +1,26 @@
+{
+  "name": "crypto-tracker-back",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "start": "./node_modules/nodemon/bin/nodemon.js index.js --exec babel-node -e js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "coinbase": "^2.0.8",
+    "apollo-server-express": "^2.24.0",
+    "express": "^4.17.1",
+    "graphql": "^15.5.0",
+    "mongodb": "^3.6.6",
+    "mongoose": "^6.3.5",
+    "nodemon": "^2.0.16"
+  },
+  "devDependencies": {
+    "@types/node": "^15.0.3",
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-stage-0": "^6.24.1"
+  }
+}
