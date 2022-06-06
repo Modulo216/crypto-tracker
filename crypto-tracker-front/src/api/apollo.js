@@ -15,7 +15,7 @@ const apolloClient = new ApolloClient({
 })
 
 async function getInt() {
-  let res = await apolloClient.query({ query: getInterestsGql })
+  const res = await apolloClient.query({ query: getInterestsGql })
   return res.data.getInterests
 }
 
