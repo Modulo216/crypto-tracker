@@ -1,0 +1,6 @@
+query {
+  getInterests {
+    id,
+    nickName
+  }
+}

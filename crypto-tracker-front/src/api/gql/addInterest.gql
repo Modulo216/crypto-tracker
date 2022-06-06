@@ -1,0 +1,6 @@
+mutation ($label: String!) {
+  addInterest(interest: {nickName: $label}) {
+    nickName,
+    id
+  }
+}
