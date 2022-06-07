@@ -14,7 +14,7 @@ export const resolvers = {
       const { ...rest } = interest
       const newInterest = new Interest({ ...rest })
 
-      return newInterest.save()
+      return await newInterest.save()
     }
   },
 }

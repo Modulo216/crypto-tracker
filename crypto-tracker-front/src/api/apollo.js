@@ -14,19 +14,22 @@ const apolloClient = new ApolloClient({
   cache: new InMemoryCache()
 })
 
-async function getInt() {
+async function getInterests() {
   const res = await apolloClient.query({ query: getInterestsGql })
   return res.data.getInterests
 }
 
-async function addInterest(label) {
+async function addInterest(interest) {
   const result = await apolloClient.mutate({
     mutation: addInterestGql,
     variables: {
-      label: label,
+      nickName: interest.nickName,
+      name: interest.name,
+      currencyPair: interest.currencyPair,
+      walletId: interest.walletId,
     },
   })
-  return result
+  return result.data.addInterest
 }
 
-export { getInt, addInterest }
+export { getInterests, addInterest }

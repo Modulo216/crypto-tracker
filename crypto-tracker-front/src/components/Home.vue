@@ -12,7 +12,7 @@
 </template>
 
 <script>
-import { getInt, addInterest } from '../api/apollo'
+import { getInterests, addInterest } from '../api/apollo'
   export default {
     name: 'Home',
     data: () => ({
@@ -20,10 +20,15 @@ import { getInt, addInterest } from '../api/apollo'
     }),
     methods: {
       doIt() {
-        getInt().then(r => console.log("Tttt", r))
+        getInterests().then(r => console.log("Tttt", r))
       },
       addTag() {
-        addInterest('testtesttest').then(r => console.log("QQQ", r))
+        let interest = {}
+        interest.nickName = 'Coinbase ETH Wallet'
+        interest.name = 'Ethereum'
+        interest.currencyPair = 'ETH-USD'
+        interest.walletId = '3808ce95-c092-5a04-94f8-349feb47f048'
+        addInterest(interest).then(r => console.log("QQQ", r))
       }
     }
   }

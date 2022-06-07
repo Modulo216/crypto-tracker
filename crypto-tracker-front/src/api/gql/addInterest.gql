@@ -1,6 +1,9 @@
-mutation ($label: String!) {
-  addInterest(interest: {nickName: $label}) {
+mutation ($nickName: String!, $name: String!, $currencyPair: String!, $walletId: String!) {
+  addInterest(interest: {nickName: $nickName, name: $name, currencyPair: $currencyPair, walletId: $walletId}) {
+    id,
     nickName,
-    id
+    name,
+    currencyPair,
+    walletId
   }
 }

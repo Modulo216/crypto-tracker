@@ -1,6 +1,9 @@
 query {
   getInterests {
     id,
-    nickName
+    nickName,
+    name,
+    currencyPair,
+    walletId
   }
 }

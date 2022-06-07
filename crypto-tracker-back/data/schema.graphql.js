@@ -4,9 +4,15 @@ export const typeDefs = gql`
   type Interest {
     id: ID
     nickName: String
+    name: String
+    currencyPair: String
+    walletId: String
   }
   input InterestInput {
     nickName: String
+    name: String
+    currencyPair: String
+    walletId: String
   }
   type Query {
     getInterests: [Interest]
