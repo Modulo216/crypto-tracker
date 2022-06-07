@@ -9,8 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "coinbase": "^2.0.8",
     "apollo-server-express": "^2.24.0",
+    "coinbase": "^2.0.8",
     "express": "^4.17.1",
     "graphql": "^15.5.0",
     "mongodb": "^3.6.6",

@@ -23,10 +23,7 @@ async function addInterest(interest) {
   const result = await apolloClient.mutate({
     mutation: addInterestGql,
     variables: {
-      nickName: interest.nickName,
-      name: interest.name,
-      currencyPair: interest.currencyPair,
-      walletId: interest.walletId,
+      interest
     },
   })
   return result.data.addInterest

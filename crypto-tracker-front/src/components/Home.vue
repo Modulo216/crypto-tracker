@@ -19,17 +19,7 @@ import { getInterests, addInterest } from '../api/apollo'
       
     }),
     methods: {
-      doIt() {
-        getInterests().then(r => console.log("Tttt", r))
-      },
-      addTag() {
-        let interest = {}
-        interest.nickName = 'Coinbase ETH Wallet'
-        interest.name = 'Ethereum'
-        interest.currencyPair = 'ETH-USD'
-        interest.walletId = '3808ce95-c092-5a04-94f8-349feb47f048'
-        addInterest(interest).then(r => console.log("QQQ", r))
-      }
+
     }
   }
 </script>

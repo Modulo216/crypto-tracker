@@ -6,13 +6,15 @@ export const typeDefs = gql`
     nickName: String
     name: String
     currencyPair: String
-    walletId: String
+    cbaseWalletId: String
+    wallet: String
   }
   input InterestInput {
     nickName: String
     name: String
     currencyPair: String
-    walletId: String
+    cbaseWalletId: String
+    wallet: String
   }
   type Query {
     getInterests: [Interest]

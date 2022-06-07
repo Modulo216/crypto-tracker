@@ -1,9 +1,10 @@
-mutation ($nickName: String!, $name: String!, $currencyPair: String!, $walletId: String!) {
-  addInterest(interest: {nickName: $nickName, name: $name, currencyPair: $currencyPair, walletId: $walletId}) {
+mutation addInterest($interest: InterestInput!) {
+  addInterest(interest: $interest ) {
     id,
     nickName,
     name,
     currencyPair,
-    walletId
+    cbaseWalletId,
+    wallet
   }
 }

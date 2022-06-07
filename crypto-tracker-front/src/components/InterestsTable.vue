@@ -32,7 +32,10 @@
                           <v-text-field v-model="editedItem.currencyPair" label="Currency Pair" />
                         </v-col>
                         <v-col cols="12" sm="12" md="12">
-                          <v-text-field v-model="editedItem.walletId" label="Wallet Id" />
+                          <v-text-field v-model="editedItem.cbaseWalletId" label="Coinbase Wallet Id" />
+                        </v-col>
+                        <v-col cols="12" sm="12" md="12">
+                          <v-text-field v-model="editedItem.wallet" label="Exchange Wallet" />
                         </v-col>
                       </v-row>
                     </v-container>
@@ -79,6 +82,7 @@ import { getInterests, addInterest } from '../api/apollo'
         { text: 'Name', sortable: false, value: 'name' },
         { text: 'Nick name', sortable: false, value: 'nickName' },
         { text: 'Currency Pair', sortable: false, value: 'currencyPair' },
+        { text: 'Exchange Wallet', sortable: false, value: 'wallet' },
         { text: 'Actions', value: 'actions', sortable: false },
       ],
       interests: [],
@@ -87,13 +91,15 @@ import { getInterests, addInterest } from '../api/apollo'
         name: '',
         nickName: '',
         currencyPair: '',
-        walletId: ''
+        cbaseWalletId: '',
+        wallet: ''
       },
       defaultItem: {
         name: '',
         nickName: '',
         currencyPair: '',
-        walletId: ''
+        cbaseWalletId: '',
+        wallet: ''
       },
     }),
     created () {
@@ -145,8 +151,6 @@ import { getInterests, addInterest } from '../api/apollo'
         if (this.editedIndex > -1) {
           Object.assign(this.interests[this.editedIndex], this.editedItem)
         } else {
-          console.log("HERE")
-          //this.interests.push(this.editedItem)
           addInterest(this.editedItem).then(r => this.interests.push(r))
         }
         this.close()

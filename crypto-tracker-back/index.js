@@ -2,6 +2,7 @@ const express = require('express')
 const { ApolloServer } = require('apollo-server-express')
 const { resolvers } = require("./data/resolvers.graphql")
 const { typeDefs } = require("./data/schema.graphql")
+const { doIt } = require("./api/coinbase")
 const app = express()
 const port = 5001
 
@@ -14,4 +15,5 @@ app.get('/', (req, res) => {
 
 app.listen(port, async () => {
   console.log(`Dolphin app listening on port ${port}!`)
+  doIt().then(f => console.log("F2", f))
 })

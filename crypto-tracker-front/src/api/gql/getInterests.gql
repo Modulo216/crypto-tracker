@@ -4,6 +4,7 @@ query {
     nickName,
     name,
     currencyPair,
-    walletId
+    cbaseWalletId,
+    wallet
   }
 }

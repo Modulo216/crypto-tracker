@@ -10,7 +10,10 @@ exports.interestSchema = new mongoose.Schema({
   currencyPair: {
     type: String
   },
-  walletId: {
+  cbaseWalletId: {
+    type: String
+  },
+  wallet: {
     type: String
   },
 })
