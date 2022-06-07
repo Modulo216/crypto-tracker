@@ -5,8 +5,9 @@ let client = new coinbase.Client({ 'apiKey': 'RYPWo266sLFKx7vz', 'apiSecret': 'M
 
 async function doIt() {
   const getAccountsAsync = promisify(client.getAccounts).bind(client);
-  let res = await getAccountsAsync({limit: 1})
-  return res
+  let accounts = await getAccountsAsync({limit: 300})
+  let btcWallet = accounts.find(a => a.currency === 'BTC')
+  return btcWallet.balance
 }
 
 export { doIt }

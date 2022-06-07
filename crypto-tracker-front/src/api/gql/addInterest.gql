@@ -1,10 +1,5 @@
 mutation addInterest($interest: InterestInput!) {
   addInterest(interest: $interest ) {
-    id,
-    nickName,
-    name,
-    currencyPair,
-    cbaseWalletId,
-    wallet
+    id, nickName, name, currencyPair, cbaseWalletId, wallet
   }
 }
