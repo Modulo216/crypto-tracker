@@ -4,6 +4,7 @@ import { InMemoryCache } from 'apollo-cache-inmemory'
 
 const getInterestsGql = require('./gql/getInterests.gql')
 const addInterestGql = require('./gql/addInterest.gql')
+const getTrxsGql = require('./gql/getTrxs.gql')
 
 const httpLink = createHttpLink({
   uri: 'http://localhost:5001/graphql',
@@ -29,4 +30,9 @@ async function addInterest(interest) {
   return result.data.addInterest
 }
 
-export { getInterests, addInterest }
+async function getTrxs() {
+  const res = await apolloClient.query({ query: getTrxsGql })
+  return res.data.getTrxs
+}
+
+export { getInterests, addInterest, getTrxs }

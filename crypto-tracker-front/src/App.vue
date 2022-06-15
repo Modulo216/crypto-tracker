@@ -37,7 +37,8 @@ export default {
   data: () => ({
     items: [
       { title: 'Home', icon: 'mdi-view-dashboard', route: '/' },
-      { title: 'Interests', icon: 'mdi-image', route: '/about' }
+      { title: 'Interests', icon: 'mdi-image', route: '/about' },
+      { title: 'Spending', icon: 'mdi-image', route: '/spending' }
     ]
   })
 };

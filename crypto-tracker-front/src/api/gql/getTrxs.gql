@@ -1,0 +1,5 @@
+query {
+  getTrxs {
+    id, exchange, exchangeId, trxType, updatedAt, amount, merchant, title, subtitle, category
+  }
+}
