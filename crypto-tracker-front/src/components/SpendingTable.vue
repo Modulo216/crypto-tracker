@@ -1,6 +1,7 @@
 <template>
   <v-container>
     <v-row class="text-center">
+      <h2>{{ monthActive.monthName }}</h2>
       <v-col cols="12">
         <v-data-table
           dense
@@ -16,11 +17,34 @@
           :items-per-page="30"
         >
           <template v-slot:item.updatedAt="{ item }">
-            <span>{{ new Date(item.updatedAt).toLocaleString() }}</span>
+            <span>{{ formatDate(item.updatedAt) }}</span>
+          </template>
+          <template v-slot:item.amount="props">
+            <v-edit-dialog
+              :return-value.sync="props.item.amount"
+              @save="save(props.item)"
+              large
+              persistent
+            >
+              <div>{{ props.item.amount }}</div>
+              <template v-slot:input>
+                <div class="mt-4 text-h6">
+                  Update Amount
+                </div>
+                <v-text-field
+                  v-model="props.item.amount"
+                  label="Edit"
+                  single-line
+                  counter
+                  autofocus
+                ></v-text-field>
+              </template>
+            </v-edit-dialog>
           </template>
           <template v-slot:item.merchant="props">
             <v-edit-dialog
               :return-value.sync="props.item.merchant"
+              @save="save(props.item)"
               large
               persistent
             >
@@ -43,6 +67,8 @@
             <v-select
               v-model="item.category"
               :items="categories"
+              dense 
+              @change="save(item)"
             ></v-select>
           </template>
         </v-data-table>
@@ -52,24 +78,43 @@
 </template>
 
 <script>
-import { getInterests, addInterest } from '../api/apollo'
+import { updateTrx } from '../api/apollo'
   export default {
     props: {
-      trxs: Array
+      trxs: Array,
+      monthActive: {
+        type: Object,
+        default: () => ({
+          monthPlace: '',
+          monthName: ''
+        })
+      }
     },
     data: () => ({
-      categories: ['Bills', 'Entertainment', 'Fun'],
+      categories: ['Bills', 'Entertainment', 'Fun', 'Gas'],
       sortBy: 'updatedAt',
       sortDesc: false,
       headers: [
         { text: 'Updated At', sortable: true, value: 'updatedAt' },
         { text: 'Merchant', sortable: false, value: 'merchant' },
-        { text: 'Amount', sortable: false, value: 'amount' },
+        { text: 'Amount', sortable: true, value: 'amount' },
         { text: 'Category', sortable: false, value: 'category', width: '200' }
       ],
     }),
-    methods: {
+    watch: {
+      monthActive(n, o) {
 
+      }
+    },
+    methods: {
+      save(e) {
+        updateTrx(e)
+      },
+      formatDate(d) {
+        let theDate = new Date(d)
+        return ("0" + (theDate.getMonth() + 1)).slice(-2) + '/' + ("0" + theDate.getDate()).slice(-2) + '/' +
+          theDate.getFullYear().toString().substr(2,2) + ' ' + theDate.toLocaleTimeString().replace(/(.*)\D\d+/, '$1')
+      }
     }
   }
 </script>

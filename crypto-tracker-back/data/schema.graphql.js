@@ -34,6 +34,7 @@ export const typeDefs = gql`
     wallet: String
   }
   input InterestInput {
+    id: ID
     nickName: String
     name: String
     currencyPair: String
@@ -42,11 +43,13 @@ export const typeDefs = gql`
   }
   type Query {
     getInterests: [Interest]
-    findInterests(interest: InterestInput): [Interest]
+    findInterest(interest: InterestInput): Interest
     getTrxs: [Trx]
   }
   type Mutation {
     addInterest(interest: InterestInput): Interest
+    updateInterest(interest: InterestInput): Interest
+    deleteInterest(id: ID): Interest
     addTrx(trx: TrxInput): Trx
     updateTrx(trx: TrxInput): Trx
   }

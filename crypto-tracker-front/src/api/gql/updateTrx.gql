@@ -1,0 +1,5 @@
+mutation updateTrx($trx: TrxInput!) {
+  updateTrx(trx: $trx) {
+    id
+  }
+}

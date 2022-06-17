@@ -5,19 +5,25 @@ export const resolvers = {
     getInterests: async (root) => {
       return await Interest.find()
     },
-    findInterests: async (root, { interest }) => {
-      return await Interest.find({ nickName: interest.nickName })
+    findInterest: async (root, { interest }) => {
+      return await Interest.findOne({ name: interest.name })
     },
     getTrxs: async (root) => {
       return await Trx.find()
-    },
+    }
   },
   Mutation: {
     addInterest: async (root, { interest }) => {
       const { ...rest } = interest
       const newInterest = new Interest({ ...rest })
-
+      
       return await newInterest.save()
+    },
+    deleteInterest: async (root, { id }) => {
+      return await Interest.findByIdAndDelete(id)
+    },
+    updateInterest: async (root, { interest }) => {
+      return await Interest.findByIdAndUpdate(interest.id, interest, { new: true })
     },
     addTrx: async (root, { trx }) => {
       const { ...rest } = trx

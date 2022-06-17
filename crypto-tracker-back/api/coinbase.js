@@ -1,28 +1,27 @@
 let coinbase = require('coinbase')
-const { promisify } = require('util');
+const { promisify } = require('util')
+require('dotenv').config()
 
-let client = new coinbase.Client({ 'apiKey': 'RYPWo266sLFKx7vz', 'apiSecret': 'MbMoUJZhoP0y2ovI5TtWoHxWnh9orBgI', strictSSL: false })
+let client = new coinbase.Client({ 'apiKey': process.env.api_key, 'apiSecret': process.env.api_secret, strictSSL: false })
 
-async function getUsdcTrxs() {
-  const getAccountsAsync = promisify(client.getAccounts).bind(client);
-  let accounts = await getAccountsAsync({limit: 300})
-  let usdcWallet = accounts.find(a => a.currency === 'USDC')
-  const getTxns = transactions(usdcWallet);
+async function getTrxs(walletId) {
+  const getAccountAsync = promisify(client.getAccount).bind(client);
+  let wallet = await getAccountAsync(walletId)
+  const getTxns = transactions(wallet);
+  
   let page = { next_uri: null, limit: 100 }
-
-  let usdcTrxs = []
+  let trxs = []
   do {
     let {txns, pagination} = await getTxns(page)
     page = pagination
     if(txns !== null) {
-      let trxs = txns.filter(txn => new Date(txn.updated_at) > new Date('2022-06-01') && (txn.type === 'cardspend' || txn.type === 'cardbuyback'))
-      trxs.forEach(txn => {
-        usdcTrxs.push(txn)
+      txns.forEach(txn => {
+        trxs.push(txn)
       })
     }
-  } while (page.next_uri !== null)
+  } while (page !== undefined && page.next_uri !== null)
 
-  return usdcTrxs
+  return trxs
 
 }
 
@@ -37,4 +36,4 @@ function transactions(wallet) {
   };
 }
 
-export { getUsdcTrxs }
+export { getTrxs }

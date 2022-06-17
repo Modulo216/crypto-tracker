@@ -1,0 +1,5 @@
+mutation updateInterest($interest: InterestInput!) {
+  updateInterest(interest: $interest) {
+    id
+  }
+}

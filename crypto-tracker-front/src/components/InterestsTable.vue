@@ -72,14 +72,14 @@
 </template>
 
 <script>
-import { getInterests, addInterest } from '../api/apollo'
+import { getInterests, addInterest, deleteInterest, updateInterest } from '../api/apollo'
   export default {
     name: 'InterestsTable',
     data: () => ({
       dialog: false,
       dialogDelete: false,
       headers: [
-        { text: 'Name', sortable: false, value: 'name' },
+        { text: 'Name', sortable: true, value: 'name' },
         { text: 'Nick name', sortable: false, value: 'nickName' },
         { text: 'Currency Pair', sortable: false, value: 'currencyPair' },
         { text: 'Exchange Wallet', sortable: false, value: 'wallet' },
@@ -127,6 +127,7 @@ import { getInterests, addInterest } from '../api/apollo'
       },
 
       deleteItemConfirm () {
+        deleteInterest(this.editedItem.id)
         this.interests.splice(this.editedIndex, 1)
         this.closeDelete()
       },
@@ -149,6 +150,7 @@ import { getInterests, addInterest } from '../api/apollo'
 
       save () {
         if (this.editedIndex > -1) {
+          updateInterest(this.editedItem)
           Object.assign(this.interests[this.editedIndex], this.editedItem)
         } else {
           addInterest(this.editedItem).then(r => this.interests.push(r))

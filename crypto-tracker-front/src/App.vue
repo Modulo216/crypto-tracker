@@ -23,11 +23,9 @@
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
-    <v-container>
-      <v-main>
-        <router-view/>
-      </v-main>
-    </v-container>
+    <v-main >
+      <router-view/>
+    </v-main>
   </v-app>
 </template>
 
