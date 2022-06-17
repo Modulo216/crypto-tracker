@@ -4,6 +4,7 @@
       <h2>{{ monthActive.monthName }}</h2>
       <v-col cols="12">
         <v-data-table
+          dark
           dense
           :sort-by.sync="sortBy"
           :sort-desc.sync="sortDesc"

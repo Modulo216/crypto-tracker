@@ -1,6 +1,18 @@
 import { gql } from "apollo-server-express"
 
 export const typeDefs = gql`
+  type Checking {
+    id: ID
+    date: String
+    amount: String
+    type: String
+  }
+  input CheckingInput {
+    id: ID
+    date: String
+    amount: String
+    type: String
+  }
   type Trx {
     id: ID
     exchange: String
@@ -45,8 +57,11 @@ export const typeDefs = gql`
     getInterests: [Interest]
     findInterest(interest: InterestInput): Interest
     getTrxs: [Trx]
+    getChecking: [Checking]
   }
   type Mutation {
+    addChecking(checking: CheckingInput): Checking
+    updateChecking(checking: CheckingInput): Checking
     addInterest(interest: InterestInput): Interest
     updateInterest(interest: InterestInput): Interest
     deleteInterest(id: ID): Interest

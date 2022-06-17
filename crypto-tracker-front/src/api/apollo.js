@@ -8,6 +8,9 @@ const getTrxsGql = require('./gql/getTrxs.gql')
 const updateTrxGql = require('./gql/updateTrx.gql')
 const deleteInterestGql = require('./gql/deleteInterest.gql')
 const updateInterestGql = require('./gql/updateInterest.gql')
+const addCheckingGql = require('./gql/addChecking.gql')
+const updateCheckingGql = require('./gql/updateChecking.gql')
+const getCheckingGql = require('./gql/getChecking.gql')
 
 const httpLink = createHttpLink({ uri: 'http://localhost:5001/graphql' })
 
@@ -21,12 +24,25 @@ async function getInterests() {
   return res.data.getInterests
 }
 
+async function getChecking() {
+  const res = await apolloClient.query({ query: getCheckingGql })
+  return res.data.getChecking
+}
+
 async function addInterest(interest) {
   const result = await apolloClient.mutate({
     mutation: addInterestGql,
     variables: { interest }
   })
   return result.data.addInterest
+}
+
+async function addChecking(checking) {
+  const result = await apolloClient.mutate({
+    mutation: addCheckingGql,
+    variables: { checking }
+  })
+  return result.data.addChecking
 }
 
 async function updateInterest(interest) {
@@ -50,6 +66,14 @@ async function updateTrx(trx) {
   return result.data.updateTrx
 }
 
+async function updateChecking(checking) {
+  const result = await apolloClient.mutate({
+    mutation: updateCheckingGql,
+    variables: { checking }
+  })
+  return result.data.updateChecking
+}
+
 async function deleteInterest(id) {
   const result = await apolloClient.mutate({
     mutation: deleteInterestGql,
@@ -58,4 +82,4 @@ async function deleteInterest(id) {
   return result.data.deleteInterestGql
 }
 
-export { getInterests, addInterest, getTrxs, updateTrx, deleteInterest, updateInterest }
+export { getInterests, addInterest, getTrxs, updateTrx, deleteInterest, updateInterest, getChecking, addChecking, updateChecking }

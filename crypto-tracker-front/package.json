@@ -12,6 +12,7 @@
     "apollo-link": "^1.2.14",
     "apollo-link-http": "^1.5.17",
     "chart.js": "^3.8.0",
+    "chartjs-plugin-datalabels": "^2.0.0",
     "core-js": "^3.8.3",
     "graphql": "^15.0.0",
     "graphql-tag": "^2.12.6",

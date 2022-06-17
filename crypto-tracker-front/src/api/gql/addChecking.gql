@@ -1,0 +1,5 @@
+mutation addChecking($checking: CheckingInput!) {
+  addChecking(checking: $checking ) {
+    id, date, amount, type
+  }
+}

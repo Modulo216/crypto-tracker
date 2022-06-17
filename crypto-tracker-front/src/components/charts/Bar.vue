@@ -24,8 +24,8 @@ import {
   CategoryScale,
   LinearScale
 } from 'chart.js'
-
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
+import ChartDataLabels from 'chartjs-plugin-datalabels'
+ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ChartDataLabels)
 
 export default {
   name: 'BarChart',
@@ -73,34 +73,43 @@ export default {
         ],
         datasets: [
           {
-            label: 'Dataset 1',
-            data: [189.30, 165.21, 130.62, 173.33, 242.42],
-            backgroundColor: '#41B883'
+            label: 'Week 1', // week 1
+            data: [189.30, 451.38, 400.56, 804.62],
+            backgroundColor: 'rgba(255, 99, 132, 0.5)',
+            borderColor: 'rgb(255, 99, 132)',
+            borderWidth: 1
           },
           {
-            label: 'Dataset 2',
-            data: [451.38, 213.49, 110.70, 1031.26, 0],
-            backgroundColor: '#E46651',
+            label: 'Week 2', // week 2
+            data: [165.21, 213.49, 205.55, 183.36],
+            backgroundColor: 'rgba(255, 159, 64, 0.5)',
+            borderColor: 'rgb(255, 159, 64)',
+            borderWidth: 1
           },
           {
-            label: 'Dataset 3',
-            data: [400.56, 205.55, 110.92, 366.67, 0],
-            backgroundColor: '#00D8FF',
+            label: 'Week 3', // week 3
+            data: [130.62, 110.70, 110.92, 44.66],
+            backgroundColor: 'rgba(153, 102, 255, 0.5)',
+            borderColor: 'rgb(153, 102, 255)',
+            borderWidth: 1
+          },
+          {
+            label: 'Week 4', // week 3
+            data: [173.33, 1031.26, 366.67, 336.08],
+            backgroundColor: '#00FF00',
+          },
+          {
+            label: 'Week 5', // week 3
+            data: [242.43, 0, 0, 119.29, 0],
+            backgroundColor: '#FFA500',
           }
         ]
       },
       chartOptions: {
-        plugins: { legend: { display: false }, },
+        plugins: { legend: { display: false } },
         responsive: true,
         maintainAspectRatio: false,
-        scales: {
-          x: {
-            stacked: true,
-          },
-          y: {
-            stacked: true
-          }
-        }
+        scales: { x: { stacked: true }, y: { stacked: true } }
       }
     }
   }

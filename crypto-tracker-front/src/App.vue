@@ -1,17 +1,9 @@
 <template>
-  <v-app>
-    <v-app-bar color="green" class="flex-grow-0" app dark>
+  <v-app style="background-color:#424242">
+    <v-app-bar style="background-color: #141E30" app dark clipped-left>
       <h1>Crypto Tracker</h1>
     </v-app-bar>
-    <v-navigation-drawer app>
-      <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title class="text-h6">
-            Navigation..
-          </v-list-item-title>
-        </v-list-item-content>
-      </v-list-item>
-      <v-divider></v-divider>
+    <v-navigation-drawer app clipped expand-on-hover :mini-variant.sync="mini" dark>
       <v-list dense nav>
         <v-list-item v-for="item in items" :to="item.route" :key="item.title" link>
           <v-list-item-icon>
@@ -23,7 +15,7 @@
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
-    <v-main >
+    <v-main>
       <router-view/>
     </v-main>
   </v-app>
@@ -33,6 +25,7 @@
 export default {
   name: 'App',
   data: () => ({
+    mini: true,
     items: [
       { title: 'Home', icon: 'mdi-view-dashboard', route: '/' },
       { title: 'Interests', icon: 'mdi-image', route: '/about' },

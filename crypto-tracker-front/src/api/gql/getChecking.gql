@@ -1,0 +1,5 @@
+query {
+  getChecking {
+    id, date, amount, type
+  }
+}

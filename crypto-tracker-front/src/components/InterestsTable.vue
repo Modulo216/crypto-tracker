@@ -2,7 +2,7 @@
   <v-container>
     <v-row class="text-center">
       <v-col cols="12">
-        <v-data-table :headers="headers" :items="interests" sort-by="name" class="elevation-1">
+        <v-data-table dense :headers="headers" :items="interests" sort-by="name" class="elevation-10" dark>
           <template v-slot:top>
             <v-toolbar flat>
               <v-toolbar-title>Interests</v-toolbar-title>
@@ -11,7 +11,7 @@
               <v-dialog v-model="dialog" max-width="800px">
                 <template v-slot:activator="{ on, attrs }">
                   <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on">
-                    New Item
+                    New Interest
                   </v-btn>
                 </template>
                 <v-card>

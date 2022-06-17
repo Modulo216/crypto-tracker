@@ -1,4 +1,4 @@
-import { Interest, Trx } from "../db/dbConnector.js"
+import { Interest, Trx, Checking } from "../db/dbConnector.js"
 
 export const resolvers = {
   Query: {
@@ -10,9 +10,21 @@ export const resolvers = {
     },
     getTrxs: async (root) => {
       return await Trx.find()
+    },
+    getChecking: async (root) => {
+      return await Checking.find()
     }
   },
   Mutation: {
+    addChecking: async (root, { checking }) => {
+      const { ...rest } = checking
+      const newChecking = new Checking({ ...rest })
+      
+      return await newChecking.save()
+    },
+    updateChecking: async (root, { checking }) => {
+      return await Checking.findByIdAndUpdate(checking.id, checking, { new: true })
+    },
     addInterest: async (root, { interest }) => {
       const { ...rest } = interest
       const newInterest = new Interest({ ...rest })
