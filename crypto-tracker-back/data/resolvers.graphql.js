@@ -34,6 +34,9 @@ export const resolvers = {
     deleteInterest: async (root, { id }) => {
       return await Interest.findByIdAndDelete(id)
     },
+    deleteChecking: async (root, { id }) => {
+      return await Checking.findByIdAndDelete(id)
+    },
     updateInterest: async (root, { interest }) => {
       return await Interest.findByIdAndUpdate(interest.id, interest, { new: true })
     },

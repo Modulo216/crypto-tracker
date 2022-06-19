@@ -65,6 +65,7 @@ export const typeDefs = gql`
     addInterest(interest: InterestInput): Interest
     updateInterest(interest: InterestInput): Interest
     deleteInterest(id: ID): Interest
+    deleteChecking(id: ID): Checking
     addTrx(trx: TrxInput): Trx
     updateTrx(trx: TrxInput): Trx
   }

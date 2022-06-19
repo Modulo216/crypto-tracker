@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <v-row class="text-center">
-      <h2>{{ monthActive.monthName }}</h2>
+      <h2>{{ monthNameActive }}</h2>
       <v-col cols="12">
         <v-data-table
           dark
@@ -17,17 +17,17 @@
           }"
           :items-per-page="30"
         >
-          <template v-slot:item.updatedAt="{ item }">
+          <template v-slot:[`item.updatedAt`]="{ item }">
             <span>{{ formatDate(item.updatedAt) }}</span>
           </template>
-          <template v-slot:item.amount="props">
+          <template v-slot:[`item.amount`]="props">
             <v-edit-dialog
               :return-value.sync="props.item.amount"
               @save="save(props.item)"
               large
               persistent
             >
-              <div>{{ props.item.amount }}</div>
+              <div>{{ getAsCurrency(parseFloat(props.item.amount)) }}</div>
               <template v-slot:input>
                 <div class="mt-4 text-h6">
                   Update Amount
@@ -42,7 +42,7 @@
               </template>
             </v-edit-dialog>
           </template>
-          <template v-slot:item.merchant="props">
+          <template v-slot:[`item.merchant`]="props">
             <v-edit-dialog
               :return-value.sync="props.item.merchant"
               @save="save(props.item)"
@@ -64,7 +64,7 @@
               </template>
             </v-edit-dialog>
           </template>
-          <template v-slot:item.category="{ item }">
+          <template v-slot:[`item.category`]="{ item }">
             <v-select
               v-model="item.category"
               :items="categories"
@@ -83,13 +83,7 @@ import { updateTrx } from '../api/apollo'
   export default {
     props: {
       trxs: Array,
-      monthActive: {
-        type: Object,
-        default: () => ({
-          monthPlace: '',
-          monthName: ''
-        })
-      }
+      monthNameActive: String,
     },
     data: () => ({
       categories: ['Bills', 'Entertainment', 'Fun', 'Gas'],
@@ -102,11 +96,6 @@ import { updateTrx } from '../api/apollo'
         { text: 'Category', sortable: false, value: 'category', width: '200' }
       ],
     }),
-    watch: {
-      monthActive(n, o) {
-
-      }
-    },
     methods: {
       save(e) {
         updateTrx(e)
@@ -115,6 +104,12 @@ import { updateTrx } from '../api/apollo'
         let theDate = new Date(d)
         return ("0" + (theDate.getMonth() + 1)).slice(-2) + '/' + ("0" + theDate.getDate()).slice(-2) + '/' +
           theDate.getFullYear().toString().substr(2,2) + ' ' + theDate.toLocaleTimeString().replace(/(.*)\D\d+/, '$1')
+      },
+      getAsCurrency(numb) {
+        return numb.toLocaleString('en-US', {
+          style: 'currency',
+          currency: 'USD',
+        })
       }
     }
   }

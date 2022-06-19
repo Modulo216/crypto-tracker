@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <v-data-table dense :headers="headers" :items="items" class="elevation-5" dark hide-default-footer>
+    <v-data-table dense :headers="headers" :items="items.filter(i => i.type === type)" class="elevation-5" dark hide-default-footer>
       <template v-slot:top>
         <v-toolbar flat>
           <v-toolbar-title>{{ type === 'checkingIn' ? 'Checking In' : type === 'checkingOut' ? 'Checking Out' : 'Investments' }}</v-toolbar-title>
@@ -29,7 +29,7 @@
                       >
                         <template v-slot:activator="{ on, attrs }">
                           <v-text-field
-                            v-model="editedItem.date"
+                            :value="formatDate"
                             label="Date"
                             prepend-icon="mdi-calendar"
                             readonly
@@ -58,7 +58,13 @@
           </v-dialog>
         </v-toolbar>
       </template>
-      <template v-slot:item.actions="{ item }">
+      <template v-slot:[`item.date`]="{ item }">
+        <span>{{ format(parseISO(item.date), 'MM/dd/yy') }}</span>
+      </template>
+      <template v-slot:[`item.amount`]="{ item }">
+        <span>{{ getAsCurrency(parseFloat(item.amount)) }}</span>
+      </template>
+      <template v-slot:[`item.actions`]="{ item }">
         <v-icon small class="mr-2" @click="editItem(item)">mdi-pencil</v-icon>
         <v-icon small @click="deleteItem(item)">mdi-delete</v-icon>
       </template>
@@ -67,13 +73,13 @@
 </template>
 
 <script>
-import { addChecking, updateChecking } from '../api/apollo'
+import { format, parseISO } from 'date-fns'
 export default {
   props: {
     items: Array,
     type: String
   },
-  data: () => ({
+  data: (instance) => ({
     dateModal: false,
     dialog: false,
     headers: [
@@ -81,16 +87,22 @@ export default {
       { text: 'Amount', sortable: false, value: 'amount' },
       { text: 'Actions', value: 'actions', sortable: false },
     ],
-    editedIndex: -1,
     editedItem: {
-      date: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
+      date: format(parseISO(new Date().toISOString()), 'yyyy-MM-dd'),
       amount: '',
+      type: instance.type
     },
     defaultItem: {
-      date: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
+      date: format(parseISO(new Date().toISOString()), 'yyyy-MM-dd'),
       amount: '',
+      type: instance.type
     },
   }),
+  computed: {
+    formatDate() {
+      return this.editedItem.date ? format(parseISO(this.editedItem.date), 'MM/dd/yy') : ''
+    }
+  },
   watch: {
     dialog (val) {
       val || this.close()
@@ -98,34 +110,28 @@ export default {
   },
   methods: {
     editItem (item) {
-      this.editedIndex = this.items.indexOf(item)
       this.editedItem = Object.assign({}, item)
       this.dialog = true
     },
-
     deleteItem (item) {
-      this.items.splice(this.items.indexOf(item), 1)
+      this.$emit('removeItem', item)
     },
-
     close () {
       this.dialog = false
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem)
-        this.editedIndex = -1
       })
     },
-
-    save () {
-      if (this.editedIndex > -1) {
-        Object.assign(this.items[this.editedIndex], this.editedItem)
-        updateChecking(this.editedItem)
-      } else {
-        this.items.push(this.editedItem)
-        this.editedItem.type = this.type
-        addChecking(this.editedItem)
-      }
-      this.close()
+    getAsCurrency(numb) {
+      return numb.toLocaleString('en-US', {
+        style: 'currency',
+        currency: 'USD',
+      })
     },
+    save () {
+      this.$emit('saveItem', this.editedItem)
+      this.close()
+    }, format, parseISO
   }
 }
 </script>

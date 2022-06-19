@@ -5,10 +5,24 @@
         <month-picker :trxs="allTrxs" @monthClick="onMonthClick" />
       </v-col>
       <v-col cols="6">
-        <spending-table :trxs="trxs" :monthActive="monthActive" />
+        <spending-table :trxs="trxs" :monthNameActive="monthNameActive" />
       </v-col>
       <v-col cols="5">
-        <spending-input :checkingInItems="checkingInItems" :checkingOutItems="checkingOutItems" :investItems="investItems"  />
+        <v-row no-gutters>
+          <v-col cols="6">
+            <spending-input-comp @removeItem="onRemoveItem" @saveItem="onSaveItem" :items="checkings" type="checkingIn" />
+          </v-col>
+          <v-col cols="6">
+            <spending-input-comp @removeItem="onRemoveItem" @saveItem="onSaveItem" :items="checkings" type="checkingOut" />
+          </v-col>
+          <v-col cols="6">
+            <spending-input-comp @removeItem="onRemoveItem" @saveItem="onSaveItem" :items="checkings" type="investments" />
+          </v-col>
+          <v-col cols="6">
+            <div>{{ `Card Spent: ${ getAsCurrency(cardSpend) }` }}</div>
+            <div>{{ `Total Spent: ${ getAsCurrency(getTotalSpent) }` }}</div>
+          </v-col>
+        </v-row>
         <pie />
         <bar />
       </v-col>
@@ -17,55 +31,73 @@
 </template>
 
 <script>
-  import SpendingTable from '../components/SpendingTable'
-  import MonthPicker from '../components/MonthPicker'
-  import Pie from '../components/charts/Pie'
-  import Bar from '../components/charts/Bar'
-  import SpendingInput from '@/components/SpendingInput'
-  import { getTrxs, getChecking } from '../api/apollo'
-  export default {
-    components: {
-      SpendingTable,
-      MonthPicker,
-      Pie,
-      Bar,
-      SpendingInput
+import SpendingTable from '../components/SpendingTable'
+import MonthPicker from '../components/MonthPicker'
+import Pie from '../components/charts/Pie'
+import Bar from '../components/charts/Bar'
+import SpendingInputComp from '../components/SpendingInputComp'
+import { getTrxs, getChecking, deleteChecking, addChecking, updateChecking } from '../api/apollo'
+export default {
+  components: {
+    SpendingTable,
+    MonthPicker,
+    Pie,
+    Bar,
+    SpendingInputComp
+  },
+  data: () => ({
+    allTrxs: [],
+    trxs: [],
+    allChecking: [],
+    checkings: [],
+    monthNameActive: '',
+    cardSpend: 0
+  }),
+  created() {
+    Promise.all([getTrxs(), getChecking()]).then(values => {
+      this.allTrxs = [...values[0]]
+      this.allChecking = [...values[1]]
+      this.onMonthClick(new Date().getMonth())
+    });
+  },
+  computed: {
+    getTotalSpent() {
+      return this.cardSpend + 
+        (this.checkings.length ? 
+        this.checkings.filter(i => i.type === 'checkingOut')
+          .map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next) : 0)
+    }
+  },
+  methods: {
+    onMonthClick(dateMonth) {
+      this.monthNameActive = this.$store.getters.getMonthNames[dateMonth]
+      this.trxs = this.allTrxs.filter(t => this.$store.getters.getUtcMonth(t.updatedAt) === dateMonth)
+      this.checkings = this.allChecking.filter(q => this.$store.getters.getUtcMonth(q.date) === dateMonth)
+      this.cardSpend = this.trxs.map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next)
     },
-    data: () => ({
-      allTrxs: [],
-      trxs: [],
-      allChecking: [],
-      monthActive: undefined,
-      checkingInItems: [],
-      checkingOutItems: [],
-      investItems: []
-    }),
-    created() {
-      getTrxs().then(r => {
-        this.allTrxs = [...r]
-        const date = new Date()
-        this.onMonthClick({ monthPlace: date.getMonth(), monthName: this.$store.getters.getMonthNames[date.getMonth()] })
-        
-        getChecking().then(c => {
-          this.allChecking = [...c]
-
-          let items = c.filter(q => new Date(q.date).getMonth() === this.monthActive.monthPlace)
-          this.checkingInItems = [...items.filter(c => c.type === "checkingIn")]
-          this.checkingOutItems = [...items.filter(c => c.type === "checkingOut")]
-          this.investItems = [...items.filter(c => c.type === "investments")] 
-        })
+    getAsCurrency(numb) {
+      return numb.toLocaleString('en-US', {
+        style: 'currency',
+        currency: 'USD',
       })
     },
-    methods: {
-      onMonthClick(e) {
-        this.monthActive = e
-        this.trxs = this.allTrxs.filter(t => new Date(t.updatedAt).getMonth() === e.monthPlace)
-
-        let items = this.allChecking.filter(q => new Date(q.date).getMonth() === this.monthActive.monthPlace)
-        this.checkingInItems = [...items.filter(c => c.type === "checkingIn")]
-        this.checkingOutItems = [...items.filter(c => c.type === "checkingOut")]
-        this.investItems = [...items.filter(c => c.type === "investments")] 
+    onRemoveItem(item) {
+      this.allChecking.splice(this.allChecking.indexOf(item), 1)
+      this.checkings.splice(this.checkings.indexOf(item), 1)
+      deleteChecking(item.id)
+    },
+    onSaveItem(item, idx) {
+      if(item.id !== undefined) {
+        updateChecking(item)
+        Object.assign(this.allChecking[this.allChecking.findIndex(f => f.id === item.id)], item)
+        Object.assign(this.checkings[this.checkings.findIndex(f => f.id === item.id)], item)
+      } else {
+        addChecking(item).then(i => {
+          this.allChecking.push(i)
+          this.checkings.push(i)
+        })
       }
     }
   }
+}
 </script>

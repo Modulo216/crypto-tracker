@@ -7,6 +7,7 @@ const addInterestGql = require('./gql/addInterest.gql')
 const getTrxsGql = require('./gql/getTrxs.gql')
 const updateTrxGql = require('./gql/updateTrx.gql')
 const deleteInterestGql = require('./gql/deleteInterest.gql')
+const deleteCheckingGql = require('./gql/deleteChecking.gql')
 const updateInterestGql = require('./gql/updateInterest.gql')
 const addCheckingGql = require('./gql/addChecking.gql')
 const updateCheckingGql = require('./gql/updateChecking.gql')
@@ -79,7 +80,16 @@ async function deleteInterest(id) {
     mutation: deleteInterestGql,
     variables: { id }
   })
-  return result.data.deleteInterestGql
+  return result.data.deleteInterest
 }
 
-export { getInterests, addInterest, getTrxs, updateTrx, deleteInterest, updateInterest, getChecking, addChecking, updateChecking }
+async function deleteChecking(id) {
+  const result = await apolloClient.mutate({
+    mutation: deleteCheckingGql,
+    variables: { id }
+  })
+  return result.data.deleteChecking
+}
+
+export { getInterests, addInterest, getTrxs, updateTrx, deleteInterest,
+  updateInterest, getChecking, addChecking, updateChecking, deleteChecking }

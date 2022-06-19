@@ -1,0 +1,5 @@
+mutation deleteChecking($id: ID) {
+  deleteChecking(id: $id) {
+    id
+  }
+}
