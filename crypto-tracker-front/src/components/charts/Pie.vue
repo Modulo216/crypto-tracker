@@ -82,9 +82,11 @@ export default {
   },
   watch: {
     trxs(newTrxs) {
-      this.chartData.datasets[0].data = ([...this.$store.getters.getCategories.map(c => 
+      let valArr = [...this.$store.getters.getCategories.map(c => 
         newTrxs.filter(t => t.category === c).map(({amount}) => parseInt(amount)).reduce((prev, next) => prev + next, 0)
-      )])
+      )]      
+
+      this.chartData.datasets[0].data = [...valArr.map(v => v === 0 ? undefined : v)]
     }
   },
   methods: {

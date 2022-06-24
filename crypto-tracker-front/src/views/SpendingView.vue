@@ -9,6 +9,7 @@
       </v-col>
       <v-col cols="5">
         <v-row no-gutters>
+          
           <v-col lg="6" sm="12">
             <spending-input-comp @removeItem="onRemoveItem" @saveItem="onSaveItem" :items="checkings" type="checkingIn" />
           </v-col>
@@ -32,9 +33,9 @@
               </v-card-text>
             </v-card>
           </v-col>
-        </v-row>
-        <v-row>
-          <v-col lg="6" xs="12" class="pr-1">
+
+
+          <v-col lg="6" xs="12" class="pa-1">
             <v-data-table
               dark
               hide-default-footer
@@ -54,7 +55,7 @@
               </template>
             </v-data-table>
           </v-col>
-          <v-col lg="6" xs="12" class="pl-1">
+          <v-col lg="6" xs="12" class="pa-1">
             <section style="display:flex;flex-direction:column;height:512px;">
               <v-card style="display:flex;overflow:hidden;">
                 <v-data-table
@@ -79,9 +80,13 @@
               </v-card>
             </section>
           </v-col>
+          <v-col col="12">
+            <pie :trxs="trxs" />
+          </v-col>
+          <v-col col="12">
+            <bar />
+          </v-col>
         </v-row>
-        <pie :trxs="trxs" />
-        <bar />
       </v-col>
     </v-row>
   </v-container>

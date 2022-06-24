@@ -15,9 +15,21 @@ const getCheckingGql = require('./gql/getChecking.gql')
 
 const httpLink = createHttpLink({ uri: 'http://localhost:5001/graphql' })
 
+const defaultOptions = {
+  watchQuery: {
+    fetchPolicy: 'no-cache',
+    errorPolicy: 'ignore',
+  },
+  query: {
+    fetchPolicy: 'no-cache',
+    errorPolicy: 'all',
+  },
+}
+
 const apolloClient = new ApolloClient({
   link: httpLink,
-  cache: new InMemoryCache({ addTypename: false })
+  cache: new InMemoryCache({ addTypename: false }),
+  defaultOptions: defaultOptions
 })
 
 async function getInterests() {
