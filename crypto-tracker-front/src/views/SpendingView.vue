@@ -5,25 +5,82 @@
         <month-picker :trxs="allTrxs" @monthClick="onMonthClick" />
       </v-col>
       <v-col cols="6">
-        <spending-table :trxs="trxs" :monthNameActive="monthNameActive" />
+        <spending-table :trxs="trxs" :monthNameActive="monthNameActive" :merchantNames="merchantNames" @trxUpdated="onTrxUpdated" @refreshTrx="onRefreshTrx" />
       </v-col>
       <v-col cols="5">
         <v-row no-gutters>
-          <v-col cols="6">
+          <v-col lg="6" sm="12">
             <spending-input-comp @removeItem="onRemoveItem" @saveItem="onSaveItem" :items="checkings" type="checkingIn" />
           </v-col>
-          <v-col cols="6">
+          <v-col lg="6" sm="12">
             <spending-input-comp @removeItem="onRemoveItem" @saveItem="onSaveItem" :items="checkings" type="checkingOut" />
           </v-col>
-          <v-col cols="6">
+          <v-col lg="6" sm="12">
             <spending-input-comp @removeItem="onRemoveItem" @saveItem="onSaveItem" :items="checkings" type="investments" />
           </v-col>
-          <v-col cols="6">
-            <div>{{ `Card Spent: ${ getAsCurrency(cardSpend) }` }}</div>
-            <div>{{ `Total Spent: ${ getAsCurrency(getTotalSpent) }` }}</div>
+          <v-col lg="6" sm="12">
+            <v-card class="ma-1" dark>
+              <v-card-text class="subtitle-1 pa-3 d-flex">
+                <div style="flex: 0 0 50%;">
+                  <div class="pb-1">Card: <span class="red--text">{{ getAsCurrency(getCardSpent) }}</span></div>
+                  <div>Total: <span class="red--text">{{ getAsCurrency(getTotalSpent) }}</span></div>
+                </div>
+                <div>
+                  <div class="pb-1">Total: <span class="green--text">{{ getAsCurrency(getTotalSaved) }}</span></div>
+                  <div>USDC: <span class="green--text">{{ getAsCurrency(getUsdcSaved) }}</span></div>
+                </div>
+              </v-card-text>
+            </v-card>
           </v-col>
         </v-row>
-        <pie />
+        <v-row>
+          <v-col lg="6" xs="12" class="pr-1">
+            <v-data-table
+              dark
+              hide-default-footer
+              dense
+              disable-pagination
+              :headers="categoryHeaders"
+              :items="categorySpending"
+              item-key="category"
+              class="elevation-10">
+              <template v-slot:[`item.spending`]="{ item }">
+                <div class="rounded-lg text-center" :style="getBackgroundColor(item)">
+                  <span class="black--text">{{ getAsCurrency(item.spending) }}</span>
+                </div>
+              </template>
+              <template v-slot:[`item.avg`]="{ item }">
+                <span>{{ getAsCurrency(item.avg) }}</span>
+              </template>
+            </v-data-table>
+          </v-col>
+          <v-col lg="6" xs="12" class="pl-1">
+            <section style="display:flex;flex-direction:column;height:512px;">
+              <v-card style="display:flex;overflow:hidden;">
+                <v-data-table
+                  style="width:100%"
+                  fixed-header
+                  disable-pagination
+                  dark
+                  hide-default-footer
+                  dense
+                  :headers="merchantHeaders"
+                  :items="merchantSpending"
+                  item-key="merchant"
+                  class="elevation-10 flex-table d-flex">
+                  <template v-slot:[`item.amount`]="{ item }">
+                    <span>{{ getAsCurrency(item.amount) }}</span>
+                  </template>
+                  <template v-slot:[`item.merchant`]="{ item }">
+                    <span v-if="item.merchant && item.merchant.length < 16">{{ item.merchant }}</span>
+                    <span v-else>{{ `${item.merchant ? item.merchant.substring(0,16) : ''}  ...` }}</span>
+                  </template>
+                </v-data-table>
+              </v-card>
+            </section>
+          </v-col>
+        </v-row>
+        <pie :trxs="trxs" />
         <bar />
       </v-col>
     </v-row>
@@ -37,6 +94,11 @@ import Pie from '../components/charts/Pie'
 import Bar from '../components/charts/Bar'
 import SpendingInputComp from '../components/SpendingInputComp'
 import { getTrxs, getChecking, deleteChecking, addChecking, updateChecking } from '../api/apollo'
+import eachMonthOfInterval from 'date-fns/eachMonthOfInterval'
+import endOfMonth from 'date-fns/endOfMonth'
+import isWithinInterval from 'date-fns/isWithinInterval'
+import { refreshTrxs } from '../api/endpoints/trx'
+import chroma from "chroma-js";
 export default {
   components: {
     SpendingTable,
@@ -50,30 +112,69 @@ export default {
     trxs: [],
     allChecking: [],
     checkings: [],
+    merchantNames: [],
+    averages: [],
+    categorySpending: [],
+    merchantSpending: [],
     monthNameActive: '',
-    cardSpend: 0
+    categoryHeaders: [
+      { text: 'Category', sortable: false, value: 'category' },
+      { text: 'Spending', sortable: true, value: 'spending' },
+      { text: 'Average', sortable: false, value: 'avg' }
+    ],
+    merchantHeaders: [
+      { text: 'Merchant', sortable: false, value: 'merchant' },
+      { text: 'Amount', sortable: true, value: 'amount' }
+    ],
   }),
   created() {
-    Promise.all([getTrxs(), getChecking()]).then(values => {
-      this.allTrxs = [...values[0]]
-      this.allChecking = [...values[1]]
-      this.onMonthClick(new Date().getMonth())
-    });
+    this.loadTrxs()
   },
   computed: {
+    getCardSpent() {
+      return this.trxs.map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0)
+    },
     getTotalSpent() {
-      return this.cardSpend + 
-        (this.checkings.length ? 
-        this.checkings.filter(i => i.type === 'checkingOut')
-          .map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next) : 0)
+      return this.getCardSpent + 
+        this.checkings.filter(i => i.type === 'checkingOut' || i.type === 'investments').map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0)
+    },
+    getTotalSaved() {
+      return (this.checkings.filter(i => i.type === 'checkingIn').map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0))
+        - (this.getCardSpent +  this.checkings.filter(i => i.type === 'checkingOut').map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0))
+    },
+    getUsdcSaved() {
+      return this.checkings.filter(i => i.type === 'checkingIn').map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0) - this.getTotalSpent
     }
   },
   methods: {
+    async onRefreshTrx(callback) {
+      let res = await refreshTrxs()
+      if(res.status === 200) {
+        this.loadTrxs()
+        callback("done")
+      } else {
+        alert("PROBLEM")
+      }
+    },
+    loadTrxs() {
+      Promise.all([getTrxs(), getChecking()]).then(values => {
+        this.allTrxs = [...values[0]]
+        this.allChecking = [...values[1]]
+        this.merchantNames = this.allTrxs.filter(t => t.merchant !== null).map(({merchant}) => merchant)
+
+        this.onMonthClick(new Date().getMonth())
+      });
+    },
     onMonthClick(dateMonth) {
       this.monthNameActive = this.$store.getters.getMonthNames[dateMonth]
       this.trxs = this.allTrxs.filter(t => this.$store.getters.getUtcMonth(t.updatedAt) === dateMonth)
       this.checkings = this.allChecking.filter(q => this.$store.getters.getUtcMonth(q.date) === dateMonth)
-      this.cardSpend = this.trxs.map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next)
+      this.getCategorySpending(dateMonth)
+      this.getMerchantSpending()
+    },
+    onTrxUpdated(item) {
+      this.$set(this.allTrxs, this.allTrxs.indexOf(t => t.id === item.id), item);
+      this.onMonthClick(this.$store.getters.getUtcMonth(item.updatedAt))
     },
     getAsCurrency(numb) {
       return numb.toLocaleString('en-US', {
@@ -86,7 +187,7 @@ export default {
       this.checkings.splice(this.checkings.indexOf(item), 1)
       deleteChecking(item.id)
     },
-    onSaveItem(item, idx) {
+    onSaveItem(item) {
       if(item.id !== undefined) {
         updateChecking(item)
         Object.assign(this.allChecking[this.allChecking.findIndex(f => f.id === item.id)], item)
@@ -97,7 +198,58 @@ export default {
           this.checkings.push(i)
         })
       }
+    },
+    getCategorySpending(dateMonth) {
+      this.categorySpending = []
+      const monthInterval = eachMonthOfInterval({start: new Date(new Date().getUTCFullYear(), 0, 1), end: new Date(new Date().getUTCFullYear(), 11, 1) })
+    
+      let spendingArr = []
+      monthInterval.forEach(d => { spendingArr.push({
+        dateMonth: d.getMonth(),
+        categories: [...this.$store.getters.getCategories.map(c => { return { category: c, total: 
+          this.allTrxs.filter(t => isWithinInterval(new Date(t.updatedAt), { start: d, end: endOfMonth(d) }) && t.category === c)
+            .map(({amount}) => parseFloat(amount))
+            .reduce((prev, next) => prev + next, 0)
+          }})]
+      })})
+
+      let averageArr = []
+      monthInterval.forEach(d => { this.$store.getters.getCategories.forEach(c => { averageArr.push({
+        category: c, dateMonth: d.getMonth(), avg: spendingArr.filter(date => date.dateMonth <= d.getMonth())
+          .map(({categories}) => categories).flat()
+          .filter(f => f.category === c)
+          .map(({total}) => parseFloat(total))
+          .reduce((avg, value, _, { length }) => avg + value / length, 0)
+      })})})
+
+      this.$store.getters.getCategories.forEach(c => {
+        this.categorySpending.push({ category: c, 
+          spending: spendingArr.find(d => d.dateMonth === dateMonth).categories.find(cat => cat.category === c).total,
+          avg: averageArr.find(d => d.dateMonth === dateMonth && d.category === c).avg
+        })
+      })
+    },
+    getMerchantSpending() {
+      this.merchantSpending = []
+      this.trxs.map(({merchant}) => merchant).forEach(m => {
+        if(!this.merchantSpending.some(merch => merch.merchant === m)) {
+          this.merchantSpending.push({ merchant: m,
+            amount: this.trxs.filter(t => t.merchant === m).map(({amount}) => parseFloat(amount)).reduce((prev, next) => prev + next, 0)
+          })
+        }
+      })
+      this.merchantSpending.sort((a,b) => b.amount - a.amount);
+    },
+    getBackgroundColor(item) {
+      let val = (item.spending !== 0 || item.avg !== 0) ? item.spending / item.avg : 0
+      let scale = chroma.scale(['#4CAF50', '#FAFAFA', '#F44336']).domain([0,2])
+      return `background-color: ${ scale(val).hex() }`
     }
   }
 }
 </script>
+<style>
+.flex-table > div {
+  width: 100%;
+}
+</style>

@@ -42,9 +42,7 @@ export const resolvers = {
     },
     addTrx: async (root, { trx }) => {
       const { ...rest } = trx
-      const newTrx = new Trx({ ...rest })
-
-      return await newTrx.save()
+      return await Trx.findOneAndUpdate({ exchangeId: trx.exchangeId }, { $setOnInsert: { ...rest } }, { upsert: true })
     },
     updateTrx: async (root, { trx }) => {
       return await Trx.findByIdAndUpdate(trx.id, trx, { new: true })

@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container class="pa-1">
     <v-data-table dense :headers="headers" :items="items.filter(i => i.type === type)" class="elevation-5" dark hide-default-footer>
       <template v-slot:top>
         <v-toolbar flat>

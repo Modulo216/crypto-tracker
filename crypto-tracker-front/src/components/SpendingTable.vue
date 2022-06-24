@@ -1,22 +1,35 @@
 <template>
-  <v-container>
+  <v-container class="pa-1">
     <v-row class="text-center">
-      <h2>{{ monthNameActive }}</h2>
       <v-col cols="12">
         <v-data-table
           dark
           dense
+          :loading="loadingTrxs"
           :sort-by.sync="sortBy"
           :sort-desc.sync="sortDesc"
           :headers="headers"
           :items="trxs"
           item-key="id"
           class="elevation-10"
-          :footer-props="{
-            'items-per-page-options': [10, 20, 30, 40, 50, 100]
-          }"
-          :items-per-page="30"
+          hide-default-footer
+          disable-pagination
         >
+          <template v-slot:top>
+            <v-toolbar flat>
+              <v-toolbar-title>{{ monthNameActive }}</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <span>{{ `${trxs.length} transactions` }}</span>
+              <v-btn color="primary" dark class="ml-2" @click="emitRefresh()" :loading="loadingTrxs" :disabled="loadingTrxs">
+                <v-icon dark>
+                  mdi-refresh
+                </v-icon>
+              </v-btn>
+            </v-toolbar>
+          </template>
+          <template v-slot:[`item.index`]="{ item }">
+            <span>{{  trxs.indexOf(item) }}</span>
+          </template>
           <template v-slot:[`item.updatedAt`]="{ item }">
             <span>{{ formatDate(item.updatedAt) }}</span>
           </template>
@@ -49,18 +62,18 @@
               large
               persistent
             >
-              <div>{{ props.item.merchant }}</div>
+              <span v-if="props.item.merchant && props.item.merchant.length < 16">{{ props.item.merchant }}</span>
+              <span v-else>{{ `${props.item.merchant ? props.item.merchant.substring(0,16) : ''}  ...` }}</span>
               <template v-slot:input>
                 <div class="mt-4 text-h6">
                   Update Merchant
                 </div>
-                <v-text-field
+                <v-combobox
                   v-model="props.item.merchant"
-                  label="Edit"
-                  single-line
-                  counter
-                  autofocus
-                ></v-text-field>
+                  :items="merchantNames"
+                  dense
+                  label="Merchant Name"
+                />
               </template>
             </v-edit-dialog>
           </template>
@@ -84,32 +97,45 @@ import { updateTrx } from '../api/apollo'
     props: {
       trxs: Array,
       monthNameActive: String,
+      merchantNames: Array
     },
     data: () => ({
-      categories: ['Bills', 'Entertainment', 'Fun', 'Gas'],
+      categories: ['Auto + Gas','Cable + Phone','Merchandise','Entertainment','Gifts','Groceries','Healthcare',
+        'Insurance','Other','Personal + Family','Pets','Rent','Restaurants','Services + Supplies','Utilities'],
       sortBy: 'updatedAt',
-      sortDesc: false,
+      sortDesc: true,
       headers: [
+        { text: '', sortable: false, value: 'index' },
         { text: 'Updated At', sortable: true, value: 'updatedAt' },
         { text: 'Merchant', sortable: false, value: 'merchant' },
         { text: 'Amount', sortable: true, value: 'amount' },
-        { text: 'Category', sortable: false, value: 'category', width: '200' }
+        { text: 'Category', sortable: false, value: 'category', width: '180' }
       ],
+      loadingTrxs: false
     }),
     methods: {
       save(e) {
         updateTrx(e)
+        this.$emit('trxUpdated', e)
       },
       formatDate(d) {
         let theDate = new Date(d)
-        return ("0" + (theDate.getMonth() + 1)).slice(-2) + '/' + ("0" + theDate.getDate()).slice(-2) + '/' +
-          theDate.getFullYear().toString().substr(2,2) + ' ' + theDate.toLocaleTimeString().replace(/(.*)\D\d+/, '$1')
+        return ("0" + (theDate.getMonth() + 1)).slice(-2) + '/' + ("0" + theDate.getDate()).slice(-2) +
+          ' ' + theDate.toLocaleTimeString().replace(/(.*)\D\d+/, '$1')
       },
       getAsCurrency(numb) {
         return numb.toLocaleString('en-US', {
           style: 'currency',
           currency: 'USD',
         })
+      },
+      async emitRefresh() {
+        this.loadingTrxs = true
+        await this.$emit('refreshTrx', callbackVal => {
+          if(callbackVal === "done") {
+            this.loadingTrxs = false
+          }
+        });
       }
     }
   }

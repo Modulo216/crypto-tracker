@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import format from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
 
 Vue.use(Vuex)
@@ -16,21 +15,28 @@ const adjustForUTCOffset = date => {
   );
 }
 
+const _categories = ['Auto + Gas','Cable + Phone','Merchandise','Entertainment','Gifts','Groceries','Healthcare',
+  'Insurance','Other','Personal + Family','Pets','Rent','Restaurants','Services + Supplies','Utilities']
+
+const _monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+
 export default new Vuex.Store({
   state: {
   },
   getters: {
     getMonthNames() {
-      return ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+      return _monthNames
     },
     getUtcMonth: state => dateString => {
       const date = parseISO(dateString);
-      const dateWithOffset = adjustForUTCOffset(date)
-      return dateWithOffset.getMonth()
+      return date.getMonth()
     },
     getUtcDate: state => dateString => {
       const date = parseISO(dateString);
       return adjustForUTCOffset(date)
+    },
+    getCategories() {
+      return _categories
     }
   },
   mutations: {
