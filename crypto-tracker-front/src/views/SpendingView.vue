@@ -8,83 +8,100 @@
         <spending-table :trxs="trxs" :monthNameActive="monthNameActive" :merchantNames="merchantNames" @trxUpdated="onTrxUpdated" @refreshTrx="onRefreshTrx" />
       </v-col>
       <v-col cols="5">
-        <v-row no-gutters>
-          
-          <v-col lg="6" sm="12">
-            <spending-input-comp @removeItem="onRemoveItem" @saveItem="onSaveItem" :items="checkings" type="checkingIn" />
-          </v-col>
-          <v-col lg="6" sm="12">
-            <spending-input-comp @removeItem="onRemoveItem" @saveItem="onSaveItem" :items="checkings" type="checkingOut" />
-          </v-col>
-          <v-col lg="6" sm="12">
-            <spending-input-comp @removeItem="onRemoveItem" @saveItem="onSaveItem" :items="checkings" type="investments" />
-          </v-col>
-          <v-col lg="6" sm="12">
-            <v-card class="ma-1" dark>
-              <v-card-text class="subtitle-1 pa-3 d-flex">
-                <div style="flex: 0 0 50%;">
-                  <div class="pb-1">Card: <span class="red--text">{{ getAsCurrency(getCardSpent) }}</span></div>
-                  <div>Total: <span class="red--text">{{ getAsCurrency(getTotalSpent) }}</span></div>
-                </div>
-                <div>
-                  <div class="pb-1">Total: <span class="green--text">{{ getAsCurrency(getTotalSaved) }}</span></div>
-                  <div>USDC: <span class="green--text">{{ getAsCurrency(getUsdcSaved) }}</span></div>
-                </div>
-              </v-card-text>
-            </v-card>
-          </v-col>
-
-
-          <v-col lg="6" xs="12" class="pa-1">
-            <v-data-table
-              dark
-              hide-default-footer
-              dense
-              disable-pagination
-              :headers="categoryHeaders"
-              :items="categorySpending"
-              item-key="category"
-              class="elevation-10">
-              <template v-slot:[`item.spending`]="{ item }">
-                <div class="rounded-lg text-center" :style="getBackgroundColor(item)">
-                  <span class="black--text">{{ getAsCurrency(item.spending) }}</span>
-                </div>
-              </template>
-              <template v-slot:[`item.avg`]="{ item }">
-                <span>{{ getAsCurrency(item.avg) }}</span>
-              </template>
-            </v-data-table>
-          </v-col>
-          <v-col lg="6" xs="12" class="pa-1">
-            <section style="display:flex;flex-direction:column;height:512px;">
-              <v-card style="display:flex;overflow:hidden;">
-                <v-data-table
-                  style="width:100%"
-                  fixed-header
-                  disable-pagination
-                  dark
-                  hide-default-footer
-                  dense
-                  :headers="merchantHeaders"
-                  :items="merchantSpending"
-                  item-key="merchant"
-                  class="elevation-10 flex-table d-flex">
-                  <template v-slot:[`item.amount`]="{ item }">
-                    <span>{{ getAsCurrency(item.amount) }}</span>
-                  </template>
-                  <template v-slot:[`item.merchant`]="{ item }">
-                    <span v-if="item.merchant && item.merchant.length < 16">{{ item.merchant }}</span>
-                    <span v-else>{{ `${item.merchant ? item.merchant.substring(0,16) : ''}  ...` }}</span>
-                  </template>
-                </v-data-table>
-              </v-card>
-            </section>
-          </v-col>
-          <v-col col="12">
+        <v-row no-gutters class="pt-1">
+          <v-expansion-panels accordion dark multiple v-model="panel">
+            <v-expansion-panel v-model="panel">
+              <v-expansion-panel-header>Checking & Investments</v-expansion-panel-header>
+              <v-expansion-panel-content>
+                <v-row no-gutters>
+                  <v-col lg="6" sm="12">
+                    <spending-input-comp @removeItem="onRemoveItem" @saveItem="onSaveItem" :items="checkings" type="checkingIn" />
+                  </v-col>
+                  <v-col lg="6" sm="12">
+                    <spending-input-comp @removeItem="onRemoveItem" @saveItem="onSaveItem" :items="checkings" type="checkingOut" />
+                  </v-col>
+                  <v-col lg="6" sm="12">
+                    <spending-input-comp @removeItem="onRemoveItem" @saveItem="onSaveItem" :items="checkings" type="investments" />
+                  </v-col>
+                  <v-col lg="6" sm="12">
+                    <v-card class="ma-1" dark>
+                      <v-card-text class="subtitle-1 pa-3 d-flex">
+                        <div style="flex: 0 0 50%;">
+                          <div class="pb-1">Card: <span class="red--text">{{ getAsCurrency(getCardSpent) }}</span></div>
+                          <div>Total: <span class="red--text">{{ getAsCurrency(getTotalSpent) }}</span></div>
+                        </div>
+                        <div>
+                          <div class="pb-1">Total: <span class="green--text">{{ getAsCurrency(getTotalSaved) }}</span></div>
+                          <div>USDC: <span class="green--text">{{ getAsCurrency(getUsdcSaved) }}</span></div>
+                        </div>
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+                </v-row>
+              </v-expansion-panel-content>
+            </v-expansion-panel>
+            <v-expansion-panel>
+            <v-expansion-panel-header>Spending</v-expansion-panel-header>
+              <v-expansion-panel-content>
+                <v-row no-gutters>
+                  <v-col lg="6" xs="12" class="pa-1">
+                    <v-data-table
+                      @click:row="categoryClick"
+                      single-select
+                      dark
+                      hide-default-footer
+                      dense
+                      disable-pagination
+                      :headers="categoryHeaders"
+                      :items="categorySpending"
+                      item-key="category"
+                      class="elevation-10 row-pointer">
+                      <template v-slot:[`item.spending`]="{ item }">
+                        <div class="rounded text-center" :style="getBackgroundColor(item)">
+                          <span class="black--text">{{ getAsCurrency(item.spending) }}</span>
+                        </div>
+                      </template>
+                      <template v-slot:[`item.avg`]="{ item }">
+                        <span>{{ getAsCurrency(item.avg) }}</span>
+                      </template>
+                    </v-data-table>
+                  </v-col>
+                  <v-col lg="6" xs="12" class="pa-1">
+                    <section style="display:flex;flex-direction:column;height:539px;">
+                      <v-card style="display:flex;overflow:hidden;">
+                        <v-data-table
+                          @click:row="merchantClick"
+                          single-select
+                          style="width:100%"
+                          fixed-header
+                          disable-pagination
+                          dark
+                          hide-default-footer
+                          dense
+                          :headers="merchantHeaders"
+                          :items="merchantSpending"
+                          item-key="merchant"
+                          class="elevation-10 flex-table d-flex row-pointer">
+                          <template v-slot:[`item.amount`]="{ item }">
+                            <span>{{ getAsCurrency(item.amount) }}</span>
+                          </template>
+                          <template v-slot:[`item.merchant`]="{ item }">
+                            <span v-if="item.merchant && item.merchant.length < 16">{{ item.merchant }}</span>
+                            <span v-else>{{ `${item.merchant ? item.merchant.substring(0,16) : ''}  ...` }}</span>
+                          </template>
+                        </v-data-table>
+                      </v-card>
+                    </section>
+                  </v-col>
+                </v-row>
+              </v-expansion-panel-content>
+            </v-expansion-panel>
+          </v-expansion-panels>
+          <v-col lg="12">
             <pie :trxs="trxs" />
           </v-col>
-          <v-col col="12">
-            <bar />
+          <v-col lg="12">
+            <bar :allTrxs="allTrxs" />
           </v-col>
         </v-row>
       </v-col>
@@ -121,16 +138,18 @@ export default {
     averages: [],
     categorySpending: [],
     merchantSpending: [],
+    selectedRow: undefined,
     monthNameActive: '',
     categoryHeaders: [
       { text: 'Category', sortable: false, value: 'category' },
-      { text: 'Spending', sortable: true, value: 'spending' },
-      { text: 'Average', sortable: false, value: 'avg' }
+      { text: 'Spend', sortable: false, value: 'spending' },
+      { text: 'Avg', sortable: false, value: 'avg' }
     ],
     merchantHeaders: [
       { text: 'Merchant', sortable: false, value: 'merchant' },
-      { text: 'Amount', sortable: true, value: 'amount' }
+      { text: 'Amt', sortable: true, value: 'amount' }
     ],
+    panel: [0]
   }),
   created() {
     this.loadTrxs()
@@ -168,7 +187,7 @@ export default {
         this.merchantNames = this.allTrxs.filter(t => t.merchant !== null).map(({merchant}) => merchant)
 
         this.onMonthClick(new Date().getMonth())
-      });
+      })
     },
     onMonthClick(dateMonth) {
       this.monthNameActive = this.$store.getters.getMonthNames[dateMonth]
@@ -249,6 +268,34 @@ export default {
       let val = (item.spending !== 0 || item.avg !== 0) ? item.spending / item.avg : 0
       let scale = chroma.scale(['#4CAF50', '#FAFAFA', '#F44336']).domain([0,2])
       return `background-color: ${ scale(val).hex() }`
+    },
+    categoryClick(e, row) {
+      if(this.selectedRow !== undefined) {
+        this.selectedRow.select(false)
+      }
+      row.select(true)
+
+      if(this.trxs.every(t => t.category === e.category)) {
+        row.select(false)
+        this.trxs = this.allTrxs.filter(t => this.$store.getters.getUtcMonth(t.updatedAt) === this.$store.getters.getMonthNames.indexOf(this.monthNameActive))
+      } else {
+        this.trxs = this.allTrxs.filter(t => this.$store.getters.getUtcMonth(t.updatedAt) === this.$store.getters.getMonthNames.indexOf(this.monthNameActive) && t.category === e.category)
+      }
+      this.selectedRow = row
+    },
+    merchantClick(e, row) {
+      if(this.selectedRow !== undefined) {
+        this.selectedRow.select(false)
+      }
+      row.select(true)
+
+      if(this.trxs.every(t => t.merchant === e.merchant)) {
+        row.select(false)
+        this.trxs = this.allTrxs.filter(t => this.$store.getters.getUtcMonth(t.updatedAt) === this.$store.getters.getMonthNames.indexOf(this.monthNameActive))
+      } else {
+        this.trxs = this.allTrxs.filter(t => this.$store.getters.getUtcMonth(t.updatedAt) === this.$store.getters.getMonthNames.indexOf(this.monthNameActive) && t.merchant === e.merchant)
+      }
+      this.selectedRow = row
     }
   }
 }
@@ -256,5 +303,8 @@ export default {
 <style>
 .flex-table > div {
   width: 100%;
+}
+.row-pointer > .v-data-table__wrapper > table > tbody > tr:hover { 
+  cursor: pointer;
 }
 </style>

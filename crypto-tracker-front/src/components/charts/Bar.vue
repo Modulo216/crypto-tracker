@@ -24,8 +24,8 @@ import {
   CategoryScale,
   LinearScale
 } from 'chart.js'
-import ChartDataLabels from 'chartjs-plugin-datalabels'
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ChartDataLabels)
+import eachMonthOfInterval from 'date-fns/eachMonthOfInterval'
+ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
 export default {
   name: 'BarChart',
@@ -47,7 +47,7 @@ export default {
     },
     height: {
       type: Number,
-      default: 400
+      default: 600
     },
     cssClasses: {
       default: '',
@@ -60,49 +60,73 @@ export default {
     plugins: {
       type: Array,
       default: () => []
+    },
+    allTrxs: Array
+  },
+  watch: {
+    allTrxs(newAllTrxs) {
+      this.chartData.labels = [...this.$store.getters.getMonthNames.slice(0, new Date().getMonth()+1)]
+
+      const monthInterval = eachMonthOfInterval({start: new Date(new Date().getUTCFullYear(), 0, 1), end: new Date(new Date().getUTCFullYear(), 11, 1) })
+      let week1 = [], week2 = [], week3 = [], week4 = [], week5 = []
+      monthInterval.forEach(m => {
+        if(new Date().getMonth() >= m.getMonth()) {
+          week1.push(newAllTrxs.filter(t => new Date(t.updatedAt).getMonth() === m.getMonth() && new Date(t.updatedAt).getDate() <= 7).map(w => parseFloat(w.amount)).reduce((prev, next) => prev + next, 0))
+          week2.push(newAllTrxs.filter(t => new Date(t.updatedAt).getMonth() === m.getMonth() && new Date(t.updatedAt).getDate() >= 8 && new Date(t.updatedAt).getDate() <= 14).map(w => parseFloat(w.amount)).reduce((prev, next) => prev + next, 0))
+          week3.push(newAllTrxs.filter(t => new Date(t.updatedAt).getMonth() === m.getMonth() && new Date(t.updatedAt).getDate() >= 15 && new Date(t.updatedAt).getDate() <= 21).map(w => parseFloat(w.amount)).reduce((prev, next) => prev + next, 0))
+          week4.push(newAllTrxs.filter(t => new Date(t.updatedAt).getMonth() === m.getMonth() && new Date(t.updatedAt).getDate() >= 22 && new Date(t.updatedAt).getDate() <= 28).map(w => parseFloat(w.amount)).reduce((prev, next) => prev + next, 0))
+          week5.push(newAllTrxs.filter(t => new Date(t.updatedAt).getMonth() === m.getMonth() && new Date(t.updatedAt).getDate() >= 29 && new Date(t.updatedAt).getDate() <= 31).map(w => parseFloat(w.amount)).reduce((prev, next) => prev + next, 0))
+        }
+      })
+
+      this.chartData.datasets[0].data = [...week1.map(w => parseInt(w))]
+      this.chartData.datasets[1].data = [...week2.map(w => parseInt(w))]
+      this.chartData.datasets[2].data = [...week3.map(w => parseInt(w))]
+      this.chartData.datasets[3].data = [...week4.map(w => parseInt(w))]
+      this.chartData.datasets[4].data = [...week5.map(w => parseInt(w))]
     }
   },
   data() {
     return {
       chartData: {
-        labels: [
-          'January',
-          'February',
-          'March',
-          'April'
-        ],
+        labels: [ ],
         datasets: [
           {
-            label: 'Week 1', // week 1
-            data: [189.30, 451.38, 400.56, 804.62],
+            label: 'Week 1',
+            data: [],
             backgroundColor: 'rgba(255, 99, 132, 0.5)',
-            borderColor: 'rgb(255, 99, 132)',
+            borderColor: '#FF',
             borderWidth: 1
           },
           {
-            label: 'Week 2', // week 2
-            data: [165.21, 213.49, 205.55, 183.36],
-            backgroundColor: 'rgba(255, 159, 64, 0.5)',
-            borderColor: 'rgb(255, 159, 64)',
+            label: 'Week 2',
+            data: [],
+            backgroundColor: 'rgba(255, 159, 64, 0.2)',
+            borderColor: '#FF',
             borderWidth: 1
           },
           {
-            label: 'Week 3', // week 3
-            data: [130.62, 110.70, 110.92, 44.66],
-            backgroundColor: 'rgba(153, 102, 255, 0.5)',
-            borderColor: 'rgb(153, 102, 255)',
+            label: 'Week 3',
+            data: [],
+            backgroundColor: 'rgba(52, 47, 191, 0.5)',
+            borderColor: '#FF',
             borderWidth: 1
           },
           {
-            label: 'Week 4', // week 3
-            data: [173.33, 1031.26, 366.67, 336.08],
-            backgroundColor: '#00FF00',
+            label: 'Week 4',
+            data: [],
+            backgroundColor: 'rgba(216, 105, 41, 0.5)',
+            borderColor: '#FF',
+            borderWidth: 1
           },
           {
-            label: 'Week 5', // week 3
-            data: [242.43, 0, 0, 119.29, 0],
+            label: 'Week 5',
+            data: [],
             backgroundColor: '#FFA500',
+            borderColor: '#FF',
+            borderWidth: 1
           }
+          
         ]
       },
       chartOptions: {

@@ -25,6 +25,7 @@ import {
 } from 'chart.js'
 import ChartDataLabels from 'chartjs-plugin-datalabels'
 ChartJS.register(Title, Tooltip, Legend, ArcElement, CategoryScale, ChartDataLabels)
+ChartJS.defaults.set('plugins.datalabels', { color: '#000000' })
 
 export default {
   name: 'PieChart',

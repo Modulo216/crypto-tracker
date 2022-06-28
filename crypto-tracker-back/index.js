@@ -3,7 +3,7 @@ const cors = require('cors');
 const { ApolloServer } = require('apollo-server-express')
 const { resolvers } = require("./data/resolvers.graphql")
 const { typeDefs } = require("./data/schema.graphql")
-const { getTrxs } = require("./api/coinbase")
+const { getTrxs, getAllTrxs, refreshAllTrxs } = require("./api/coinbase")
 const isAfter = require('date-fns/isAfter')
 const app = express()
 const port = 5001
@@ -27,7 +27,20 @@ app.get('/trxs', async (req, res) => {
         }
     })
   })
-})            
+})
+
+app.get('/all-trxs', async (req, res) => {
+  await getAllTrxs().then(txns => {
+    console.log("DONE")
+  })
+})
+
+app.get('/refresh-all-trxs', async (req, res) => {
+  await refreshAllTrxs().then(txns => {
+    console.log("DONE")
+    res.send(txns)
+  })
+})
 
 app.listen(port, async () => {
   console.log(`Dolphin app listening on port ${port}!`)

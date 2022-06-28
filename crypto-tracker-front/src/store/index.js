@@ -18,7 +18,7 @@ const adjustForUTCOffset = date => {
 const _categories = ['Auto + Gas','Cable + Phone','Merchandise','Entertainment','Gifts','Groceries','Healthcare',
   'Insurance','Other','Personal + Family','Pets','Rent','Restaurants','Services + Supplies','Utilities']
 
-const _monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+const _monthNames = ['January', 'February', "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 
 export default new Vuex.Store({
   state: {

@@ -1,39 +1,78 @@
 let coinbase = require('coinbase')
 const { promisify } = require('util')
 require('dotenv').config()
+var fs = require('fs');
 
 let client = new coinbase.Client({ 'apiKey': process.env.api_key, 'apiSecret': process.env.api_secret, strictSSL: false })
 
 async function getTrxs(walletId) {
-  const getAccountAsync = promisify(client.getAccount).bind(client);
+  const getAccountAsync = promisify(client.getAccount).bind(client)
   let wallet = await getAccountAsync(walletId)
-  const getTxns = transactions(wallet);
+  const getTxns = transactions(wallet)
   
-  let page = { next_uri: null, limit: 100 }
-  let trxs = []
+  let page = { next_uri: null, limit: 100 }, trxs = []
   do {
     let {txns, pagination} = await getTxns(page)
     page = pagination
     if(txns !== null) {
-      txns.forEach(txn => {
-        trxs.push(txn)
-      })
+      trxs.push(...txns)
     }
   } while (page !== undefined && page.next_uri !== null)
 
   return trxs
-
 }
 
 function transactions(wallet) {
   return function() {
-    const args = Array.prototype.slice.call(arguments);
+    const args = Array.prototype.slice.call(arguments)
     return new Promise((resolve, reject) => {
-      wallet.getTransactions(args[0], function(err, txns, pagination) {
+      wallet.getTransactions(args[0], (err, txns, pagination) => {
         resolve({txns, pagination})
       })
-    });
-  };
+    })
+  }
 }
 
-export { getTrxs }
+async function getAllAccounts() {
+  const getAccountsAsync = promisify(client.getAccounts).bind(client);
+  let accounts = await getAccountsAsync({ limit: 300 })
+  return accounts.filter(a => a.created_at !== null && a.created_at !== a.updated_at)
+    .sort((a, b) => a.currency.localeCompare(b.currency))
+}
+
+async function getAllTrxs() {
+  let filteredAccts = await getAllAccounts()
+
+  let retVal = []
+  for (const wallet of filteredAccts) {
+    const getTxns = transactions(wallet)
+    let page = { next_uri: null, limit: 100 }, trxs = []
+
+    do {
+      let {txns, pagination} = await getTxns(page)
+      page = pagination
+      if(txns !== null) {
+        trxs.push(...txns)
+      }
+    } while (page !== undefined && page.next_uri !== null)
+    retVal.push({ coin: wallet.currency, transactions: trxs.length })
+  }
+  return retVal
+}
+
+async function refreshAllTrxs() {
+  let filteredAccts = await getAllAccounts()
+  let retVal = []
+
+  for (const wallet of filteredAccts) {
+    const getTxns = transactions(wallet)
+    let { txns } = await getTxns({ next_uri: null, limit: 25 })
+    if(txns !== null && txns.length > 0) {
+      retVal.push({ coin: wallet.currency, transactions: txns })
+    }
+  }
+
+  return retVal
+}
+
+export { getTrxs, getAllTrxs, refreshAllTrxs }
