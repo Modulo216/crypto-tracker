@@ -3,7 +3,7 @@ const cors = require('cors');
 const { ApolloServer } = require('apollo-server-express')
 const { resolvers } = require("./data/resolvers.graphql")
 const { typeDefs } = require("./data/schema.graphql")
-const { getTrxs, getAllTrxs, refreshAllTrxs } = require("./api/coinbase")
+const { getTrxs, getAllTaxes, refreshAllTaxes } = require("./api/coinbase")
 const isAfter = require('date-fns/isAfter')
 const app = express()
 const port = 5001
@@ -29,10 +29,46 @@ app.get('/trxs', async (req, res) => {
   })
 })
 
-app.get('/all-trxs', async (req, res) => {
-  await getAllTrxs().then(txns => {
-    console.log("DONE")
+app.get('/taxes', async (req, res) => {
+  let interests = await resolvers.Query.getInterests()
+  let rows = await resolvers.Query.taxExists()
+  let taxes = []
+
+  if(rows === 0) {
+    taxes = await getAllTaxes(interests.map(i => i.name))
+  } else {
+    taxes = await refreshAllTaxes(interests.map(i => i.name))
+  }
+  
+  taxes.forEach(t => {
+    t.transactions.filter(txn => isAfter(new Date(txn.created_at), new Date(2022, 0, 1)) && t.coin ).forEach(txn => {
+      if(txn.type === 'trade' ||
+        txn.description === 'Spending reward from Coinbase Card' ||
+        (t.coin === 'USDC' && txn.type !== 'interest')) {
+        return
+      }
+
+      let tax = { exchange: "coinbase", coin: t.coin }
+      tax.updatedAt = txn.created_at
+      tax.exchangeId = txn.id
+      tax.amount = txn.amount.amount
+      tax.value = txn.native_amount.amount
+      tax.title = txn.details.title
+      tax.subtitle = txn.details.subtitle
+
+      if(txn.type === 'staking_reward') {
+        tax.activity = 'Staking'
+      } else if (txn.type === 'interest') {
+        tax.activity = 'Interest'
+      } else if (txn.description === 'Earn Task') {
+        tax.activity = 'Learn & Earn'
+      }
+
+      resolvers.Mutation.addTax(null, { tax: { ...tax } })
+    })
   })
+
+  res.send(taxes)
 })
 
 app.get('/refresh-all-trxs', async (req, res) => {

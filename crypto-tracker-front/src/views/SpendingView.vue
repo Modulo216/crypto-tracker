@@ -15,13 +15,13 @@
               <v-expansion-panel-content>
                 <v-row no-gutters>
                   <v-col lg="6" sm="12">
-                    <spending-input-comp @removeItem="onRemoveItem" @saveItem="onSaveItem" :items="checkings" type="checkingIn" />
+                    <checking-input @removeItem="onRemoveItem" @saveItem="onSaveItem" :items="checkings" type="checkingIn" />
                   </v-col>
                   <v-col lg="6" sm="12">
-                    <spending-input-comp @removeItem="onRemoveItem" @saveItem="onSaveItem" :items="checkings" type="checkingOut" />
+                    <checking-input @removeItem="onRemoveItem" @saveItem="onSaveItem" :items="checkings" type="checkingOut" />
                   </v-col>
                   <v-col lg="6" sm="12">
-                    <spending-input-comp @removeItem="onRemoveItem" @saveItem="onSaveItem" :items="checkings" type="investments" />
+                    <checking-input @removeItem="onRemoveItem" @saveItem="onSaveItem" :items="checkings" type="investments" />
                   </v-col>
                   <v-col lg="6" sm="12">
                     <v-card class="ma-1" dark>
@@ -110,11 +110,11 @@
 </template>
 
 <script>
-import SpendingTable from '../components/SpendingTable'
-import MonthPicker from '../components/MonthPicker'
-import Pie from '../components/charts/Pie'
-import Bar from '../components/charts/Bar'
-import SpendingInputComp from '../components/SpendingInputComp'
+import SpendingTable from '../components/spending/SpendingTable'
+import MonthPicker from '../components/shared/MonthPicker'
+import Pie from '../components/spending/charts/Pie'
+import Bar from '../components/spending/charts/Bar'
+import CheckingInput from '../components/spending/CheckingInput'
 import { getTrxs, getChecking, deleteChecking, addChecking, updateChecking } from '../api/apollo'
 import eachMonthOfInterval from 'date-fns/eachMonthOfInterval'
 import endOfMonth from 'date-fns/endOfMonth'
@@ -127,7 +127,7 @@ export default {
     MonthPicker,
     Pie,
     Bar,
-    SpendingInputComp
+    CheckingInput
   },
   data: () => ({
     allTrxs: [],

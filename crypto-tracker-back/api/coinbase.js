@@ -40,11 +40,15 @@ async function getAllAccounts() {
     .sort((a, b) => a.currency.localeCompare(b.currency))
 }
 
-async function getAllTrxs() {
+async function getAllTaxes(interests) {
   let filteredAccts = await getAllAccounts()
-
   let retVal = []
+
   for (const wallet of filteredAccts) {
+    if(!interests.includes(wallet.currency)) {
+      continue
+    }
+
     const getTxns = transactions(wallet)
     let page = { next_uri: null, limit: 100 }, trxs = []
 
@@ -55,16 +59,20 @@ async function getAllTrxs() {
         trxs.push(...txns)
       }
     } while (page !== undefined && page.next_uri !== null)
-    retVal.push({ coin: wallet.currency, transactions: trxs.length })
+    retVal.push({ coin: wallet.currency, transactions: trxs })
   }
   return retVal
 }
 
-async function refreshAllTrxs() {
+async function refreshAllTaxes(interests) {
   let filteredAccts = await getAllAccounts()
   let retVal = []
 
   for (const wallet of filteredAccts) {
+    if(!interests.includes(wallet.currency)) {
+      continue
+    }
+
     const getTxns = transactions(wallet)
     let { txns } = await getTxns({ next_uri: null, limit: 25 })
     if(txns !== null && txns.length > 0) {
@@ -75,4 +83,4 @@ async function refreshAllTrxs() {
   return retVal
 }
 
-export { getTrxs, getAllTrxs, refreshAllTrxs }
+export { getTrxs, getAllTaxes, refreshAllTaxes }

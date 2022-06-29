@@ -92,7 +92,7 @@
 </template>
 
 <script>
-import { updateTrx } from '../api/apollo'
+import { updateTrx } from '../../api/apollo'
   export default {
     props: {
       trxs: Array,

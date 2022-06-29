@@ -1,4 +1,4 @@
-import { Interest, Trx, Checking } from "../db/dbConnector.js"
+import { Interest, Trx, Checking, Tax } from "../db/dbConnector.js"
 
 export const resolvers = {
   Query: {
@@ -13,6 +13,16 @@ export const resolvers = {
     },
     getChecking: async (root) => {
       return await Checking.find()
+    },
+    taxExists: async (root) => {
+      let taxes = await Tax.find().lean()
+      return taxes.length
+    },
+    getTaxes: async (root) => {
+      let taxes = await Tax.find()
+      taxes.sort((d1, d2) => new Date(d1.updatedAt).getTime() - new Date(d2.updatedAt).getTime())
+      
+      return taxes
     }
   },
   Mutation: {
@@ -46,6 +56,10 @@ export const resolvers = {
     },
     updateTrx: async (root, { trx }) => {
       return await Trx.findByIdAndUpdate(trx.id, trx, { new: true })
-    }
+    },
+    addTax: async (root, { tax }) => {
+      const { ...rest } = tax
+      return await Tax.findOneAndUpdate({ exchangeId: tax.exchangeId }, { $setOnInsert: { ...rest } }, { upsert: true })
+    },
   },
 }

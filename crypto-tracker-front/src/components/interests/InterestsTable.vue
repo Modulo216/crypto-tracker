@@ -72,7 +72,7 @@
 </template>
 
 <script>
-import { getInterests, addInterest, deleteInterest, updateInterest } from '../api/apollo'
+import { getInterests, addInterest, deleteInterest, updateInterest } from '../../api/apollo'
   export default {
     name: 'InterestsTable',
     data: () => ({

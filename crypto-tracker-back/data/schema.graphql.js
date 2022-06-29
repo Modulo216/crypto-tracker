@@ -13,6 +13,30 @@ export const typeDefs = gql`
     amount: String
     type: String
   }
+  type Tax {
+    id: ID
+    exchange: String
+    exchangeId: String
+    coin: String
+    updatedAt: String
+    amount: String
+    value: String
+    title: String
+    subtitle: String
+    activity: String
+  }
+  input TaxInput {
+    id: ID
+    exchange: String
+    exchangeId: String
+    coin: String
+    updatedAt: String
+    amount: String
+    value: String
+    title: String
+    subtitle: String
+    activity: String
+  }
   type Trx {
     id: ID
     exchange: String
@@ -58,6 +82,8 @@ export const typeDefs = gql`
     findInterest(interest: InterestInput): Interest
     getTrxs: [Trx]
     getChecking: [Checking]
+    taxExists: Int
+    getTaxes: [Tax]
   }
   type Mutation {
     addChecking(checking: CheckingInput): Checking
@@ -68,5 +94,6 @@ export const typeDefs = gql`
     deleteChecking(id: ID): Checking
     addTrx(trx: TrxInput): Trx
     updateTrx(trx: TrxInput): Trx
+    addTax(tax: TaxInput): Tax
   }
 `
