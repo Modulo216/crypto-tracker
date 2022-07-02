@@ -18,6 +18,10 @@ export const resolvers = {
       let taxes = await Tax.find().lean()
       return taxes.length
     },
+    trxExists: async (root) => {
+      let trxs = await Trx.find().lean()
+      return trxs.length
+    },
     getTaxes: async (root) => {
       let taxes = await Tax.find()
       taxes.sort((d1, d2) => new Date(d1.updatedAt).getTime() - new Date(d2.updatedAt).getTime())
@@ -59,7 +63,11 @@ export const resolvers = {
     },
     addTax: async (root, { tax }) => {
       const { ...rest } = tax
-      return await Tax.findOneAndUpdate({ exchangeId: tax.exchangeId }, { $setOnInsert: { ...rest } }, { upsert: true })
+      const newTax = new Tax({ ...rest })
+      return await newTax.save()
+    },
+    updateTax: async (root, { tax }) => {
+      return await Tax.findByIdAndUpdate(tax.id, tax, { new: true })
     },
   },
 }

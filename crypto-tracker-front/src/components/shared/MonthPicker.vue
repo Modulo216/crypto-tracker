@@ -1,8 +1,11 @@
 <template>
   <v-container>
+    <span>
     <div v-for="month in months" :key="month">
       <a @click="$emit('monthClick', month)">{{ $store.getters.getMonthNames[month] }}</a>
     </div>
+    <a @click="$emit('monthClick', 'ALL')">All</a>
+    </span>
   </v-container>
 </template>
 

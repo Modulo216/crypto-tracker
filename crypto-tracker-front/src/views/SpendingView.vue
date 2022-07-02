@@ -190,10 +190,18 @@ export default {
       })
     },
     onMonthClick(dateMonth) {
-      this.monthNameActive = this.$store.getters.getMonthNames[dateMonth]
-      this.trxs = this.allTrxs.filter(t => this.$store.getters.getUtcMonth(t.updatedAt) === dateMonth)
-      this.checkings = this.allChecking.filter(q => this.$store.getters.getUtcMonth(q.date) === dateMonth)
-      this.getCategorySpending(dateMonth)
+      if(dateMonth === 'ALL') {
+        this.monthNameActive = 'All'
+        this.trxs = this.allTrxs
+        this.checkings = this.allChecking
+        this.getCategorySpending()
+      } else {
+        this.monthNameActive = this.$store.getters.getMonthNames[dateMonth]
+        this.trxs = this.allTrxs.filter(t => this.$store.getters.getUtcMonth(t.updatedAt) === dateMonth)
+        this.checkings = this.allChecking.filter(q => this.$store.getters.getUtcMonth(q.date) === dateMonth)
+        this.getCategorySpending(dateMonth)
+      }
+
       this.getMerchantSpending()
     },
     onTrxUpdated(item) {
@@ -247,10 +255,17 @@ export default {
       })})})
 
       this.$store.getters.getCategories.forEach(c => {
-        this.categorySpending.push({ category: c, 
-          spending: spendingArr.find(d => d.dateMonth === dateMonth).categories.find(cat => cat.category === c).total,
-          avg: averageArr.find(d => d.dateMonth === dateMonth && d.category === c).avg
-        })
+        if(dateMonth) {
+          this.categorySpending.push({ category: c, 
+            spending: spendingArr.find(d => d.dateMonth === dateMonth).categories.find(cat => cat.category === c).total,
+            avg: averageArr.find(d => d.dateMonth === dateMonth && d.category === c).avg
+          })
+        } else {
+          this.categorySpending.push({ category: c, 
+            spending: spendingArr.map(s => s.categories).flat().filter(cat => cat.category === c).map(({total}) => parseFloat(total)).reduce((prev, next) => prev + next, 0),
+            avg: averageArr.filter(d => d.category === c).map(({avg}) => parseFloat(avg)).reduce((avg, value, _, { length }) => avg + value / length, 0)
+          })
+        }
       })
     },
     getMerchantSpending() {
@@ -277,9 +292,17 @@ export default {
 
       if(this.trxs.every(t => t.category === e.category)) {
         row.select(false)
-        this.trxs = this.allTrxs.filter(t => this.$store.getters.getUtcMonth(t.updatedAt) === this.$store.getters.getMonthNames.indexOf(this.monthNameActive))
+        if(this.monthNameActive === 'All') {
+          this.trxs = this.allTrxs
+        } else {
+          this.trxs = this.allTrxs.filter(t => this.$store.getters.getUtcMonth(t.updatedAt) === this.$store.getters.getMonthNames.indexOf(this.monthNameActive))
+        }
       } else {
-        this.trxs = this.allTrxs.filter(t => this.$store.getters.getUtcMonth(t.updatedAt) === this.$store.getters.getMonthNames.indexOf(this.monthNameActive) && t.category === e.category)
+        if(this.monthNameActive === 'All') {
+          this.trxs = this.allTrxs.filter(t => t.category === e.category)
+        } else {
+          this.trxs = this.allTrxs.filter(t => this.$store.getters.getUtcMonth(t.updatedAt) === this.$store.getters.getMonthNames.indexOf(this.monthNameActive) && t.category === e.category)
+        }
       }
       this.selectedRow = row
     },
@@ -291,9 +314,17 @@ export default {
 
       if(this.trxs.every(t => t.merchant === e.merchant)) {
         row.select(false)
-        this.trxs = this.allTrxs.filter(t => this.$store.getters.getUtcMonth(t.updatedAt) === this.$store.getters.getMonthNames.indexOf(this.monthNameActive))
+        if(this.monthNameActive === 'All') {
+          this.trxs = this.allTrxs
+        } else {
+          this.trxs = this.allTrxs.filter(t => this.$store.getters.getUtcMonth(t.updatedAt) === this.$store.getters.getMonthNames.indexOf(this.monthNameActive))
+        }
       } else {
-        this.trxs = this.allTrxs.filter(t => this.$store.getters.getUtcMonth(t.updatedAt) === this.$store.getters.getMonthNames.indexOf(this.monthNameActive) && t.merchant === e.merchant)
+        if(this.monthNameActive === 'All') {
+          this.trxs = this.allTrxs.filter(t => t.merchant === e.merchant)
+        } else {
+          this.trxs = this.allTrxs.filter(t => this.$store.getters.getUtcMonth(t.updatedAt) === this.$store.getters.getMonthNames.indexOf(this.monthNameActive) && t.merchant === e.merchant)
+        }
       }
       this.selectedRow = row
     }

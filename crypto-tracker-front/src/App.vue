@@ -29,7 +29,8 @@ export default {
     items: [
       { title: 'Home', icon: 'mdi-view-dashboard', route: '/' },
       { title: 'Interests', icon: 'mdi-image', route: '/about' },
-      { title: 'Spending', icon: 'mdi-image', route: '/spending' }
+      { title: 'Spending', icon: 'mdi-image', route: '/spending' },
+      { title: 'Taxes', icon: 'mdi-image', route: '/taxes' }
     ]
   })
 };

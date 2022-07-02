@@ -1,0 +1,5 @@
+query {
+  getTaxes {
+    id, exchangeId, activity, amount, coin, exchange, subtitle, title, updatedAt, value
+  }
+}

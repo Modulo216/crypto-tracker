@@ -1,9 +1,12 @@
 <template>
   <v-container class="pa-1">
-    <v-data-table dense :headers="headers" :items="items.filter(i => i.type === type)" class="elevation-5" dark hide-default-footer>
+    <v-data-table dense :headers="headers" :items="items.filter(i => i.type === type)" class="elevation-5" dark hide-default-footer disable-pagination>
       <template v-slot:top>
         <v-toolbar flat>
-          <v-toolbar-title>{{ type === 'checkingIn' ? 'Checking In' : type === 'checkingOut' ? 'Checking Out' : 'Investments' }}</v-toolbar-title>
+          <v-toolbar-title>
+            {{ type === 'checkingIn' ? 'In' : type === 'checkingOut' ? 'Out' : 'Invest' }}
+            {{ getAsCurrency(getTotal) }}
+          </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-dialog v-model="dialog" max-width="800px">
             <template v-slot:activator="{ on, attrs }">
@@ -101,6 +104,9 @@ export default {
   computed: {
     formatDate() {
       return this.editedItem.date ? format(parseISO(this.editedItem.date), 'MM/dd/yy') : ''
+    },
+    getTotal() {
+      return this.items.filter(i => i.type === this.type).map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0) 
     }
   },
   watch: {

@@ -83,6 +83,7 @@ export const typeDefs = gql`
     getTrxs: [Trx]
     getChecking: [Checking]
     taxExists: Int
+    trxExists: Int
     getTaxes: [Tax]
   }
   type Mutation {
@@ -95,5 +96,6 @@ export const typeDefs = gql`
     addTrx(trx: TrxInput): Trx
     updateTrx(trx: TrxInput): Trx
     addTax(tax: TaxInput): Tax
+    updateTax(tax: TaxInput): Tax
   }
 `

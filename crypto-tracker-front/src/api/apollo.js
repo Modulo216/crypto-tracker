@@ -4,14 +4,17 @@ import { InMemoryCache } from 'apollo-cache-inmemory'
 
 const getInterestsGql = require('./gql/getInterests.gql')
 const addInterestGql = require('./gql/addInterest.gql')
+const addTaxGql = require('./gql/addTax.gql')
 const getTrxsGql = require('./gql/getTrxs.gql')
 const updateTrxGql = require('./gql/updateTrx.gql')
+const updateTaxGql = require('./gql/updateTax.gql')
 const deleteInterestGql = require('./gql/deleteInterest.gql')
 const deleteCheckingGql = require('./gql/deleteChecking.gql')
 const updateInterestGql = require('./gql/updateInterest.gql')
 const addCheckingGql = require('./gql/addChecking.gql')
 const updateCheckingGql = require('./gql/updateChecking.gql')
 const getCheckingGql = require('./gql/getChecking.gql')
+const getTaxesGql = require('./gql/getTaxes.gql')
 
 const httpLink = createHttpLink({ uri: 'http://localhost:5001/graphql' })
 
@@ -50,6 +53,14 @@ async function addInterest(interest) {
   return result.data.addInterest
 }
 
+async function addTax(tax) {
+  const result = await apolloClient.mutate({
+    mutation: addTaxGql,
+    variables: { tax }
+  })
+  return result.data.addTax
+}
+
 async function addChecking(checking) {
   const result = await apolloClient.mutate({
     mutation: addCheckingGql,
@@ -71,12 +82,25 @@ async function getTrxs() {
   return res.data.getTrxs
 }
 
+async function getTaxes() {
+  const res = await apolloClient.query({ query: getTaxesGql })
+  return res.data.getTaxes
+}
+
 async function updateTrx(trx) {
   const result = await apolloClient.mutate({
     mutation: updateTrxGql,
     variables: { trx }
   })
   return result.data.updateTrx
+}
+
+async function updateTax(tax) {
+  const result = await apolloClient.mutate({
+    mutation: updateTaxGql,
+    variables: { tax }
+  })
+  return result.data.updateTax
 }
 
 async function updateChecking(checking) {
@@ -104,4 +128,4 @@ async function deleteChecking(id) {
 }
 
 export { getInterests, addInterest, getTrxs, updateTrx, deleteInterest,
-  updateInterest, getChecking, addChecking, updateChecking, deleteChecking }
+  updateInterest, getChecking, addChecking, updateChecking, deleteChecking, getTaxes, updateTax, addTax }
