@@ -96,6 +96,7 @@ export const typeDefs = gql`
     addTrx(trx: TrxInput): Trx
     updateTrx(trx: TrxInput): Trx
     addTax(tax: TaxInput): Tax
+    addTaxImport(tax: TaxInput): Tax
     updateTax(tax: TaxInput): Tax
   }
 `

@@ -30,6 +30,13 @@
                   mdi-plus-thick
                 </v-icon>
               </v-btn>
+              <download-excel :data="taxes">
+                <v-btn color="primary" dark class="ml-2">
+                  <v-icon dark>
+                    mdi-download
+                  </v-icon>
+                </v-btn>
+              </download-excel>
             </v-toolbar>
           </template>
           <template v-slot:[`item.updatedAt`]="{ item }">
@@ -143,7 +150,7 @@ export default {
       { text: 'Activity', sortable: false, value: 'activity' },
       { text: 'Coin', sortable: true, value: 'coin' },
       { text: 'Amount', sortable: false, value: 'amount' },
-      { text: 'Value', sortable: true, value: 'value' }
+      { text: 'Tax', sortable: true, value: 'value' }
     ],
     loadingTaxes: false,
     dateModal: false,

@@ -190,6 +190,10 @@ export default {
       })
     },
     onMonthClick(dateMonth) {
+      if(this.selectedRow !== undefined) {
+        this.selectedRow.select(false)
+      }
+
       if(dateMonth === 'ALL') {
         this.monthNameActive = 'All'
         this.trxs = this.allTrxs

@@ -25,6 +25,13 @@
                   mdi-refresh
                 </v-icon>
               </v-btn>
+              <download-excel :data="trxs">
+                <v-btn color="primary" dark class="ml-2">
+                  <v-icon dark>
+                    mdi-download
+                  </v-icon>
+                </v-btn>
+              </download-excel>
             </v-toolbar>
           </template>
           <template v-slot:[`item.index`]="{ item }">

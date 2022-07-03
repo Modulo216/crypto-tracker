@@ -60,7 +60,7 @@ app.get('/taxes', async (req, res) => {
         tax.activity = 'Learn & Earn'
       }
 
-      resolvers.Mutation.addTax(null, { tax: { ...tax } })
+      resolvers.Mutation.addTaxImport(null, { tax: { ...tax } })
     })
   })
 
