@@ -172,20 +172,20 @@ export default {
 
       new Set(this.taxes.map(t => t.activity)).forEach(a => {
         this.activitySum.push({ activity: a, idx: idx++, sum: 
-          this.taxes.filter(t => t.activity === a && (dateMonth ? new Date(t.updatedAt).getMonth() === dateMonth : true)).map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0)
+          this.taxes.filter(t => t.activity === a && (dateMonth ? new Date(t.updatedAt).getUTCMonth() === dateMonth : true)).map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0)
         })
       })
       new Set(this.taxes.map(t => t.exchange)).forEach(a => {
         this.exchangeSum.push({ exchange: a, idx: idx++, sum: 
-          this.taxes.filter(t => t.exchange === a && (dateMonth ? new Date(t.updatedAt).getMonth() === dateMonth : true)).map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0)
+          this.taxes.filter(t => t.exchange === a && (dateMonth ? new Date(t.updatedAt).getUTCMonth() === dateMonth : true)).map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0)
         })
       })
       new Set(this.taxes.map(t => t.coin)).forEach(a => {
         let coinCookie = $cookies.get(a)
         this.coinsSum.push({ coin: a, idx: idx++, sum: 
-          this.taxes.filter(t => t.coin === a && (dateMonth ? new Date(t.updatedAt).getMonth() === dateMonth : true)).map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0),
-          amount: this.taxes.filter(t => t.coin === a && (dateMonth ? new Date(t.updatedAt).getMonth() === dateMonth : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0),
-          val: coinCookie ? this.taxes.filter(t => t.coin === a && (dateMonth ? new Date(t.updatedAt).getMonth() === dateMonth : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0) * coinCookie : 0
+          this.taxes.filter(t => t.coin === a && (dateMonth ? new Date(t.updatedAt).getUTCMonth() === dateMonth : true)).map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0),
+          amount: this.taxes.filter(t => t.coin === a && (dateMonth ? new Date(t.updatedAt).getUTCMonth() === dateMonth : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0),
+          val: coinCookie ? this.taxes.filter(t => t.coin === a && (dateMonth ? new Date(t.updatedAt).getUTCMonth() === dateMonth : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0) * coinCookie : 0
         })
       })
     },
