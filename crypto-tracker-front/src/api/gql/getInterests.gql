@@ -1,5 +1,5 @@
 query {
   getInterests {
-    id, nickName, name, currencyPair, cbaseWalletId, wallet
+    id, nickName, name, currencyPair, cbaseWalletId, wallet, isTax, soldTaxForBtc, soldTaxForEth, isReward, soldRewardForBtc, soldRewardForEth
   }
 }

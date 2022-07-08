@@ -13,6 +13,28 @@ export const typeDefs = gql`
     amount: String
     type: String
   }
+  type Reward {
+    id: ID
+    exchange: String
+    exchangeId: String
+    coin: String
+    updatedAt: String
+    amount: String
+    value: String
+    title: String
+    subtitle: String
+  }
+  input RewardInput {
+    id: ID
+    exchange: String
+    exchangeId: String
+    coin: String
+    updatedAt: String
+    amount: String
+    value: String
+    title: String
+    subtitle: String
+  }
   type Tax {
     id: ID
     exchange: String
@@ -68,6 +90,12 @@ export const typeDefs = gql`
     currencyPair: String
     cbaseWalletId: String
     wallet: String
+    isTax: Boolean
+    soldTaxForBtc: Boolean
+    soldTaxForEth: Boolean
+    isReward: Boolean
+    soldRewardForBtc: String
+    soldRewardForEth: String
   }
   input InterestInput {
     id: ID
@@ -76,6 +104,12 @@ export const typeDefs = gql`
     currencyPair: String
     cbaseWalletId: String
     wallet: String
+    isTax: Boolean
+    soldTaxForBtc: Boolean
+    soldTaxForEth: Boolean
+    isReward: Boolean
+    soldRewardForBtc: String
+    soldRewardForEth: String
   }
   type Query {
     getInterests: [Interest]
@@ -84,7 +118,9 @@ export const typeDefs = gql`
     getChecking: [Checking]
     taxExists: Int
     trxExists: Int
+    rewardExists: Int
     getTaxes: [Tax]
+    getRewards: [Reward]
   }
   type Mutation {
     addChecking(checking: CheckingInput): Checking
@@ -96,6 +132,7 @@ export const typeDefs = gql`
     addTrx(trx: TrxInput): Trx
     updateTrx(trx: TrxInput): Trx
     addTax(tax: TaxInput): Tax
+    addRewardImport(reward: RewardInput): Reward
     addTaxImport(tax: TaxInput): Tax
     updateTax(tax: TaxInput): Tax
   }

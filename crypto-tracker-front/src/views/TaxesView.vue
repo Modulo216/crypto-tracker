@@ -67,6 +67,9 @@
                       :items="coinsSum"
                       item-key="coin"
                       class="elevation-10 row-pointer">
+                      <template v-slot:[`item.amount`]="{ item }">
+                        <span>{{ Number((item.amount).toFixed(8)) }}</span>
+                      </template>
                       <template v-slot:[`item.sum`]="{ item }">
                         <span>{{ getAsCurrency(item.sum) }}</span>
                       </template>
@@ -80,7 +83,10 @@
             </v-expansion-panel>
           </v-expansion-panels>
           <v-col lg="12">
-            <bar :allTaxes="allTaxes" />
+            <bar :allTaxes="allTaxes" class="mt-2" />
+          </v-col>
+          <v-col lg="12">
+            <line-chart :allRewards="allTaxes" class="mt-2" />
           </v-col>
         </v-row>
       </v-col>
@@ -92,14 +98,16 @@
 import MonthPicker from '../components/shared/MonthPicker'
 import TaxesTable from '../components/taxes/TaxesTable.vue'
 import Bar from '../components/taxes/charts/Bar'
+import Line from '../components/taxes/charts/Line'
 import { refreshTaxes } from '../api/endpoints/tax'
 import { getCoinPrice } from '../api/endpoints/coinbase'
-import { getTaxes } from '../api/apollo'
+import { getTaxes, getInterests } from '../api/apollo'
 export default {
   components: {
     MonthPicker,
     TaxesTable,
-    Bar
+    Bar,
+    LineChart: Line
   },
   data: () => ({
     allTaxes: [],
@@ -110,9 +118,14 @@ export default {
     monthNameActive: '',
     panel: [0],
     selectedRow: undefined,
+    interests: []
   }),
   created() {
     this.loadTaxes()
+    getInterests().then(r => {
+      this.interests = [...r.filter(r => r.isTax && !r.soldTaxForBtc && !r.soldTaxForEth).map(r => r.name)]
+      this.interests.push('BTC','ETH','XLM')
+    })
   },
   methods: {
     async loadTaxes() {
@@ -149,10 +162,12 @@ export default {
       this.onMonthClick(this.$store.getters.getUtcMonth(item.updatedAt))
     },
     async onRefreshTax(callback) {
-      let coinPrices = await getCoinPrice(new Set(this.taxes.map(t => t.coin)))
+      let coinPrices = await getCoinPrice(new Set(this.allTaxes.filter(t => this.interests.includes(t.coin)).map(t => t.coin)))
       coinPrices.map(p => p.data.data).forEach(p => {
         let coinSum = this.coinsSum.find(s => s.coin === p.base)
-        coinSum.val = coinSum.amount * p.amount
+        if(coinSum) {
+          coinSum.val = coinSum.amount * p.amount
+        }
         $cookies.set(p.base, p.amount)
       })
 
@@ -185,7 +200,7 @@ export default {
         this.coinsSum.push({ coin: a, idx: idx++, sum: 
           this.taxes.filter(t => t.coin === a && (dateMonth ? new Date(t.updatedAt).getUTCMonth() === dateMonth : true)).map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0),
           amount: this.taxes.filter(t => t.coin === a && (dateMonth ? new Date(t.updatedAt).getUTCMonth() === dateMonth : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0),
-          val: coinCookie ? this.taxes.filter(t => t.coin === a && (dateMonth ? new Date(t.updatedAt).getUTCMonth() === dateMonth : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0) * coinCookie : 0
+          val: coinCookie && this.interests.includes(a) ? this.taxes.filter(t => t.coin === a && (dateMonth ? new Date(t.updatedAt).getUTCMonth() === dateMonth : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0) * coinCookie : 0
         })
       })
     },

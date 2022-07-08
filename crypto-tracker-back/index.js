@@ -3,7 +3,7 @@ const cors = require('cors');
 const { ApolloServer } = require('apollo-server-express')
 const { resolvers } = require("./data/resolvers.graphql")
 const { typeDefs } = require("./data/schema.graphql")
-const { getTrxs, getTaxes } = require("./api/coinbase")
+const { getTrxs, getMultiWalletTrxes } = require("./api/coinbase")
 const isAfter = require('date-fns/isAfter')
 const app = express()
 const port = 5001
@@ -11,6 +11,27 @@ const port = 5001
 app.use(cors());
 const server = new ApolloServer({ typeDefs, resolvers })
 server.applyMiddleware({ app })
+
+app.get('/rewards', async (req, res) => {
+  let interests = await resolvers.Query.getInterests(null, { isReward: true })
+  let rows = await resolvers.Query.rewardExists()
+  let rewards = await getMultiWalletTrxes(interests.map(i => i.name), rows === 0)
+
+  rewards.forEach(t => {
+    t.transactions.filter(txn => isAfter(new Date(txn.created_at), new Date(2021, 7, 1)) && txn.description !== null && (txn.description === 'Spending reward from Coinbase Card' || txn.description.includes('Debit Card Rewards'))).forEach(txn => {
+      let reward = { exchange: "Coinbase", coin: t.coin }
+      reward.updatedAt = txn.created_at
+      reward.exchangeId = txn.id
+      reward.amount = txn.amount.amount
+      reward.value = txn.native_amount.amount
+      reward.title = txn.details.title
+      reward.subtitle = txn.details.subtitle
+
+      resolvers.Mutation.addRewardImport(null, { reward: { ...reward } })
+    })
+  })
+  res.send('OK')
+})
 
 app.get('/trxs', async (req, res) => {
   let usdcWallet = await resolvers.Query.findInterest(null, { interest : { name: 'USDC' }})
@@ -31,10 +52,10 @@ app.get('/trxs', async (req, res) => {
 })
 
 app.get('/taxes', async (req, res) => {
-  let interests = await resolvers.Query.getInterests()
+  let interests = await resolvers.Query.getInterests(null, { isTax: true })
   let rows = await resolvers.Query.taxExists()
 
-  let taxes = await getTaxes(interests.map(i => i.name), rows === 0)
+  let taxes = await getMultiWalletTrxes(interests.map(i => i.name), rows === 0)
   
   taxes.forEach(t => {
     t.transactions.filter(txn => isAfter(new Date(txn.created_at), new Date(2022, 0, 1)) && t.coin ).forEach(txn => {

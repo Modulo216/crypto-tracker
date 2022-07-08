@@ -2,7 +2,7 @@
   <v-container>
     <v-row class="text-center">
       <v-col cols="12">
-        <v-data-table dense :headers="headers" :items="interests" sort-by="name" class="elevation-10" dark>
+        <v-data-table dense :headers="headers" :items="interests" sort-by="name" class="elevation-10" dark hide-default-footer disable-pagination>
           <template v-slot:top>
             <v-toolbar flat>
               <v-toolbar-title>Interests</v-toolbar-title>
@@ -22,20 +22,32 @@
                   <v-card-text>
                     <v-container>
                       <v-row>
-                        <v-col cols="12" sm="6" md="4">
+                        <v-col sm="12" md="6" lg="4">
                           <v-text-field v-model="editedItem.name" label="Coin Name" />
                         </v-col>
-                        <v-col cols="12" sm="6" md="4">
+                        <v-col sm="12" md="6" lg="4">
                           <v-text-field v-model="editedItem.nickName" label="Nickname" />
                         </v-col>
-                        <v-col cols="12" sm="6" md="4">
-                          <v-text-field v-model="editedItem.currencyPair" label="Currency Pair" />
-                        </v-col>
-                        <v-col cols="12" sm="12" md="12">
+                        <v-col sm="12" md="12" lg="4">
                           <v-text-field v-model="editedItem.cbaseWalletId" label="Coinbase Wallet Id" />
                         </v-col>
-                        <v-col cols="12" sm="12" md="12">
-                          <v-text-field v-model="editedItem.wallet" label="Exchange Wallet" />
+                        <v-col cols="4">
+                          <v-checkbox v-model="editedItem.isTax" label="Taxable?" />
+                        </v-col>
+                        <v-col cols="4">
+                          <v-checkbox v-model="editedItem.soldTaxForBtc" label="Sold Tax for BTC?" />
+                        </v-col>
+                        <v-col cols="4">
+                          <v-checkbox v-model="editedItem.soldTaxForEth" label="Sold Tax for ETH?" />
+                        </v-col>
+                        <v-col cols="4">
+                          <v-checkbox v-model="editedItem.isReward" label="Rewards?" />
+                        </v-col>
+                        <v-col cols="4">
+                          <v-text-field v-model="editedItem.soldRewardForBtc" label="Amount sold for BTC" />
+                        </v-col>
+                        <v-col cols="4">
+                          <v-text-field v-model="editedItem.soldRewardForEth" label="Amount sold for ETH" />
                         </v-col>
                       </v-row>
                     </v-container>
@@ -81,8 +93,9 @@ import { getInterests, addInterest, deleteInterest, updateInterest } from '../..
       headers: [
         { text: 'Name', sortable: true, value: 'name' },
         { text: 'Nick name', sortable: false, value: 'nickName' },
-        { text: 'Currency Pair', sortable: false, value: 'currencyPair' },
         { text: 'Exchange Wallet', sortable: false, value: 'wallet' },
+        { text: 'Tax', sortable: false, value: 'isTax' },
+        { text: 'Reward', sortable: false, value: 'isReward' },
         { text: 'Actions', value: 'actions', sortable: false },
       ],
       interests: [],
@@ -92,14 +105,18 @@ import { getInterests, addInterest, deleteInterest, updateInterest } from '../..
         nickName: '',
         currencyPair: '',
         cbaseWalletId: '',
-        wallet: ''
+        wallet: '',
+        isTax: false,
+        isReward: false
       },
       defaultItem: {
         name: '',
         nickName: '',
         currencyPair: '',
         cbaseWalletId: '',
-        wallet: ''
+        wallet: '',
+        isTax: false,
+        isReward: false
       },
     }),
     created () {

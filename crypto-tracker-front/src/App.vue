@@ -30,7 +30,8 @@ export default {
       { title: 'Home', icon: 'mdi-view-dashboard', route: '/' },
       { title: 'Interests', icon: 'mdi-image', route: '/about' },
       { title: 'Spending', icon: 'mdi-image', route: '/spending' },
-      { title: 'Taxes', icon: 'mdi-image', route: '/taxes' }
+      { title: 'Taxes', icon: 'mdi-image', route: '/taxes' },
+      { title: 'Rewards', icon: 'mdi-image', route: '/rewards' }
     ]
   })
 };

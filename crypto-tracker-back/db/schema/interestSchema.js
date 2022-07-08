@@ -16,4 +16,22 @@ exports.interestSchema = new mongoose.Schema({
   wallet: {
     type: String
   },
+  isTax: {
+    type: Boolean
+  },
+  soldTaxForBtc: {
+    type: Boolean
+  },
+  soldTaxForEth: {
+    type: Boolean
+  },
+  isReward: {
+    type: Boolean
+  },
+  soldRewardForBtc: {
+    type: String
+  },
+  soldRewardForEth: {
+    type: String
+  },
 })

@@ -1,0 +1,5 @@
+query {
+  getRewards {
+    id, exchangeId, coin, updatedAt, amount, value, title, subtitle
+  }
+}

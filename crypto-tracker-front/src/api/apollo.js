@@ -15,6 +15,8 @@ const addCheckingGql = require('./gql/addChecking.gql')
 const updateCheckingGql = require('./gql/updateChecking.gql')
 const getCheckingGql = require('./gql/getChecking.gql')
 const getTaxesGql = require('./gql/getTaxes.gql')
+const getRewardsGql = require('./gql/getRewards.gql')
+const { isAfter } = require('date-fns')
 
 const httpLink = createHttpLink({ uri: 'http://localhost:5001/graphql' })
 
@@ -82,6 +84,12 @@ async function getTrxs() {
   return res.data.getTrxs
 }
 
+async function getRewards() {
+  const res = await apolloClient.query({ query: getRewardsGql })
+  //return res.data.getRewards.filter(r => isAfter(new Date(r.updatedAt), new Date(2022, 0, 1)))
+  return res.data.getRewards
+}
+
 async function getTaxes() {
   const res = await apolloClient.query({ query: getTaxesGql })
   return res.data.getTaxes
@@ -127,5 +135,5 @@ async function deleteChecking(id) {
   return result.data.deleteChecking
 }
 
-export { getInterests, addInterest, getTrxs, updateTrx, deleteInterest,
+export { getInterests, addInterest, getTrxs, updateTrx, deleteInterest, getRewards,
   updateInterest, getChecking, addChecking, updateChecking, deleteChecking, getTaxes, updateTax, addTax }

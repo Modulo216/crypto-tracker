@@ -1,9 +1,9 @@
-import { Interest, Trx, Checking, Tax } from "../db/dbConnector.js"
+import { Interest, Trx, Checking, Tax, Reward } from "../db/dbConnector.js"
 
 export const resolvers = {
   Query: {
-    getInterests: async (root) => {
-      return await Interest.find()
+    getInterests: async (root, query) => {
+      return await Interest.find({...query})
     },
     findInterest: async (root, { interest }) => {
       return await Interest.findOne({ name: interest.name })
@@ -22,11 +22,21 @@ export const resolvers = {
       let trxs = await Trx.find().lean()
       return trxs.length
     },
+    rewardExists: async (root) => {
+      let rewards = await Reward.find().lean()
+      return rewards.length
+    },
     getTaxes: async (root) => {
       let taxes = await Tax.find()
       taxes.sort((d1, d2) => new Date(d1.updatedAt).getTime() - new Date(d2.updatedAt).getTime())
       
       return taxes
+    },
+    getRewards: async (root) => {
+      let rewards = await Reward.find()
+      rewards.sort((d1, d2) => new Date(d1.updatedAt).getTime() - new Date(d2.updatedAt).getTime())
+      
+      return rewards
     }
   },
   Mutation: {
@@ -35,6 +45,10 @@ export const resolvers = {
       const newChecking = new Checking({ ...rest })
       
       return await newChecking.save()
+    },
+    addRewardImport: async (root, { reward }) => {
+      const { ...rest } = reward
+      return await Reward.findOneAndUpdate({ exchangeId: reward.exchangeId }, { $setOnInsert: { ...rest } }, { upsert: true })
     },
     updateChecking: async (root, { checking }) => {
       return await Checking.findByIdAndUpdate(checking.id, checking, { new: true })

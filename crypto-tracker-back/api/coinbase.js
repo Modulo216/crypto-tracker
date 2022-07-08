@@ -48,7 +48,7 @@ async function getAllAccounts() {
     .sort((a, b) => a.currency.localeCompare(b.currency))
 }
 
-async function getTaxes(interests, loadAll) {
+async function getMultiWalletTrxes(interests, loadAll) {
   let filteredAccts = await getAllAccounts()
   let retVal = []
 
@@ -79,4 +79,4 @@ async function getTaxes(interests, loadAll) {
   return retVal
 }
 
-export { getTrxs, getTaxes }
+export { getTrxs, getMultiWalletTrxes }

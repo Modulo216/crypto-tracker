@@ -4,6 +4,7 @@ import HomeView from '../views/HomeView.vue'
 import AboutView from '../views/AboutView.vue'
 import SpendingView from '../views/SpendingView.vue'
 import TaxesView from '../views/TaxesView.vue'
+import RewardsView from '../views/RewardsView'
 
 Vue.use(VueRouter)
 
@@ -27,6 +28,11 @@ const routes = [
     path: '/taxes',
     name: 'taxes',
     component: TaxesView
+  },
+  {
+    path: '/rewards',
+    name: 'rewards',
+    component: RewardsView
   }
 ]
 

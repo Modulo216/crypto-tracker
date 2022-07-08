@@ -98,7 +98,7 @@
             </v-expansion-panel>
           </v-expansion-panels>
           <v-col lg="12">
-            <pie :trxs="trxs" />
+            <pie :trxs="trxs" class="mt-3"/>
           </v-col>
           <v-col lg="12">
             <bar :allTrxs="allTrxs" />
