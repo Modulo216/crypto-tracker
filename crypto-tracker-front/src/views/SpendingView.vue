@@ -121,6 +121,7 @@ import endOfMonth from 'date-fns/endOfMonth'
 import isWithinInterval from 'date-fns/isWithinInterval'
 import { refreshTrxs } from '../api/endpoints/trx'
 import chroma from "chroma-js";
+import dateMixin from '@/mixins/datesMixin'
 export default {
   components: {
     SpendingTable,
@@ -129,6 +130,7 @@ export default {
     Bar,
     CheckingInput
   },
+  mixins: [dateMixin],
   data: () => ({
     allTrxs: [],
     trxs: [],
@@ -186,23 +188,22 @@ export default {
         this.allChecking = [...values[1]]
         this.merchantNames = this.allTrxs.filter(t => t.merchant !== null).map(({merchant}) => merchant)
 
-        this.onMonthClick(new Date().getMonth())
+        this.onMonthClick(this.monthNameActive !== '' ? this.monthNameActive : {month: new Date().getUTCMonth(), year: new Date().getUTCFullYear()})
       })
     },
     onMonthClick(dateMonth) {
       if(this.selectedRow !== undefined) {
         this.selectedRow.select(false)
       }
+      this.monthNameActive = dateMonth
 
       if(dateMonth === 'ALL') {
-        this.monthNameActive = 'All'
         this.trxs = this.allTrxs
         this.checkings = this.allChecking
         this.getCategorySpending()
       } else {
-        this.monthNameActive = this.$store.getters.getMonthNames[dateMonth]
-        this.trxs = this.allTrxs.filter(t => this.$store.getters.getUtcMonth(t.updatedAt) === dateMonth)
-        this.checkings = this.allChecking.filter(q => this.$store.getters.getUtcMonth(q.date) === dateMonth)
+        this.trxs = this.allTrxs.filter(t => this.dateIsInRange(t.updatedAt, dateMonth))
+        this.checkings = this.allChecking.filter(q => this.dateIsInRange(q.date, dateMonth))
         this.getCategorySpending(dateMonth)
       }
 
@@ -210,7 +211,7 @@ export default {
     },
     onTrxUpdated(item) {
       this.$set(this.allTrxs, this.allTrxs.indexOf(t => t.id === item.id), item);
-      this.onMonthClick(this.$store.getters.getUtcMonth(item.updatedAt))
+      this.onMonthClick(this.monthNameActiv)
     },
     getAsCurrency(numb) {
       return numb.toLocaleString('en-US', {
@@ -261,8 +262,8 @@ export default {
       this.$store.getters.getCategories.forEach(c => {
         if(dateMonth) {
           this.categorySpending.push({ category: c, 
-            spending: spendingArr.find(d => d.dateMonth === dateMonth).categories.find(cat => cat.category === c).total,
-            avg: averageArr.find(d => d.dateMonth === dateMonth && d.category === c).avg
+            spending: spendingArr.find(d => d.dateMonth === dateMonth.month).categories.find(cat => cat.category === c).total,
+            avg: averageArr.find(d => d.dateMonth === dateMonth.month && d.category === c).avg
           })
         } else {
           this.categorySpending.push({ category: c, 
@@ -296,16 +297,16 @@ export default {
 
       if(this.trxs.every(t => t.category === e.category)) {
         row.select(false)
-        if(this.monthNameActive === 'All') {
+        if(this.monthNameActive === 'ALL') {
           this.trxs = this.allTrxs
         } else {
-          this.trxs = this.allTrxs.filter(t => this.$store.getters.getUtcMonth(t.updatedAt) === this.$store.getters.getMonthNames.indexOf(this.monthNameActive))
+          this.trxs = this.allTrxs.filter(t => this.dateIsInRange(t.updatedAt, this.monthNameActive))
         }
       } else {
-        if(this.monthNameActive === 'All') {
+        if(this.monthNameActive === 'ALL') {
           this.trxs = this.allTrxs.filter(t => t.category === e.category)
         } else {
-          this.trxs = this.allTrxs.filter(t => this.$store.getters.getUtcMonth(t.updatedAt) === this.$store.getters.getMonthNames.indexOf(this.monthNameActive) && t.category === e.category)
+          this.trxs = this.allTrxs.filter(t => this.dateIsInRange(t.updatedAt, this.monthNameActive) && t.category === e.category)
         }
       }
       this.selectedRow = row
@@ -318,16 +319,16 @@ export default {
 
       if(this.trxs.every(t => t.merchant === e.merchant)) {
         row.select(false)
-        if(this.monthNameActive === 'All') {
+        if(this.monthNameActive === 'ALL') {
           this.trxs = this.allTrxs
         } else {
-          this.trxs = this.allTrxs.filter(t => this.$store.getters.getUtcMonth(t.updatedAt) === this.$store.getters.getMonthNames.indexOf(this.monthNameActive))
+          this.trxs = this.allTrxs.filter(t => this.dateIsInRange(t.updatedAt, this.monthNameActive))
         }
       } else {
-        if(this.monthNameActive === 'All') {
+        if(this.monthNameActive === 'ALL') {
           this.trxs = this.allTrxs.filter(t => t.merchant === e.merchant)
         } else {
-          this.trxs = this.allTrxs.filter(t => this.$store.getters.getUtcMonth(t.updatedAt) === this.$store.getters.getMonthNames.indexOf(this.monthNameActive) && t.merchant === e.merchant)
+          this.trxs = this.allTrxs.filter(t => this.dateIsInRange(t.updatedAt, this.monthNameActive) && t.merchant === e.merchant)
         }
       }
       this.selectedRow = row

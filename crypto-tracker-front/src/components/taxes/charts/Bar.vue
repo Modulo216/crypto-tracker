@@ -26,6 +26,7 @@ import {
 } from 'chart.js'
 import eachMonthOfInterval from 'date-fns/eachMonthOfInterval'
 import chroma from "chroma-js";
+import dateMixin from '@/mixins/datesMixin'
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
 export default {
@@ -33,6 +34,7 @@ export default {
   components: {
     Bar
   },
+  mixins: [dateMixin],
   props: {
     chartId: {
       type: String,
@@ -66,13 +68,19 @@ export default {
   },
   watch: {
     allTaxes(newAllTaxes) {
-      this.chartData.labels = [...this.$store.getters.getMonthNames.slice(0, new Date().getMonth()+1)]
+      this.chartData.datasets[0].data = []
+      this.chartData.labels = []
+      let monthYears = []
 
-      const monthInterval = eachMonthOfInterval({start: new Date(new Date().getUTCFullYear(), 0, 1), end: new Date(new Date().getUTCFullYear(), 11, 1) })
-      monthInterval.forEach(m => {
-        if(new Date().getMonth() >= m.getMonth()) {
-          this.chartData.datasets[0].data.push(parseInt(newAllTaxes.filter(t => new Date(t.updatedAt).getMonth() === m.getMonth()).map(w => parseFloat(w.value)).reduce((prev, next) => prev + next, 0)))
-        }
+      newAllTaxes.forEach(t => {
+        const date = new Date(t.updatedAt)
+        let obj = {month: date.getUTCMonth(), year: date.getUTCFullYear()}
+        monthYears.findIndex(x => x.month === obj.month && x.year === obj.year) === -1 ? monthYears.push(obj) : undefined
+      })
+
+      monthYears.forEach(m => {
+        this.chartData.labels.push(`${this.$store.getters.getMonthNames[m.month]} ${m.year.toString().slice(-2)}`)
+        this.chartData.datasets[0].data.push(parseInt(newAllTaxes.filter(t => this.dateIsInRange(t.updatedAt, m)).map(w => parseFloat(w.value)).reduce((prev, next) => prev + next, 0)))
         this.chartData.datasets[0].backgroundColor.push(chroma.random())
       })
     }

@@ -17,7 +17,7 @@
         >
           <template v-slot:top>
             <v-toolbar flat>
-              <v-toolbar-title>{{ monthNameActive }}</v-toolbar-title>
+              <v-toolbar-title>{{ monthNameActive !== 'ALL' ? `${$store.getters.getMonthNames[monthNameActive.month]} - ${monthNameActive.year}` : 'ALL' }} Rewards</v-toolbar-title>
               <v-spacer></v-spacer>
               <span>{{ `${rewards.length} transactions` }}</span>
               <v-btn color="primary" dark class="ml-2" @click="emitRefresh()" :loading="loadingRewards" :disabled="loadingRewards">
@@ -49,7 +49,7 @@
 export default {
   props: {
     rewards: Array,
-    monthNameActive: String,
+    monthNameActive: {},
   },
   data: () => ({
     loadingRewards: false,

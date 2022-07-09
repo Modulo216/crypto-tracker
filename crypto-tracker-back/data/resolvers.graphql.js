@@ -77,7 +77,11 @@ export const resolvers = {
     },
     addTaxImport: async (root, { tax }) => {
       const { ...rest } = tax
-      return await Tax.findOneAndUpdate({ exchangeId: tax.exchangeId }, { $setOnInsert: { ...rest } }, { upsert: true })
+      let taxExist = await Tax.findOne({ exchangeId: tax.exchangeId })
+      if(!taxExist) {
+        const newTax = new Tax({ ...rest })
+        return await newTax.save()
+      }
     },
     addTax: async (root, { tax }) => {
       const { ...rest } = tax

@@ -48,12 +48,14 @@ import { getCoinPrice } from '../api/endpoints/coinbase'
 import { getRewards, getInterests } from '../api/apollo'
 import { refreshRewards } from '../api/endpoints/rewards'
 import Line from '../components/rewards/charts/Line'
+import dateMixin from '@/mixins/datesMixin'
 export default {
   components: {
     MonthPicker,
     RewardsTable,
     LineChart: Line
   },
+  mixins: [dateMixin],
   data: () => ({
     allRewards: [],
     rewards: [],
@@ -71,7 +73,7 @@ export default {
   methods: {
     async loadRewards() {
       this.allRewards = await getRewards()
-      this.onMonthClick(new Date().getMonth())
+      this.onMonthClick(this.monthNameActive !== '' ? this.monthNameActive : {month: new Date().getUTCMonth(), year: new Date().getUTCFullYear()})
     },
     getAsCurrency(numb) {
       return numb.toLocaleString('en-US', {
@@ -83,14 +85,13 @@ export default {
       if(this.selectedRow !== undefined) {
         this.selectedRow.select(false)
       }
+      this.monthNameActive = dateMonth
 
       if(dateMonth === 'ALL') {
-        this.monthNameActive = 'All'
         this.rewards = this.allRewards
         this.setSums()
       } else {
-        this.monthNameActive = this.$store.getters.getMonthNames[dateMonth]
-        this.rewards = this.allRewards.filter(t => this.$store.getters.getUtcMonth(t.updatedAt) === dateMonth)
+        this.rewards = this.allRewards.filter(t => this.dateIsInRange(t.updatedAt, dateMonth))
         this.setSums(dateMonth)
       }
     },
@@ -118,9 +119,9 @@ export default {
       new Set(this.rewards.map(t => t.coin)).forEach(a => {
         let coinCookie = $cookies.get(a)
         this.coinsSum.push({ coin: a, sum: 
-          this.rewards.filter(t => t.coin === a && (dateMonth ? new Date(t.updatedAt).getUTCMonth() === dateMonth : true)).map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0),
-          amount: this.rewards.filter(t => t.coin === a && (dateMonth ? new Date(t.updatedAt).getUTCMonth() === dateMonth : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0),
-          val: coinCookie ? this.rewards.filter(t => t.coin === a && (dateMonth ? new Date(t.updatedAt).getUTCMonth() === dateMonth : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0) * coinCookie : 0
+          this.rewards.filter(t => t.coin === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0),
+          amount: this.rewards.filter(t => t.coin === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0),
+          val: coinCookie ? this.rewards.filter(t => t.coin === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0) * coinCookie : 0
         })
       })
     },
@@ -131,9 +132,9 @@ export default {
 
       if(this.selectedRow !== undefined && this.selectedRow.item.coin ===  e.coin) {
         this.selectedRow = undefined
-        this.rewards = this.allRewards.filter(t => this.monthNameActive === 'All' ? true : this.$store.getters.getUtcMonth(t.updatedAt) === this.$store.getters.getMonthNames.indexOf(this.monthNameActive))
+        this.rewards = this.allRewards.filter(t => this.monthNameActive === 'ALL' ? true : this.dateIsInRange(t.updatedAt, this.monthNameActive))
       } else {
-        this.rewards = this.allRewards.filter(t => t.coin === e.coin && (this.monthNameActive === 'All' ? true : this.$store.getters.getUtcMonth(t.updatedAt) === this.$store.getters.getMonthNames.indexOf(this.monthNameActive)))
+        this.rewards = this.allRewards.filter(t => t.coin === e.coin && (this.monthNameActive === 'ALL' ? true : this.dateIsInRange(t.updatedAt, this.monthNameActive)))
         row.select(true)
         this.selectedRow = row
       }

@@ -102,6 +102,7 @@ import Line from '../components/taxes/charts/Line'
 import { refreshTaxes } from '../api/endpoints/tax'
 import { getCoinPrice } from '../api/endpoints/coinbase'
 import { getTaxes, getInterests } from '../api/apollo'
+import dateMixin from '@/mixins/datesMixin'
 export default {
   components: {
     MonthPicker,
@@ -109,6 +110,7 @@ export default {
     Bar,
     LineChart: Line
   },
+  mixins: [dateMixin],
   data: () => ({
     allTaxes: [],
     taxes: [],
@@ -121,16 +123,16 @@ export default {
     interests: []
   }),
   created() {
-    this.loadTaxes()
     getInterests().then(r => {
       this.interests = [...r.filter(r => r.isTax && !r.soldTaxForBtc && !r.soldTaxForEth).map(r => r.name)]
-      this.interests.push('BTC','ETH','XLM')
+      this.interests.push('BTC','ETH')
+      this.loadTaxes()
     })
   },
   methods: {
     async loadTaxes() {
       this.allTaxes = await getTaxes()
-      this.onMonthClick(new Date().getMonth())
+      this.onMonthClick(this.monthNameActive !== '' ? this.monthNameActive : {month: new Date().getUTCMonth(), year: new Date().getUTCFullYear()})
     },
     getAsCurrency(numb) {
       return numb.toLocaleString('en-US', {
@@ -142,24 +144,23 @@ export default {
       if(this.selectedRow !== undefined) {
         this.selectedRow.select(false)
       }
+      this.monthNameActive = dateMonth
 
       if(dateMonth === 'ALL') {
-        this.monthNameActive = 'All'
         this.taxes = this.allTaxes
         this.setSums()
       } else {
-        this.monthNameActive = this.$store.getters.getMonthNames[dateMonth]
-        this.taxes = this.allTaxes.filter(t => this.$store.getters.getUtcMonth(t.updatedAt) === dateMonth)
+        this.taxes = this.allTaxes.filter(t => this.dateIsInRange(t.updatedAt, dateMonth))
         this.setSums(dateMonth)
       }
     },
     onTaxUpdated(item) {
       this.$set(this.allTaxes, this.allTaxes.indexOf(t => t.id === item.id), item);
-      this.onMonthClick(this.$store.getters.getUtcMonth(item.updatedAt))
+      this.onMonthClick(this.monthNameActive)
     },
     onTaxAdded(item) {
       this.allTaxes.push(item)
-      this.onMonthClick(this.$store.getters.getUtcMonth(item.updatedAt))
+      this.onMonthClick(this.monthNameActive)
     },
     async onRefreshTax(callback) {
       let coinPrices = await getCoinPrice(new Set(this.allTaxes.filter(t => this.interests.includes(t.coin)).map(t => t.coin)))
@@ -187,20 +188,20 @@ export default {
 
       new Set(this.taxes.map(t => t.activity)).forEach(a => {
         this.activitySum.push({ activity: a, idx: idx++, sum: 
-          this.taxes.filter(t => t.activity === a && (dateMonth ? new Date(t.updatedAt).getUTCMonth() === dateMonth : true)).map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0)
+          this.taxes.filter(t => t.activity === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0)
         })
       })
       new Set(this.taxes.map(t => t.exchange)).forEach(a => {
         this.exchangeSum.push({ exchange: a, idx: idx++, sum: 
-          this.taxes.filter(t => t.exchange === a && (dateMonth ? new Date(t.updatedAt).getUTCMonth() === dateMonth : true)).map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0)
+          this.taxes.filter(t => t.exchange === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0)
         })
       })
       new Set(this.taxes.map(t => t.coin)).forEach(a => {
         let coinCookie = $cookies.get(a)
         this.coinsSum.push({ coin: a, idx: idx++, sum: 
-          this.taxes.filter(t => t.coin === a && (dateMonth ? new Date(t.updatedAt).getUTCMonth() === dateMonth : true)).map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0),
-          amount: this.taxes.filter(t => t.coin === a && (dateMonth ? new Date(t.updatedAt).getUTCMonth() === dateMonth : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0),
-          val: coinCookie && this.interests.includes(a) ? this.taxes.filter(t => t.coin === a && (dateMonth ? new Date(t.updatedAt).getUTCMonth() === dateMonth : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0) * coinCookie : 0
+          this.taxes.filter(t => t.coin === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0),
+          amount: this.taxes.filter(t => t.coin === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0),
+          val: coinCookie && this.interests.includes(a) ? this.taxes.filter(t => t.coin === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0) * coinCookie : 0
         })
       })
     },
@@ -211,14 +212,14 @@ export default {
 
       if(this.selectedRow !== undefined && this.selectedRow.item.idx ===  e.idx) {
         this.selectedRow = undefined
-        this.taxes = this.allTaxes.filter(t => this.monthNameActive === 'All' ? true : this.$store.getters.getUtcMonth(t.updatedAt) === this.$store.getters.getMonthNames.indexOf(this.monthNameActive))
+        this.taxes = this.allTaxes.filter(t => this.monthNameActive === 'ALL' ? true : this.dateIsInRange(t.updatedAt, this.monthNameActive))
       } else {
         if(e.hasOwnProperty('coin')) {
-          this.taxes = this.allTaxes.filter(t => t.coin === e.coin && (this.monthNameActive === 'All' ? true : this.$store.getters.getUtcMonth(t.updatedAt) === this.$store.getters.getMonthNames.indexOf(this.monthNameActive)))
+          this.taxes = this.allTaxes.filter(t => t.coin === e.coin && (this.monthNameActive === 'ALL' ? true : this.dateIsInRange(t.updatedAt, this.monthNameActive)))
         } else if(e.hasOwnProperty('exchange')) {
-          this.taxes = this.allTaxes.filter(t => t.exchange === e.exchange && (this.monthNameActive === 'All' ? true : this.$store.getters.getUtcMonth(t.updatedAt) === this.$store.getters.getMonthNames.indexOf(this.monthNameActive)))
+          this.taxes = this.allTaxes.filter(t => t.exchange === e.exchange && (this.monthNameActive === 'ALL' ? true : this.dateIsInRange(t.updatedAt, this.monthNameActive)))
         } else {
-          this.taxes = this.allTaxes.filter(t => t.activity === e.activity && (this.monthNameActive === 'All' ? true : this.$store.getters.getUtcMonth(t.updatedAt) === this.$store.getters.getMonthNames.indexOf(this.monthNameActive)))
+          this.taxes = this.allTaxes.filter(t => t.activity === e.activity && (this.monthNameActive === 'ALL' ? true : this.dateIsInRange(t.updatedAt, this.monthNameActive)))
         }
         row.select(true)
         this.selectedRow = row

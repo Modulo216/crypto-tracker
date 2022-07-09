@@ -17,7 +17,7 @@
         >
           <template v-slot:top>
             <v-toolbar flat>
-              <v-toolbar-title>{{ monthNameActive }}</v-toolbar-title>
+              <v-toolbar-title>{{ monthNameActive !== 'ALL' ? `${$store.getters.getMonthNames[monthNameActive.month]} - ${monthNameActive.year}` : 'ALL' }} Taxes</v-toolbar-title>
               <v-spacer></v-spacer>
               <span>{{ `${taxes.length} transactions` }}</span>
               <v-btn color="primary" dark class="ml-2" @click="emitRefresh()" :loading="loadingTaxes" :disabled="loadingTaxes">
@@ -137,7 +137,7 @@ export default {
   props: {
     taxes: Array,
     activities: Array,
-    monthNameActive: String,
+    monthNameActive: {},
     coins: Array,
     exchanges: Array
   },

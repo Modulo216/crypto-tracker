@@ -17,7 +17,7 @@
         >
           <template v-slot:top>
             <v-toolbar flat>
-              <v-toolbar-title>{{ monthNameActive }}</v-toolbar-title>
+              <v-toolbar-title>{{ monthNameActive !== 'ALL' ? `${$store.getters.getMonthNames[monthNameActive.month]} - ${monthNameActive.year}` : 'ALL' }}</v-toolbar-title>
               <v-spacer></v-spacer>
               <span>{{ `${trxs.length} transactions` }}</span>
               <v-btn color="primary" dark class="ml-2" @click="emitRefresh()" :loading="loadingTrxs" :disabled="loadingTrxs">
@@ -103,7 +103,7 @@ import { updateTrx } from '../../api/apollo'
   export default {
     props: {
       trxs: Array,
-      monthNameActive: String,
+      monthNameActive: {},
       merchantNames: Array
     },
     data: () => ({

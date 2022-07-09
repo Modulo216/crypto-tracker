@@ -58,9 +58,11 @@ app.get('/taxes', async (req, res) => {
   let taxes = await getMultiWalletTrxes(interests.map(i => i.name), rows === 0)
   
   taxes.forEach(t => {
-    t.transactions.filter(txn => isAfter(new Date(txn.created_at), new Date(2022, 0, 1)) && t.coin ).forEach(txn => {
+    t.transactions.filter(txn => isAfter(new Date(txn.created_at), new Date(2021, 7, 1))).forEach(txn => {
       if(txn.type === 'trade' ||
         txn.description === 'Spending reward from Coinbase Card' ||
+        txn.description === 'R7 - US Debit Card Rewards (external funded)' ||
+        txn.to !== undefined ||
         (t.coin === 'USDC' && txn.type !== 'interest')) {
         return
       }
@@ -77,7 +79,7 @@ app.get('/taxes', async (req, res) => {
         tax.activity = 'Staking'
       } else if (txn.type === 'interest') {
         tax.activity = 'Interest'
-      } else if (txn.description === 'Earn Task') {
+      } else if (txn.description === 'Earn Task' || txn.details.subtitle === 'From Coinbase Earn') {
         tax.activity = 'Learn & Earn'
       }
 
