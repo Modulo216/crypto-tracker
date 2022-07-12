@@ -59,6 +59,32 @@ export const typeDefs = gql`
     subtitle: String
     activity: String
   }
+  type Investment {
+    id: ID
+    exchangeId: String
+    coin: String
+    updatedAt: String
+    amount: String
+    spent: String
+    title: String
+    subtitle: String
+    investType: String
+    fillPrice: String
+    value: String
+  }
+  input InvestmentInput {
+    id: ID
+    exchangeId: String
+    coin: String
+    updatedAt: String
+    amount: String
+    spent: String
+    title: String
+    subtitle: String
+    investType: String
+    fillPrice: String
+    value: String
+  }
   type Trx {
     id: ID
     exchange: String
@@ -120,6 +146,7 @@ export const typeDefs = gql`
     trxExists: Int
     rewardExists: Int
     getTaxes: [Tax]
+    getInvestments: [Investment]
     getRewards: [Reward]
   }
   type Mutation {
@@ -134,6 +161,8 @@ export const typeDefs = gql`
     addTax(tax: TaxInput): Tax
     addRewardImport(reward: RewardInput): Reward
     addTaxImport(tax: TaxInput): Tax
+    addInvestment(investment: InvestmentInput): Investment
+    addInvestmentImport(investment: InvestmentInput): Investment
     updateTax(tax: TaxInput): Tax
   }
 `

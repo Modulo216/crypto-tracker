@@ -1,0 +1,5 @@
+mutation addInvestment($investment: InvestmentInput!) {
+  addInvestment(investment: $investment) {
+    id
+  }
+}

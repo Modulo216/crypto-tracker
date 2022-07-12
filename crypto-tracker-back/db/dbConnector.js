@@ -4,6 +4,7 @@ const { trxSchema } = require('./schema/trxSchema.js')
 const { checkingSchema } = require('./schema/checkingSchema.js')
 const { taxSchema } = require('./schema/taxSchema')
 const { rewardSchema } = require('./schema/rewardSchema')
+const { investmentSchema } = require('./schema/investmentSchema')
 
 mongoose.connect('mongodb://127.0.0.1/my_db', {
   useNewUrlParser: true,
@@ -20,5 +21,6 @@ const Trx = mongoose.model('Trx', trxSchema)
 const Checking = mongoose.model('Checking', checkingSchema)
 const Tax = mongoose.model('Tax', taxSchema)
 const Reward = mongoose.model('Reward', rewardSchema)
+const Investment = mongoose.model('Investment', investmentSchema)
 
-export { Interest, Trx, Checking, Tax, Reward }
+export { Interest, Trx, Checking, Tax, Reward, Investment }

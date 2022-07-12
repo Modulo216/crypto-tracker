@@ -1,0 +1,5 @@
+query {
+  getInvestments {
+    id, exchangeId, coin, updatedAt, amount, spent, subtitle, title, fillPrice, value
+  }
+}

@@ -1,4 +1,4 @@
-import { Interest, Trx, Checking, Tax, Reward } from "../db/dbConnector.js"
+import { Interest, Trx, Checking, Tax, Reward, Investment } from "../db/dbConnector.js"
 
 export const resolvers = {
   Query: {
@@ -31,6 +31,12 @@ export const resolvers = {
       taxes.sort((d1, d2) => new Date(d1.updatedAt).getTime() - new Date(d2.updatedAt).getTime())
       
       return taxes
+    },
+    getInvestments: async (root) => {
+      let investments = await Investment.find()
+      investments.sort((d1, d2) => new Date(d1.updatedAt).getTime() - new Date(d2.updatedAt).getTime())
+      
+      return investments
     },
     getRewards: async (root) => {
       let rewards = await Reward.find()
@@ -87,6 +93,19 @@ export const resolvers = {
       const { ...rest } = tax
       const newTax = new Tax({ ...rest })
       return await newTax.save()
+    },
+    addInvestmentImport: async (root, { investment }) => {
+      const { ...rest } = investment
+      let investmentExist = await Investment.findOne({ exchangeId: investment.exchangeId })
+      if(!investmentExist) {
+        const newInvestment = new Investment({ ...rest })
+        return await newInvestment.save()
+      }
+    },
+    addInvestment: async (root, { investment }) => {
+      const { ...rest } = investment
+      const newInvestment = new Investment({ ...rest })
+      return await newInvestment.save()
     },
     updateTax: async (root, { tax }) => {
       return await Tax.findByIdAndUpdate(tax.id, tax, { new: true })

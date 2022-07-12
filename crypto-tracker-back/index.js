@@ -33,6 +33,37 @@ app.get('/rewards', async (req, res) => {
   res.send('OK')
 })
 
+app.get('/investments', async (req, res) => {
+  let btcWallet = await resolvers.Query.findInterest(null, { interest : { name: 'BTC' }})
+  let ethWallet = await resolvers.Query.findInterest(null, { interest : { name: 'ETH' }})
+  let trxs = await Promise.all([getTrxs(btcWallet.cbaseWalletId, true), getTrxs(ethWallet.cbaseWalletId, true)])
+
+  trxs.forEach((allTrxs, index, array) => {
+    allTrxs.filter(txn => isAfter(new Date(txn.created_at), new Date(2021, 7, 1)) && txn.type === "buy").forEach(trx => {
+      resolvers.Mutation.addInvestmentImport(null, { investment: { exchangeId: trx.id, updatedAt: trx.created_at, coin: trx.amount.currency, title: trx.details.title,
+        subtitle: trx.details.subtitle, amount: trx.amount.amount, spent: trx.native_amount.amount, investType: 'buy', value: '0.00'
+      }})
+    })
+
+    allTrxs.filter(txn => isAfter(new Date(txn.created_at), new Date(2021, 7, 1)) && txn.details.title.includes('Converted to')).forEach(trx => {
+      resolvers.Mutation.addInvestmentImport(null, { investment: { exchangeId: trx.id, updatedAt: trx.created_at, coin: trx.amount.currency, title: trx.details.title,
+        subtitle: trx.details.payment_method_name, amount: trx.amount.amount, spent: '0.00', investType: 'convert', value: '0.00'
+      }})
+    })
+
+    let atfTrxs = allTrxs.filter(txn => isAfter(new Date(txn.created_at), new Date(2021, 7, 1)) && txn.type === "advanced_trade_fill")
+    new Set(atfTrxs.map(atf => atf.advanced_trade_fill.order_id)).forEach(a => {
+      let aftTrx = atfTrxs.filter(f => f.advanced_trade_fill.order_id === a)
+      resolvers.Mutation.addInvestmentImport(null, { investment: { exchangeId: a, updatedAt: aftTrx[0].created_at, coin: aftTrx[0].amount.currency, title: aftTrx[0].details.title, subtitle: aftTrx[0].details.subtitle,
+        amount: aftTrx.map(t => t.amount).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0).toString(),
+        spent: aftTrx.map(t => t.native_amount).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0).toString(), investType: 'atf',
+        fillPrice: aftTrx[0].advanced_trade_fill.fill_price, value: '0.00'
+      }})
+    })
+  })
+  res.send('OK')
+})
+
 app.get('/trxs', async (req, res) => {
   let usdcWallet = await resolvers.Query.findInterest(null, { interest : { name: 'USDC' }})
   let rows = await resolvers.Query.trxExists()

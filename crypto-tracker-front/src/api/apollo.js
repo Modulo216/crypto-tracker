@@ -16,6 +16,8 @@ const updateCheckingGql = require('./gql/updateChecking.gql')
 const getCheckingGql = require('./gql/getChecking.gql')
 const getTaxesGql = require('./gql/getTaxes.gql')
 const getRewardsGql = require('./gql/getRewards.gql')
+const getInvestmentsGql = require('./gql/getInvestments.gql')
+const addInvestmentGql = require('./gql/addInvestment.gql')
 const { isAfter } = require('date-fns')
 
 const httpLink = createHttpLink({ uri: 'http://localhost:5001/graphql' })
@@ -63,6 +65,14 @@ async function addTax(tax) {
   return result.data.addTax
 }
 
+async function addInvestment(investment) {
+  const result = await apolloClient.mutate({
+    mutation: addInvestmentGql,
+    variables: { investment }
+  })
+  return result.data.addInvestment
+}
+
 async function addChecking(checking) {
   const result = await apolloClient.mutate({
     mutation: addCheckingGql,
@@ -93,6 +103,11 @@ async function getRewards() {
 async function getTaxes() {
   const res = await apolloClient.query({ query: getTaxesGql })
   return res.data.getTaxes
+}
+
+async function getInvestments() {
+  const res = await apolloClient.query({ query: getInvestmentsGql })
+  return res.data.getInvestments
 }
 
 async function updateTrx(trx) {
@@ -135,5 +150,5 @@ async function deleteChecking(id) {
   return result.data.deleteChecking
 }
 
-export { getInterests, addInterest, getTrxs, updateTrx, deleteInterest, getRewards,
+export { getInterests, addInterest, getTrxs, updateTrx, deleteInterest, getRewards, getInvestments, addInvestment,
   updateInterest, getChecking, addChecking, updateChecking, deleteChecking, getTaxes, updateTax, addTax }

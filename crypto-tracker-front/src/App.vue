@@ -28,10 +28,11 @@ export default {
     mini: true,
     items: [
       { title: 'Home', icon: 'mdi-view-dashboard', route: '/' },
-      { title: 'Interests', icon: 'mdi-image', route: '/about' },
+      { title: 'Interests', icon: 'mdi-image', route: '/interests' },
       { title: 'Spending', icon: 'mdi-image', route: '/spending' },
       { title: 'Taxes', icon: 'mdi-image', route: '/taxes' },
-      { title: 'Rewards', icon: 'mdi-image', route: '/rewards' }
+      { title: 'Rewards', icon: 'mdi-image', route: '/rewards' },
+      { title: 'Investments', icon: 'mdi-image', route: '/investments' }
     ]
   })
 };

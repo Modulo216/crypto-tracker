@@ -62,7 +62,7 @@ export default {
     monthNameActive: '',
     interests: [],
     coinsSum: [],
-    selectedRow: undefined,
+    selectedRow: undefined
   }),
   created() {
     this.loadRewards()
