@@ -1,10 +1,10 @@
 <template>
   <v-container fluid>
     <v-row>
-      <v-col cols="10">
+      <v-col cols="9">
         <line-chart :items="profitHistory" />
       </v-col>
-      <v-col cols="2">
+      <v-col cols="3">
         <v-card class="my-2" dark>
           <v-card-text class="subtitle-1 pa-1 d-flex">
             <div style="flex: 0 0 30%;">
@@ -24,7 +24,7 @@
           hide-default-footer
           dense
           disable-pagination
-          :headers="[{ text: 'Coin', value: 'coin' },{ text: 'Price', value: 'price' },{ text: 'Value', value: 'value' }]"
+          :headers="[{ text: 'Coin', value: 'coin' },{ text: 'Price', value: 'price' },{ text: 'Value', value: 'value' },{ text: 'Gain', value: 'gain' }]"
           :items="coinsSum"
           item-key="coin"
           class="elevation-10">
@@ -33,6 +33,11 @@
           </template>
           <template v-slot:[`item.price`]="{ item }">
             <span>{{ getAsCurrency(item.price) }}</span>
+          </template>
+          <template v-slot:[`item.gain`]="{ item }">
+            <div class="rounded text-center" :style="`background-color: ${ getGain(item) > 0 ? '#4CAF50' : getGain(item) === 0 ? '#FAFAFA' : '#F44336' }`">
+              <span class="black--text">{{ getGain(item).toFixed(2) }}%</span>
+            </div>
           </template>
         </v-data-table>
       </v-col>
@@ -71,8 +76,10 @@ export default {
     })
   },
   methods: {
+    getGain(item) {
+      return ((item.price - item.oldPrice) / item.price) * 100
+    },
     sumCoins() {
-      this.coinsSum = []
       this.interests.forEach(r => {
         if(r.name === 'USDC' || (r.isTax && (r.soldTaxForBtc || r.soldTaxForEth) && !r.isReward)) {
           return
@@ -82,15 +89,16 @@ export default {
         let amount = (this.rewards.filter(f => f.coin === r.name).map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0) +
             this.investments.filter(f => f.coin === r.name).map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0) +
             this.taxes.filter(f => f.coin === r.name).map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0))
-
         let obj = this.coinsSum.find(c => c.coin === r.name)
-
-        this.coinsSum.push( { coin: r.name,
-          price: Number(coinCookie),
-          amount: amount,
-          spent: this.investments.filter(f => f.coin === r.name).map(f => parseFloat(f.spent)).reduce((prev, next) => prev + next, 0),
-          value: amount * coinCookie
-        })
+        if(obj) {
+          obj.oldPrice = obj.price
+          obj.price = Number(coinCookie)
+          obj.value = amount * coinCookie
+        } else {
+          this.coinsSum.push( { coin: r.name, oldPrice: 0, price: Number(coinCookie), amount: amount, value: amount * coinCookie,
+            spent: this.investments.filter(f => f.coin === r.name).map(f => parseFloat(f.spent)).reduce((prev, next) => prev + next, 0)
+          })
+        }
       })
     },
     getAsCurrency(numb) {

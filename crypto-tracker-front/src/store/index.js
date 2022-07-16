@@ -22,6 +22,7 @@ const _monthNames = ['Jan', 'Feb', "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Se
 
 export default new Vuex.Store({
   state: {
+    homeCoinsSum: []
   },
   getters: {
     getMonthNames() {
@@ -40,6 +41,12 @@ export default new Vuex.Store({
     }
   },
   mutations: {
+    setCoinsSum(state, coinsSum) {
+      state.homeCoinsSum = coinsSum
+    },
+    updateCoinsSum(state, coinsSum) {
+      //state.homeCoinsSum = coinsSum
+    }
   },
   actions: {
   },
