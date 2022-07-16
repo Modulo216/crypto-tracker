@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import parseISO from 'date-fns/parseISO';
+import { getInterests } from '../api/apollo'
 
 Vue.use(Vuex)
 
@@ -22,7 +23,8 @@ const _monthNames = ['Jan', 'Feb', "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Se
 
 export default new Vuex.Store({
   state: {
-    homeCoinsSum: []
+    homeCoinsSum: [],
+    interests: []
   },
   getters: {
     getMonthNames() {
@@ -41,14 +43,33 @@ export default new Vuex.Store({
     }
   },
   mutations: {
-    setCoinsSum(state, coinsSum) {
-      state.homeCoinsSum = coinsSum
+    updateCoinsSum(state, { item }) {
+      const itemId = state.homeCoinsSum.findIndex(c => c.coin === item.coin)
+      if(itemId === -1) {
+        item.oldPrice = item.price
+        state.homeCoinsSum.push(item)
+      } else {
+        state.homeCoinsSum[itemId].oldPrice = state.homeCoinsSum[itemId].price
+        state.homeCoinsSum[itemId].value = item.value
+        state.homeCoinsSum[itemId].price = item.price
+      }
     },
-    updateCoinsSum(state, coinsSum) {
-      //state.homeCoinsSum = coinsSum
+    setInterests(state, items) {
+      state.interests = items
+    },
+    removeInterest(state, item) {
+      state.interests.splice(state.interests.findIndex(i => i.id === item.id), 1)
+    },
+    addInterest(state, item) {
+      state.interests.push(item)
+    },
+    updatedInterest(state, item) {
+      let indexOf = state.interests.findIndex(i => i.id === item.id)
+      state.interests[indexOf] = item
     }
   },
   actions: {
+    populateInterests: (context) => getInterests().then(r => context.commit('setInterests', r))
   },
   modules: {
   }

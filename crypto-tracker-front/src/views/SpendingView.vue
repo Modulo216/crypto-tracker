@@ -211,7 +211,7 @@ export default {
     },
     onTrxUpdated(item) {
       this.$set(this.allTrxs, this.allTrxs.indexOf(t => t.id === item.id), item);
-      this.onMonthClick(this.monthNameActiv)
+      this.onMonthClick(this.monthNameActive)
     },
     getAsCurrency(numb) {
       return numb.toLocaleString('en-US', {

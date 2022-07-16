@@ -34,6 +34,9 @@ export default {
       { title: 'Rewards', icon: 'mdi-image', route: '/rewards' },
       { title: 'Investments', icon: 'mdi-image', route: '/investments' }
     ]
-  })
+  }),
+  created () {
+    this.$store.dispatch('populateInterests')
+  }
 };
 </script>

@@ -120,7 +120,7 @@ import { getInterests, addInterest, deleteInterest, updateInterest } from '../..
       },
     }),
     created () {
-      getInterests().then(r => this.interests = [...r])
+      //getInterests().then(r => this.interests = [...r])
     },
     watch: {
       dialog (val) {
@@ -143,12 +143,6 @@ import { getInterests, addInterest, deleteInterest, updateInterest } from '../..
         this.dialogDelete = true
       },
 
-      deleteItemConfirm () {
-        deleteInterest(this.editedItem.id)
-        this.interests.splice(this.editedIndex, 1)
-        this.closeDelete()
-      },
-
       close () {
         this.dialog = false
         this.$nextTick(() => {
@@ -163,6 +157,12 @@ import { getInterests, addInterest, deleteInterest, updateInterest } from '../..
           this.editedItem = Object.assign({}, this.defaultItem)
           this.editedIndex = -1
         })
+      },
+
+      deleteItemConfirm () {
+        deleteInterest(this.editedItem.id)
+        this.interests.splice(this.editedIndex, 1)
+        this.closeDelete()
       },
 
       save () {

@@ -14,8 +14,8 @@
                 </v-icon>
               </v-btn>
             </div>
-            <div class="pt-1" style="flex: 0 0 35%;"><span class="red--text">{{ getAsCurrency(coinsSum.map(t => parseFloat(t.spent)).reduce((prev, next) => prev + next, 0)) }}</span></div>
-            <div class="pt-1"><span class="green--text">{{ getAsCurrency(coinsSum.map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0)) }}</span></div>
+            <div class="pt-1" style="flex: 0 0 35%;"><span class="red--text">{{ getAsCurrency($store.state.homeCoinsSum.map(t => parseFloat(t.spent)).reduce((prev, next) => prev + next, 0)) }}</span></div>
+            <div class="pt-1"><span class="green--text">{{ getAsCurrency($store.state.homeCoinsSum.map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0)) }}</span></div>
           </v-card-text>
         </v-card>
         <v-data-table
@@ -25,7 +25,7 @@
           dense
           disable-pagination
           :headers="[{ text: 'Coin', value: 'coin' },{ text: 'Price', value: 'price' },{ text: 'Value', value: 'value' },{ text: 'Gain', value: 'gain' }]"
-          :items="coinsSum"
+          :items="$store.state.homeCoinsSum"
           item-key="coin"
           class="elevation-10">
           <template v-slot:[`item.value`]="{ item }">
@@ -35,9 +35,14 @@
             <span>{{ getAsCurrency(item.price) }}</span>
           </template>
           <template v-slot:[`item.gain`]="{ item }">
-            <div class="rounded text-center" :style="`background-color: ${ getGain(item) > 0 ? '#4CAF50' : getGain(item) === 0 ? '#FAFAFA' : '#F44336' }`">
-              <span class="black--text">{{ getGain(item).toFixed(2) }}%</span>
-            </div>
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <div style="cursor: pointer" class="rounded text-center" :style="`background-color: ${ getGain(item) > 0 ? '#4CAF50' : getGain(item) === 0 ? '#FAFAFA' : '#F44336' }`" v-bind="attrs" v-on="on">
+                  <span class="black--text">{{ getGain(item).toFixed(2) }}%</span>
+                </div>
+              </template>
+              <span>{{ item.oldPrice }}</span>
+            </v-tooltip>
           </template>
         </v-data-table>
       </v-col>
@@ -57,7 +62,6 @@ export default {
       investments: [],
       taxes: [],
       interests: [],
-      coinsSum: [],
       profitHistory: [],
       loading: false
     }
@@ -71,8 +75,7 @@ export default {
       this.investments = r[1]
       this.taxes = r[2]
       this.interests = r[3]
-      this.sumCoins()
-      this.profitHistory = JSON.parse($cookies.get("profitHistory")) || []
+      this.refreshValue()
     })
   },
   methods: {
@@ -80,6 +83,7 @@ export default {
       return ((item.price - item.oldPrice) / item.price) * 100
     },
     sumCoins() {
+      console.log("T", this.$store.state.homeCoinsSum)
       this.interests.forEach(r => {
         if(r.name === 'USDC' || (r.isTax && (r.soldTaxForBtc || r.soldTaxForEth) && !r.isReward)) {
           return
@@ -89,16 +93,10 @@ export default {
         let amount = (this.rewards.filter(f => f.coin === r.name).map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0) +
             this.investments.filter(f => f.coin === r.name).map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0) +
             this.taxes.filter(f => f.coin === r.name).map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0))
-        let obj = this.coinsSum.find(c => c.coin === r.name)
-        if(obj) {
-          obj.oldPrice = obj.price
-          obj.price = Number(coinCookie)
-          obj.value = amount * coinCookie
-        } else {
-          this.coinsSum.push( { coin: r.name, oldPrice: 0, price: Number(coinCookie), amount: amount, value: amount * coinCookie,
-            spent: this.investments.filter(f => f.coin === r.name).map(f => parseFloat(f.spent)).reduce((prev, next) => prev + next, 0)
+        this.$store.commit('updateCoinsSum',
+          { item: { coin: r.name, price: Number(coinCookie), amount: amount, value: amount * coinCookie,
+            spent: this.investments.filter(f => f.coin === r.name).map(f => parseFloat(f.spent)).reduce((prev, next) => prev + next, 0) } 
           })
-        }
       })
     },
     getAsCurrency(numb) {
@@ -109,7 +107,7 @@ export default {
     },
     async refreshValue() {
       this.loading = true
-      let coinPrices = await getCoinPrice(this.interests.map(r => r.name))
+      let coinPrices = await getCoinPrice(this.interests.filter(r => !(r.isTax && (r.soldTaxForBtc || r.soldTaxForEth) && !r.isReward)).map(r => r.name))
       coinPrices.map(p => p.data.data).forEach(p => {
         $cookies.set(p.base, p.amount)
       })
@@ -120,9 +118,9 @@ export default {
         this.profitHistory.shift()
       }
       let time = new Date();
-      let dateVal = time.getDate() + 'th ' + time.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })
+      let dateVal = `${time.getDate()} ${time.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })}`
 
-      this.profitHistory.push({date: dateVal, sum: this.coinsSum.map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0) - this.coinsSum.map(t => parseFloat(t.spent)).reduce((prev, next) => prev + next, 0)})
+      this.profitHistory.push({date: dateVal, sum: this.$store.state.homeCoinsSum.map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0) - this.$store.state.homeCoinsSum.map(t => parseFloat(t.spent)).reduce((prev, next) => prev + next, 0)})
       $cookies.set("profitHistory", JSON.stringify(this.profitHistory))
       this.loading = false
     }
