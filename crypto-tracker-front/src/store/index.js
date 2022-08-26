@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import parseISO from 'date-fns/parseISO';
-import { getInterests } from '../api/apollo'
+import { getInterests, getRewards, getTaxes, getInvestments } from '../api/apollo'
 
 Vue.use(Vuex)
 
@@ -24,7 +24,10 @@ const _monthNames = ['Jan', 'Feb', "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Se
 export default new Vuex.Store({
   state: {
     homeCoinsSum: [],
-    interests: []
+    interests: [],
+    allRewards: [],
+    allTaxes: [],
+    allInvestments: []
   },
   getters: {
     getMonthNames() {
@@ -57,19 +60,44 @@ export default new Vuex.Store({
     setInterests(state, items) {
       state.interests = items
     },
-    removeInterest(state, item) {
-      state.interests.splice(state.interests.findIndex(i => i.id === item.id), 1)
+    removeInterest(state, itemId) {
+      state.interests.splice(state.interests.findIndex(i => i.id === itemId), 1)
     },
     addInterest(state, item) {
       state.interests.push(item)
     },
     updatedInterest(state, item) {
       let indexOf = state.interests.findIndex(i => i.id === item.id)
-      state.interests[indexOf] = item
-    }
+      Object.assign(state.interests[indexOf], item)
+    },
+
+    setRewards(state, items) {
+      state.allRewards = items
+    },
+
+    setTaxes(state, items) {
+      state.allTaxes = items
+    },
+    addTax(state, item) {
+      state.allTaxes.push(item)
+    },
+    updatedTax(state, item) {
+      let indexOf = state.allTaxes.findIndex(i => i.id === item.id)
+      Object.assign(state.allTaxes[indexOf], item)
+    },
+
+    setInvestments(state, items) {
+      state.allInvestments = items
+    },
+    addInvestment(state, item) {
+      state.allInvestments.push(item)
+    },
   },
   actions: {
-    populateInterests: (context) => getInterests().then(r => context.commit('setInterests', r))
+    populateInterests: (context) => getInterests().then(r => context.commit('setInterests', r)),
+    populateRewards: (context) => getRewards().then(r => context.commit('setRewards', r)),
+    populateTaxes: (context) => getTaxes().then(r => context.commit('setTaxes', r)),
+    populateInvestments: (context) => getInvestments().then(r => context.commit('setInvestments', r))
   },
   modules: {
   }

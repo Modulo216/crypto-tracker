@@ -101,7 +101,6 @@ import Bar from '../components/taxes/charts/Bar'
 import Line from '../components/taxes/charts/Line'
 import { refreshTaxes } from '../api/endpoints/tax'
 import { getCoinPrice } from '../api/endpoints/coinbase'
-import { getTaxes, getInterests } from '../api/apollo'
 import dateMixin from '@/mixins/datesMixin'
 export default {
   components: {
@@ -112,7 +111,6 @@ export default {
   },
   mixins: [dateMixin],
   data: () => ({
-    allTaxes: [],
     taxes: [],
     activitySum: [],
     exchangeSum: [],
@@ -123,15 +121,20 @@ export default {
     interests: []
   }),
   created() {
-    getInterests().then(r => {
-      this.interests = [...r.filter(r => r.isTax && !r.soldTaxForBtc && !r.soldTaxForEth).map(r => r.name)]
-      this.interests.push('BTC','ETH')
+    this.loadTaxes()
+  },
+  computed: {
+    allTaxes() {
+      return this.$store.state.allTaxes
+    }
+  },
+  watch: {
+    allTaxes() {
       this.loadTaxes()
-    })
+    }
   },
   methods: {
-    async loadTaxes() {
-      this.allTaxes = await getTaxes()
+    loadTaxes() {
       this.onMonthClick(this.monthNameActive !== '' ? this.monthNameActive : {month: new Date().getUTCMonth(), year: new Date().getUTCFullYear()})
     },
     getAsCurrency(numb) {
@@ -155,15 +158,13 @@ export default {
       }
     },
     onTaxUpdated(item) {
-      this.$set(this.allTaxes, this.allTaxes.indexOf(t => t.id === item.id), item);
-      this.onMonthClick(this.monthNameActive)
+      this.$store.commit('updatedTax', item)
     },
     onTaxAdded(item) {
-      this.allTaxes.push(item)
-      this.onMonthClick(this.monthNameActive)
+      this.$store.commit('addTax', item)
     },
     async onRefreshTax(callback) {
-      let coinPrices = await getCoinPrice(new Set(this.allTaxes.filter(t => this.interests.includes(t.coin)).map(t => t.coin)))
+      let coinPrices = await getCoinPrice([...this.$store.state.interests.filter(r => r.isTax && !r.soldTaxForBtc && !r.soldTaxForEth).map(r => r.name), 'BTC'])
       coinPrices.map(p => p.data.data).forEach(p => {
         let coinSum = this.coinsSum.find(s => s.coin === p.base)
         if(coinSum) {
@@ -174,7 +175,7 @@ export default {
 
       let res = await refreshTaxes()
       if(res.status === 200) {
-        this.loadTaxes()
+        this.$store.dispatch('populateTaxes')
         callback("done")
       } else {
         alert("PROBLEM")
@@ -201,7 +202,7 @@ export default {
         this.coinsSum.push({ coin: a, idx: idx++, sum: 
           this.taxes.filter(t => t.coin === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0),
           amount: this.taxes.filter(t => t.coin === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0),
-          val: coinCookie && this.interests.includes(a) ? this.taxes.filter(t => t.coin === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0) * coinCookie : 0
+          val: (coinCookie && this.$store.state.interests.filter(r => r.isTax && !r.soldTaxForBtc && !r.soldTaxForEth).map(r => r.name).includes(a)) || a === 'BTC' ? this.taxes.filter(t => t.coin === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0) * coinCookie : 0
         })
       })
     },

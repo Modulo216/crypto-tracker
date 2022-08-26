@@ -14,7 +14,8 @@
 
 <script>
 import { Line as LineChartGenerator } from 'vue-chartjs/legacy'
-
+import dateMixin from '@/mixins/datesMixin'
+const { isBefore, isSameDay } = require('date-fns')
 import {
   Chart as ChartJS,
   Title,
@@ -25,9 +26,6 @@ import {
   CategoryScale,
   PointElement
 } from 'chart.js'
-import chroma from "chroma-js"
-import dateMixin from '@/mixins/datesMixin'
-const { isAfter } = require('date-fns')
 ChartJS.register(
   Title,
   Tooltip,
@@ -39,7 +37,7 @@ ChartJS.register(
 )
 
 export default {
-  name: 'LineChart',
+  name: 'history-line',
   components: {
     LineChartGenerator
   },
@@ -55,11 +53,10 @@ export default {
     },
     width: {
       type: Number,
-      default: 400
     },
     height: {
       type: Number,
-      default: 400
+      default: 500
     },
     cssClasses: {
       default: '',
@@ -73,13 +70,27 @@ export default {
       type: Array,
       default: () => []
     },
-    investments: Array
+    priceHistory: Array
+  },
+  computed: {
+    investments() {
+      return this.$store.state.allInvestments
+    },
+    taxes() {
+      return this.$store.state.allTaxes
+    },
+    rewards() {
+      return this.$store.state.allRewards
+    },
+    interests() {
+      return this.$store.state.interests
+    }
   },
   created() {
     this.populateChart()    
   },
   watch: {
-    investments() {
+    priceHistory(newItems) {
       this.populateChart()
     }
   },
@@ -88,26 +99,18 @@ export default {
       this.chartData.datasets[0].data = []
       this.chartData.datasets[1].data = []
       this.chartData.labels = []
-      let monthYears = []
 
-      this.investments.forEach(t => {
-        const date = new Date(t.updatedAt)
-        let obj = {month: date.getUTCMonth(), year: date.getUTCFullYear()}
-        monthYears.findIndex(x => x.month === obj.month && x.year === obj.year) === -1 ? monthYears.push(obj) : undefined
-      })
-      monthYears.forEach((m, idx) => {
-        this.chartData.labels.push(`${this.$store.getters.getMonthNames[m.month]} ${m.year.toString().slice(-2)}`)
-        this.chartData.datasets[0].data.push(
-          this.investments.filter(t => isAfter(new Date(m.year, m.month, 30), new Date(t.updatedAt))).map(t => parseFloat(t.spent)).reduce((prev, next) => prev + next, 0).toFixed(2)
-        )
-        
+      this.priceHistory.forEach(h => {
+        this.chartData.labels.push(h.date)
+        this.chartData.datasets[0].data.push(h.coins.map(i => i.value).reduce((prev, next) => prev + next, 0))
         this.chartData.datasets[1].data.push(
-          (this.investments.filter(t => isAfter(new Date(m.year, m.month, 30), new Date(t.updatedAt))).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0) *
-            ((idx + 1 === monthYears.length) ? $cookies.get(this.investments[0].coin) || 0 : 
-            this.investments.filter(t => new Date(t.updatedAt).getUTCMonth() === m.month && new Date(t.updatedAt).getUTCFullYear() === m.year && t.fillPrice).map(t => parseFloat(t.fillPrice)).reduce((avg, value, _, { length }) => avg + value / length, 0))
-          ).toFixed(2)
+          this.investments.filter(t => isBefore(new Date(t.updatedAt), this.getDateAsUtc(h.date)) || isSameDay(new Date(t.updatedAt), this.getDateAsUtc(h.date))).map(t => parseFloat(t.spent)).reduce((prev, next) => prev + next, 0)
         )
       })
+    },
+    getDateAsUtc(d) {
+      let n = new Date(d)
+      return new Date(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate())
     }
   },
   data() {
@@ -116,25 +119,36 @@ export default {
         labels: [],
         datasets: [
           {
-            label: 'spent',
-            borderDash: [1, 1],
-            backgroundColor: 'red',
-            data: [],
-            borderColor: "black",
-          },
-          {
-            label: 'value',
-            borderDash: [1, 1],
-            backgroundColor: 'blue',
+            datalabels: {
+              display: false
+            },
+            backgroundColor: [],
             data: [],
             borderColor: "gray",
+            pointRadius: 2,
+            pointHoverRadius: 10
+          },
+          {
+            datalabels: {
+              display: false
+            },
+            backgroundColor: [],
+            data: [],
+            borderColor: 'black',
+            backgroundColor: 'gray',
+            pointRadius: 1,
+            pointHoverRadius: 10
           }
         ]
       },
       chartOptions: {
         plugins: { legend: { display: false } },
         responsive: true,
-        maintainAspectRatio: false
+        maintainAspectRatio: false,
+        scales: {
+          x: { ticks: { color: 'white' } },
+          y: { ticks: { color: 'green' }, beginAtZero: true },
+        }
       }
     }
   }

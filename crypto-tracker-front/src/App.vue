@@ -20,7 +20,6 @@
     </v-main>
   </v-app>
 </template>
-
 <script>
 export default {
   name: 'App',
@@ -37,6 +36,9 @@ export default {
   }),
   created () {
     this.$store.dispatch('populateInterests')
+    this.$store.dispatch('populateRewards')
+    this.$store.dispatch('populateTaxes')
+    this.$store.dispatch('populateInvestments')
   }
 };
 </script>

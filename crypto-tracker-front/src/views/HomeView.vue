@@ -8,7 +8,7 @@
         <v-card class="my-2" dark>
           <v-card-text class="subtitle-1 pa-1 d-flex">
             <div style="flex: 0 0 30%;">
-              <v-btn color="primary" dark @click="refreshValue" :loading="loading" :disabled="loading">
+              <v-btn color="primary" dark @contextmenu.prevent="onlyGains" @click="refreshValue" :loading="loading" :disabled="loading">
                 <v-icon dark>
                   mdi-refresh
                 </v-icon>
@@ -47,44 +47,71 @@
         </v-data-table>
       </v-col>
     </v-row>
+    <history-line :priceHistory="priceHistory" />
+    <coin-history-line :priceHistory="priceHistory" />
   </v-container>
 </template>
 
 <script>
-import { getInvestments, getRewards, getTaxes, getInterests } from '../api/apollo'
 import { getCoinPrice } from '../api/endpoints/coinbase'
+import { refreshPriceHistory } from '../api/endpoints/priceHistory'
 import LineChart from '../components/home/Line.vue'
+import HistoryLine from '@/components/home/HistoryLine'
+import CoinHistoryLine from '@/components/home/CoinHistoryLine'
+import { getPriceHistory } from '../api/apollo'
+const { isBefore, isSameDay } = require('date-fns')
 export default {
   name: 'home-view',
   data () {
     return {
-      rewards: [],
-      investments: [],
-      taxes: [],
-      interests: [],
       profitHistory: [],
+      priceHistory: [],
       loading: false
     }
   },
   components: {
-    LineChart
+    LineChart,
+    HistoryLine,
+    CoinHistoryLine
   },
   async created() {
-    Promise.all([getRewards(), getInvestments(), getTaxes(), getInterests()]).then(r => {
-      this.rewards = r[0]
-      this.investments = r[1]
-      this.taxes = r[2]
-      this.interests = r[3]
-      this.refreshValue()
+    // this.sumCoins()
+    getPriceHistory().then(hist => {
+      this.parsePriceHistory(hist)
     })
+    this.profitHistory = JSON.parse($cookies.get("profitHistory")) || []
+  },
+  computed: {
+    investments() {
+      return this.$store.state.allInvestments
+    },
+    taxes() {
+      return this.$store.state.allTaxes
+    },
+    rewards() {
+      return this.$store.state.allRewards
+    },
+  },
+  watch: {
+    investments(newVal) {
+      this.sumCoins()
+    }
   },
   methods: {
+    async onlyGains() {
+      this.loading = true
+      let coinPrices = await getCoinPrice(this.$store.state.interests.filter(r => !(r.isTax && (r.soldTaxForBtc || r.soldTaxForEth) && !r.isReward)).map(r => r.name))
+      coinPrices.map(p => p.data.data).forEach(p => {
+        $cookies.set(p.base, p.amount)
+      })
+      this.sumCoins()
+      this.loading = false
+    },
     getGain(item) {
       return ((item.price - item.oldPrice) / item.price) * 100
     },
     sumCoins() {
-      console.log("T", this.$store.state.homeCoinsSum)
-      this.interests.forEach(r => {
+      this.$store.state.interests.forEach(r => {
         if(r.name === 'USDC' || (r.isTax && (r.soldTaxForBtc || r.soldTaxForEth) && !r.isReward)) {
           return
         }
@@ -105,16 +132,35 @@ export default {
         currency: 'USD',
       })
     },
+    parsePriceHistory(hist) {
+      for (const p of hist) {
+        let coinSum = this.rewards.filter(i => (isBefore(new Date(i.updatedAt), this.getDateAsUtc(p.date)) || isSameDay(new Date(i.updatedAt), this.getDateAsUtc(p.date))) && i.coin === p.coin).map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0) +
+          this.taxes.filter(i => (isBefore(new Date(i.updatedAt), this.getDateAsUtc(p.date)) || isSameDay(new Date(i.updatedAt), this.getDateAsUtc(p.date))) && i.coin === p.coin).map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0) +
+          this.investments.filter(i => (isBefore(new Date(i.updatedAt), this.getDateAsUtc(p.date)) || isSameDay(new Date(i.updatedAt), this.getDateAsUtc(p.date))) && i.coin === p.coin).map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0)
+
+        if(coinSum) {
+          const itemId = this.priceHistory.findIndex(c => c.date === p.date)
+          if(itemId === -1) {
+            this.priceHistory.push({ date: p.date, coins: [{ coin: p.coin, coinSum, value: coinSum * p.price }] })
+          } else {
+            this.priceHistory[itemId].coins.push({ coin: p.coin, coinSum, value: coinSum * p.price })
+          }
+        }
+      }
+    },
     async refreshValue() {
       this.loading = true
-      let coinPrices = await getCoinPrice(this.interests.filter(r => !(r.isTax && (r.soldTaxForBtc || r.soldTaxForEth) && !r.isReward)).map(r => r.name))
+      refreshPriceHistory().then(hist => {
+        this.parsePriceHistory(hist.data.flat())
+      })
+
+      let coinPrices = await getCoinPrice(this.$store.state.interests.filter(r => !(r.isTax && (r.soldTaxForBtc || r.soldTaxForEth) && !r.isReward)).map(r => r.name))
       coinPrices.map(p => p.data.data).forEach(p => {
         $cookies.set(p.base, p.amount)
       })
       this.sumCoins()
 
-      this.profitHistory = JSON.parse($cookies.get("profitHistory")) || []
-      if(this.profitHistory.length === 20) {
+      if(this.profitHistory.length === 33) {
         this.profitHistory.shift()
       }
       let time = new Date();
@@ -123,6 +169,10 @@ export default {
       this.profitHistory.push({date: dateVal, sum: this.$store.state.homeCoinsSum.map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0) - this.$store.state.homeCoinsSum.map(t => parseFloat(t.spent)).reduce((prev, next) => prev + next, 0)})
       $cookies.set("profitHistory", JSON.stringify(this.profitHistory))
       this.loading = false
+    },
+    getDateAsUtc(d) {
+      let n = new Date(d)
+      return new Date(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate())
     }
   }
 }

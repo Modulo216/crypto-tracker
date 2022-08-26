@@ -17,9 +17,17 @@ export default {
   data: () => ({
     monthYears: []
   }),
+  created() {
+    this.populateItems()    
+  },
   watch: {
     trxs(newTrxs) {
-      newTrxs.forEach(t => {
+      this.populateItems()
+    }
+  },
+  methods: {
+    populateItems() {
+      this.trxs.forEach(t => {
         const date = new Date(t.updatedAt)
         let obj = {month: date.getUTCMonth(), year: date.getUTCFullYear()}
         this.monthYears.findIndex(x => x.month === obj.month && x.year === obj.year) === -1 ? this.monthYears.push(obj) : undefined

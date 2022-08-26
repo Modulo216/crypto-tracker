@@ -2,13 +2,13 @@
   <v-container>
     <v-row class="text-center">
       <v-col cols="12">
-        <v-data-table dense :headers="headers" :items="interests" sort-by="name" class="elevation-10" dark hide-default-footer disable-pagination>
+        <v-data-table dense :headers="headers" :items="$store.state.interests" sort-by="name" class="elevation-10" dark hide-default-footer disable-pagination>
           <template v-slot:top>
             <v-toolbar flat>
               <v-toolbar-title>Interests</v-toolbar-title>
               <v-divider class="mx-4" inset vertical />
               <v-spacer></v-spacer>
-              <v-dialog v-model="dialog" max-width="800px">
+              <v-dialog v-model="dialog" max-width="800px" persistent>
                 <template v-slot:activator="{ on, attrs }">
                   <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on">
                     New Interest
@@ -18,7 +18,6 @@
                   <v-card-title>
                     <span class="text-h5">Interest</span>
                   </v-card-title>
-
                   <v-card-text>
                     <v-container>
                       <v-row>
@@ -52,20 +51,19 @@
                       </v-row>
                     </v-container>
                   </v-card-text>
-
                   <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn color="blue darken-1" text @click="close">Cancel</v-btn>
+                    <v-btn color="blue darken-1" text @click="closeDialog">Cancel</v-btn>
                     <v-btn color="blue darken-1" text @click="save">Save</v-btn>
                   </v-card-actions>
                 </v-card>
               </v-dialog>
-              <v-dialog v-model="dialogDelete" max-width="500px">
+              <v-dialog v-model="dialogDelete" max-width="500px" persistent>
                 <v-card>
                   <v-card-title class="text-h5">Are you sure you want to delete this item?</v-card-title>
                   <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
+                    <v-btn color="blue darken-1" text @click="closeDialog">Cancel</v-btn>
                     <v-btn color="blue darken-1" text @click="deleteItemConfirm">OK</v-btn>
                     <v-spacer></v-spacer>
                   </v-card-actions>
@@ -84,9 +82,9 @@
 </template>
 
 <script>
-import { getInterests, addInterest, deleteInterest, updateInterest } from '../../api/apollo'
+import { addInterest, deleteInterest, updateInterest } from '../../api/apollo'
   export default {
-    name: 'InterestsTable',
+    name: 'interests-table',
     data: () => ({
       dialog: false,
       dialogDelete: false,
@@ -98,8 +96,6 @@ import { getInterests, addInterest, deleteInterest, updateInterest } from '../..
         { text: 'Reward', sortable: false, value: 'isReward' },
         { text: 'Actions', value: 'actions', sortable: false },
       ],
-      interests: [],
-      editedIndex: -1,
       editedItem: {
         name: '',
         nickName: '',
@@ -119,60 +115,36 @@ import { getInterests, addInterest, deleteInterest, updateInterest } from '../..
         isReward: false
       },
     }),
-    created () {
-      //getInterests().then(r => this.interests = [...r])
-    },
-    watch: {
-      dialog (val) {
-        val || this.close()
-      },
-      dialogDelete (val) {
-        val || this.closeDelete()
-      },
-    },
     methods: {
       editItem (item) {
-        this.editedIndex = this.interests.indexOf(item)
         this.editedItem = Object.assign({}, item)
         this.dialog = true
       },
 
       deleteItem (item) {
-        this.editedIndex = this.interests.indexOf(item)
         this.editedItem = Object.assign({}, item)
         this.dialogDelete = true
       },
-
-      close () {
+      closeDialog() {
         this.dialog = false
-        this.$nextTick(() => {
-          this.editedItem = Object.assign({}, this.defaultItem)
-          this.editedIndex = -1
-        })
-      },
-
-      closeDelete () {
         this.dialogDelete = false
         this.$nextTick(() => {
           this.editedItem = Object.assign({}, this.defaultItem)
-          this.editedIndex = -1
         })
       },
-
       deleteItemConfirm () {
         deleteInterest(this.editedItem.id)
-        this.interests.splice(this.editedIndex, 1)
-        this.closeDelete()
+        this.$store.commit('removeInterest', this.editedItem.id)
+        this.closeDialog()
       },
-
       save () {
-        if (this.editedIndex > -1) {
-          updateInterest(this.editedItem)
-          Object.assign(this.interests[this.editedIndex], this.editedItem)
+        if(this.editedItem.id === undefined) {
+          addInterest(this.editedItem).then(r =>  this.$store.commit('addInterest', r))
         } else {
-          addInterest(this.editedItem).then(r => this.interests.push(r))
+          updateInterest(this.editedItem)
+          this.$store.commit('updatedInterest', this.editedItem)
         }
-        this.close()
+        this.closeDialog()
       },
     }
   }

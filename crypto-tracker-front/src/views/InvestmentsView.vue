@@ -32,14 +32,12 @@
             <span>{{ (((item.value - item.spent) / item.spent) * 100).toFixed(2) }}%</span>
           </template>
         </v-data-table>
-
         <v-card class="my-2" dark>
           <v-card-text class="subtitle-1 pa-3 d-flex">
             <div style="flex: 0 0 50%;">Spent: <span class="red--text">{{ getAsCurrency(coinsSum.map(t => parseFloat(t.spent)).reduce((prev, next) => prev + next, 0)) }}</span></div>
             <div>Value: <span class="green--text">{{ getAsCurrency(coinsSum.map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0)) }}</span></div>
           </v-card-text>
         </v-card>
-
         <h3 class="pl-3">Bitcoin</h3>
         <line-chart :investments="allInvestments.filter(i => i.coin === 'BTC')" class="mt-2"/>
         <h3 class="pl-3">Ethereum</h3>
@@ -66,7 +64,6 @@ import dateMixin from '@/mixins/datesMixin'
     },
     mixins: [dateMixin],
     data: () => ({
-      allInvestments: [],
       investments: [],
       coinsSum: [],
       monthNameActive: '',
@@ -75,14 +72,24 @@ import dateMixin from '@/mixins/datesMixin'
     created() {
       this.loadInvestments()
     },
+    computed: {
+      allInvestments() {
+        return this.$store.state.allInvestments
+      }
+    },
+    watch: {
+      allInvestments(newAllTheRewards) {
+        this.loadInvestments()
+      }
+    },
     methods: {
-      async loadInvestments() {
-        this.allInvestments = await getInvestments()
+      loadInvestments() {
         this.onMonthClick('ALL')
       },
       onMonthClick(dateMonth) {
         if(this.selectedRow !== undefined) {
           this.selectedRow.select(false)
+          this.selectedRow = undefined
         }
         this.monthNameActive = dateMonth
         this.allInvestments.forEach(i => {
@@ -106,7 +113,7 @@ import dateMixin from '@/mixins/datesMixin'
 
         let res = await refreshInvestments()
         if(res.status === 200) {
-          this.loadInvestments()
+          this.$store.dispatch('populateInvestments')
           callback("done")
         } else {
           alert("PROBLEM")
@@ -130,7 +137,7 @@ import dateMixin from '@/mixins/datesMixin'
         })
       },
       onInvestmentAdded(item) {
-        this.allInvestments.push(item)
+        this.$store.commit('addInvestment', item)
         this.onMonthClick(this.monthNameActive)
       },
       rowClick(e, row) {

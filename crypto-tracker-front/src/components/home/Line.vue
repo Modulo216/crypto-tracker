@@ -25,8 +25,6 @@ import {
   CategoryScale,
   PointElement
 } from 'chart.js'
-import eachMonthOfInterval from 'date-fns/eachMonthOfInterval'
-import chroma from "chroma-js";
 ChartJS.register(
   Title,
   Tooltip,
@@ -57,7 +55,7 @@ export default {
     },
     height: {
       type: Number,
-      default: 600
+      default: 500
     },
     cssClasses: {
       default: '',
@@ -73,12 +71,20 @@ export default {
     },
     items: Array
   },
+  created() {
+    this.populateChart()    
+  },
   watch: {
     items(newItems) {
+      this.populateChart()
+    }
+  },
+  methods: {
+    populateChart() {
       this.chartData.datasets[0].data = []
       this.chartData.labels = []
-      newItems.forEach(i => {
-        this.chartData.datasets[0].data.push(i.sum.toFixed(2))
+      this.items.forEach(i => {
+        this.chartData.datasets[0].data.push(Math.round(i.sum))
         this.chartData.labels.push(i.date)
       })
     }
@@ -89,9 +95,6 @@ export default {
         labels: [],
         datasets: [
           {
-            lineTension: 0.5,
-            label: 'Rewards',
-            borderDash: [1, 1],
             backgroundColor: [],
             data: [],
             borderColor: "black",
@@ -102,6 +105,10 @@ export default {
         plugins: { legend: { display: false } },
         responsive: true,
         maintainAspectRatio: false,
+        scales: {
+          x: { ticks: { color: 'white' } },
+          y: { ticks: { color: 'green' } },
+        }
       }
     }
   }

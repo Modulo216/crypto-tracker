@@ -2,23 +2,14 @@
   <v-container fluid>
     <v-row>
       <v-col cols="1">
-        <month-picker :trxs="this.allRewards" @monthClick="onMonthClick" />
+        <month-picker :trxs="allRewards" @monthClick="onMonthClick" />
       </v-col>
       <v-col cols="6">
         <rewards-table :rewards="rewards" :monthNameActive="monthNameActive" @refreshRewards="onRefreshRewards" />
       </v-col>
       <v-col cols="5">
-        <v-data-table
-          @click:row="rowClick"
-          single-select
-          dark
-          hide-default-footer
-          dense
-          disable-pagination
-          :headers="[{ text: 'Coin', value: 'coin' },{ text: 'Amount', value: 'amount' },{ text: 'Sum', value: 'sum' },{ text: 'Value', value: 'val' }]"
-          :items="coinsSum"
-          item-key="coin"
-          class="elevation-10 row-pointer">
+        <v-data-table @click:row="rowClick" single-select dark hide-default-footer dense disable-pagination :items="coinsSum" item-key="coin" class="elevation-10 row-pointer"
+          :headers="[{ text: 'Coin', value: 'coin' },{ text: 'Amount', value: 'amount' },{ text: 'Sum', value: 'sum' },{ text: 'Value', value: 'val' }]">
           <template v-slot:[`item.amount`]="{ item }">
             <span>{{ Number((item.amount).toFixed(8)) }}</span>
           </template>
@@ -45,7 +36,6 @@
 import MonthPicker from '../components/shared/MonthPicker'
 import RewardsTable from '../components/rewards/RewardsTable'
 import { getCoinPrice } from '../api/endpoints/coinbase'
-import { getRewards, getInterests } from '../api/apollo'
 import { refreshRewards } from '../api/endpoints/rewards'
 import Line from '../components/rewards/charts/Line'
 import dateMixin from '@/mixins/datesMixin'
@@ -57,22 +47,26 @@ export default {
   },
   mixins: [dateMixin],
   data: () => ({
-    allRewards: [],
     rewards: [],
     monthNameActive: '',
-    interests: [],
     coinsSum: [],
     selectedRow: undefined
   }),
   created() {
-    this.loadRewards()
-    getInterests().then(r => {
-      this.interests = [...r.filter(r => r.isReward).map(r => r.name)]
-    })
+    this.loadRewards()    
+  },
+  computed: {
+    allRewards() {
+      return this.$store.state.allRewards
+    }
+  },
+  watch: {
+    allRewards(newAllTheRewards) {
+      this.loadRewards()
+    }
   },
   methods: {
-    async loadRewards() {
-      this.allRewards = await getRewards()
+    loadRewards() {
       this.onMonthClick(this.monthNameActive !== '' ? this.monthNameActive : {month: new Date().getUTCMonth(), year: new Date().getUTCFullYear()})
     },
     getAsCurrency(numb) {
@@ -96,7 +90,7 @@ export default {
       }
     },
     async onRefreshRewards(callback) {
-      let coinPrices = await getCoinPrice(new Set(this.allRewards.filter(t => this.interests.includes(t.coin)).map(t => t.coin)))
+      let coinPrices = await getCoinPrice(this.$store.state.interests.filter(r => r.isReward).map(r => r.name))
       coinPrices.map(p => p.data.data).forEach(p => {
         let coinSum = this.coinsSum.find(s => s.coin === p.base)
         if(coinSum) {
@@ -107,7 +101,7 @@ export default {
       
       let res = await refreshRewards()
       if(res.status === 200) {
-        this.loadRewards()
+        this.$store.dispatch('populateRewards')
         callback("done")
       } else {
         alert("PROBLEM")

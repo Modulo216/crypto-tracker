@@ -24,9 +24,10 @@ import {
   CategoryScale
 } from 'chart.js'
 import ChartDataLabels from 'chartjs-plugin-datalabels'
-ChartJS.register(Title, Tooltip, Legend, ArcElement, CategoryScale, ChartDataLabels)
+import zoomPlugin from 'chartjs-plugin-zoom';
+ChartJS.register(Title, Tooltip, Legend, ArcElement, CategoryScale, ChartDataLabels, zoomPlugin)
 ChartJS.defaults.set('plugins.datalabels', { color: '#FFF' })
-ChartJS.defaults.set('font', { size: 14 })
+ChartJS.defaults.set('font', { size: 12 })
 
 export default {
   name: 'PieChart',
@@ -67,7 +68,7 @@ export default {
   data() {
     return {
       chartData: {
-        labels: [ ...this.$store.getters.getCategories ],
+        labels: [],
         datasets: [
           {
             backgroundColor: [...this.getColors()],

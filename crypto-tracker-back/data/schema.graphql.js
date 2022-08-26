@@ -1,6 +1,18 @@
 import { gql } from "apollo-server-express"
 
 export const typeDefs = gql`
+  type PriceHistory {
+    id: ID
+    date: String
+    coin: String
+    price: String
+  }
+  input PriceHistoryInput {
+    id: ID
+    date: String
+    coin: String
+    price: String
+  }
   type Checking {
     id: ID
     date: String
@@ -146,11 +158,15 @@ export const typeDefs = gql`
     trxExists: Int
     rewardExists: Int
     getTaxes: [Tax]
+    findPriceHistory(priceHistory: PriceHistoryInput): PriceHistory
     getInvestments: [Investment]
     getRewards: [Reward]
+    getPriceHistory: [PriceHistory]
   }
   type Mutation {
     addChecking(checking: CheckingInput): Checking
+    addPriceHistory(priceHistory: PriceHistoryInput): PriceHistory
+    addPriceHistoryMany(priceHistories: [[Float]]): ID
     updateChecking(checking: CheckingInput): Checking
     addInterest(interest: InterestInput): Interest
     updateInterest(interest: InterestInput): Interest
@@ -164,5 +180,6 @@ export const typeDefs = gql`
     addInvestment(investment: InvestmentInput): Investment
     addInvestmentImport(investment: InvestmentInput): Investment
     updateTax(tax: TaxInput): Tax
+    deletePriceHistoryMany(priceHistory: PriceHistoryInput): ID
   }
 `

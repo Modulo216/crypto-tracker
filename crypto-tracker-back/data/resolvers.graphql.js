@@ -1,4 +1,6 @@
-import { Interest, Trx, Checking, Tax, Reward, Investment } from "../db/dbConnector.js"
+import { Interest, Trx, Checking, Tax, Reward, Investment, PriceHistory } from "../db/dbConnector.js"
+const { isBefore } = require('date-fns')
+const formatISO = require('date-fns/formatISO')
 
 export const resolvers = {
   Query: {
@@ -7,6 +9,9 @@ export const resolvers = {
     },
     findInterest: async (root, { interest }) => {
       return await Interest.findOne({ name: interest.name })
+    },
+    findPriceHistory: async (root, query) => {
+      return await PriceHistory.findOne({...query})
     },
     getTrxs: async (root) => {
       return await Trx.find()
@@ -43,6 +48,12 @@ export const resolvers = {
       rewards.sort((d1, d2) => new Date(d1.updatedAt).getTime() - new Date(d2.updatedAt).getTime())
       
       return rewards
+    },
+    getPriceHistory: async (root) => {
+      let priceHistory = await PriceHistory.find()
+      priceHistory.sort((d1, d2) => new Date(d1.date).getTime() - new Date(d2.date).getTime())
+      
+      return priceHistory
     }
   },
   Mutation: {
@@ -51,6 +62,38 @@ export const resolvers = {
       const newChecking = new Checking({ ...rest })
       
       return await newChecking.save()
+    },
+    addPriceHistory: async (root, { priceHistory }) => {
+      const { ...rest } = priceHistory
+      const newPriceHistory = new PriceHistory({ ...rest })
+      
+      return await newPriceHistory.save()
+    },
+    deletePriceHistoryMany: async (root, { priceHistory }) => {
+      let priceHistories = await PriceHistory.find()
+      let toDel = priceHistories.filter(i => isBefore(getDateAsUtc(i.date), getDateAsUtc(priceHistory.date)) && i.coin === priceHistory.coin)
+
+      toDel.forEach(async p => {
+        await PriceHistory.findByIdAndRemove(p.id)
+      })
+    },
+    addPriceHistoryMany: async (root, {coin, priceHistories}) => {  
+      let arr = []
+
+      for (const p of priceHistories) {
+        let then = formatISO(new Date(p[0])).slice(0, 10)
+        let exists = await resolvers.Query.findPriceHistory(root, {date: then, coin: coin})
+        if(formatISO(new Date()).slice(0, 10) !== then && exists === null) {
+          let priceHistory = new PriceHistory({date: then, price: p[1].toString(), coin: coin})
+          arr.push(priceHistory)
+        }
+      }
+
+      if(arr.length > 0) {
+        await PriceHistory.insertMany(arr)
+      }
+
+      return arr
     },
     addRewardImport: async (root, { reward }) => {
       const { ...rest } = reward
@@ -111,4 +154,9 @@ export const resolvers = {
       return await Tax.findByIdAndUpdate(tax.id, tax, { new: true })
     },
   },
+}
+
+function getDateAsUtc(d) {
+  let n = new Date(d)
+  return new Date(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate())
 }

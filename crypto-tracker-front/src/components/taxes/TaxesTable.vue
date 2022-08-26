@@ -2,19 +2,7 @@
   <v-container class="pa-1">
     <v-row class="text-center">
       <v-col cols="12">
-        <v-data-table
-          dark
-          dense
-          :loading="loadingTaxes"
-          :sort-by.sync="sortBy"
-          :sort-desc.sync="sortDesc"
-          :headers="headers"
-          :items="taxes"
-          item-key="id"
-          class="elevation-10"
-          hide-default-footer
-          disable-pagination
-        >
+        <v-data-table dark dense :loading="loadingTaxes" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :headers="headers" :items="taxes" item-key="id" class="elevation-10" hide-default-footer disable-pagination>
           <template v-slot:top>
             <v-toolbar flat>
               <v-toolbar-title>{{ monthNameActive !== 'ALL' ? `${$store.getters.getMonthNames[monthNameActive.month]} - ${monthNameActive.year}` : 'ALL' }} Taxes</v-toolbar-title>
@@ -196,7 +184,11 @@ export default {
     },
     formatDate(d) {
       let theDate = new Date(d)
-      return ("0" + (theDate.getUTCMonth() + 1)).slice(-2) + '/' + ("0" + theDate.getUTCDate()).slice(-2)
+      if(d.length === 10) {
+        return ("0" + (theDate.getUTCMonth() + 1)).slice(-2) + '/' + ("0" + theDate.getUTCDate()).slice(-2)
+      } else {
+        return ("0" + (theDate.getMonth() + 1)).slice(-2) + '/' + ("0" + theDate.getDate()).slice(-2)
+      }
     },
     async emitRefresh() {
       this.loadingTaxes = true

@@ -74,24 +74,32 @@ export default {
     },
     allRewards: Array
   },
+  created() {
+    this.populateChart()    
+  },
   watch: {
     allRewards(newAllRewards) {
+      this.populateChart()
+    }
+  },
+  methods: {
+    populateChart() {
       this.chartData.datasets[0].data = []
       this.chartData.datasets[1].data = []
       this.chartData.labels = []
       let monthYears = []
 
-      newAllRewards.forEach(t => {
+      this.allRewards.forEach(t => {
         const date = new Date(t.updatedAt)
         let obj = {month: date.getUTCMonth(), year: date.getUTCFullYear()}
         monthYears.findIndex(x => x.month === obj.month && x.year === obj.year) === -1 ? monthYears.push(obj) : undefined
       })
 
       monthYears.forEach(m => {
-        this.chartData.datasets[0].data.push(parseInt(newAllRewards.filter(t => this.dateIsInRange(t.updatedAt, m)).map(w => parseFloat(w.value)).reduce((prev, next) => prev + next, 0)))
+        this.chartData.datasets[0].data.push(parseInt(this.allRewards.filter(t => this.dateIsInRange(t.updatedAt, m)).map(w => parseFloat(w.value)).reduce((prev, next) => prev + next, 0)))
         
         let amount = 0
-        newAllRewards.filter(t => this.dateIsInRange(t.updatedAt, m)).forEach(r => {
+        this.allRewards.filter(t => this.dateIsInRange(t.updatedAt, m)).forEach(r => {
           let coinCookie = $cookies.get(r.coin)
           amount = amount + (coinCookie * r.amount)
         })

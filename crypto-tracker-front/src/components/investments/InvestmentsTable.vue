@@ -2,19 +2,7 @@
   <v-container class="pa-1">
     <v-row class="text-center">
       <v-col cols="12">
-        <v-data-table
-          dark
-          dense
-          :loading="loadingInvestments"
-          :sort-by.sync="sortBy"
-          :sort-desc.sync="sortDesc"
-          :headers="headers"
-          :items="investments"
-          item-key="id"
-          class="elevation-10"
-          hide-default-footer
-          disable-pagination
-        >
+        <v-data-table dark dense :loading="loadingInvestments" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :headers="headers" :items="investments" item-key="id" class="elevation-10" hide-default-footer disable-pagination>
           <template v-slot:top>
             <v-toolbar flat>
               <v-toolbar-title>{{ monthNameActive !== 'ALL' ? `${$store.getters.getMonthNames[monthNameActive.month]} - ${monthNameActive.year}` : 'ALL' }} Investments</v-toolbar-title>
@@ -57,8 +45,7 @@
         </v-data-table>
       </v-col>
     </v-row>
-
-    <v-dialog v-model="dialog" max-width="800px">
+    <v-dialog v-model="dialog" max-width="800px" persistent>
       <v-card>
         <v-card-title>
           <span class="text-h5">New Investment</span>
@@ -91,7 +78,6 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-
   </v-container>
 </template>
 <script>
@@ -146,8 +132,8 @@ export default {
     },
     formatDate(d) {
       let theDate = new Date(d)
-      return ("0" + (theDate.getUTCMonth() + 1)).slice(-2) + '/' + ("0" + theDate.getUTCDate()).slice(-2) +
-        '/' + theDate.getUTCFullYear().toString().slice(-2)
+      return ("0" + (theDate.getMonth() + 1)).slice(-2) + '/' + ("0" + theDate.getDate()).slice(-2) +
+        '/' + theDate.getFullYear().toString().slice(-2)
     },
     async emitRefresh() {
       this.loadingInvestments = true

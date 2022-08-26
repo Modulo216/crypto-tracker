@@ -24,7 +24,6 @@ import {
   CategoryScale,
   LinearScale
 } from 'chart.js'
-import eachMonthOfInterval from 'date-fns/eachMonthOfInterval'
 import chroma from "chroma-js";
 import dateMixin from '@/mixins/datesMixin'
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
@@ -66,13 +65,21 @@ export default {
     },
     allTaxes: Array
   },
+  created() {
+    this.populateChart()    
+  },
   watch: {
     allTaxes(newAllTaxes) {
+      this.populateChart()
+    }
+  },
+  methods: {
+    populateChart() {
       this.chartData.datasets[0].data = []
       this.chartData.labels = []
       let monthYears = []
 
-      newAllTaxes.forEach(t => {
+      this.allTaxes.forEach(t => {
         const date = new Date(t.updatedAt)
         let obj = {month: date.getUTCMonth(), year: date.getUTCFullYear()}
         monthYears.findIndex(x => x.month === obj.month && x.year === obj.year) === -1 ? monthYears.push(obj) : undefined
@@ -80,7 +87,7 @@ export default {
 
       monthYears.forEach(m => {
         this.chartData.labels.push(`${this.$store.getters.getMonthNames[m.month]} ${m.year.toString().slice(-2)}`)
-        this.chartData.datasets[0].data.push(parseInt(newAllTaxes.filter(t => this.dateIsInRange(t.updatedAt, m)).map(w => parseFloat(w.value)).reduce((prev, next) => prev + next, 0)))
+        this.chartData.datasets[0].data.push(parseInt(this.allTaxes.filter(t => this.dateIsInRange(t.updatedAt, m)).map(w => parseFloat(w.value)).reduce((prev, next) => prev + next, 0)))
         this.chartData.datasets[0].backgroundColor.push(chroma.random())
       })
     }

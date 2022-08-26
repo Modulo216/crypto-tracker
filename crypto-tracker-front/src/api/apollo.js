@@ -16,6 +16,7 @@ const updateCheckingGql = require('./gql/updateChecking.gql')
 const getCheckingGql = require('./gql/getChecking.gql')
 const getTaxesGql = require('./gql/getTaxes.gql')
 const getRewardsGql = require('./gql/getRewards.gql')
+const getPriceHistoryGql = require('./gql/getPriceHistory.gql')
 const getInvestmentsGql = require('./gql/getInvestments.gql')
 const addInvestmentGql = require('./gql/addInvestment.gql')
 const { isAfter } = require('date-fns')
@@ -105,6 +106,11 @@ async function getTaxes() {
   return res.data.getTaxes
 }
 
+async function getPriceHistory() {
+  const res = await apolloClient.query({ query: getPriceHistoryGql })
+  return res.data.getPriceHistory
+}
+
 async function getInvestments() {
   const res = await apolloClient.query({ query: getInvestmentsGql })
   return res.data.getInvestments
@@ -151,4 +157,4 @@ async function deleteChecking(id) {
 }
 
 export { getInterests, addInterest, getTrxs, updateTrx, deleteInterest, getRewards, getInvestments, addInvestment,
-  updateInterest, getChecking, addChecking, updateChecking, deleteChecking, getTaxes, updateTax, addTax }
+  getPriceHistory, updateInterest, getChecking, addChecking, updateChecking, deleteChecking, getTaxes, updateTax, addTax }
