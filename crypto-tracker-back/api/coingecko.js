@@ -8,6 +8,11 @@ const axiosClient = axios.create({
   }
 })
 
-export function getCoinHistory(nickName) {
-  return axiosClient.get(`api/v3/coins/${nickName}/market_chart?vs_currency=USD&days=5&interval=daily`)
+let getCoinHistory = {};
+getCoinHistory.get = async (nickName) => {
+  console.log("GECKO", nickName)
+  await new Promise(resolve => setTimeout(resolve, 2500))
+  return await axiosClient.get(`api/v3/coins/${nickName}/market_chart?vs_currency=USD&days=5&interval=daily`)
 }
+
+module.exports = getCoinHistory;

@@ -153,6 +153,10 @@ export const resolvers = {
     updateTax: async (root, { tax }) => {
       return await Tax.findByIdAndUpdate(tax.id, tax, { new: true })
     },
+    delReward: async (root, { req }) => {
+      const { ...rest } = req
+      return await Tax.deleteMany({ exchange: "Celsius" })
+    }
   },
 }
 

@@ -27,7 +27,7 @@
           :headers="[{ text: 'Coin', value: 'coin' },{ text: 'Price', value: 'price' },{ text: 'Value', value: 'value' },{ text: 'Gain', value: 'gain' }]"
           :items="$store.state.homeCoinsSum"
           item-key="coin"
-          class="elevation-10">
+          class="elevation-10 home-table">
           <template v-slot:[`item.value`]="{ item }">
             <span>{{ getAsCurrency(item.value) }}</span>
           </template>
@@ -75,7 +75,6 @@ export default {
     CoinHistoryLine
   },
   async created() {
-    // this.sumCoins()
     getPriceHistory().then(hist => {
       this.parsePriceHistory(hist)
     })
@@ -150,9 +149,9 @@ export default {
     },
     async refreshValue() {
       this.loading = true
-      refreshPriceHistory().then(hist => {
-        this.parsePriceHistory(hist.data.flat())
-      })
+
+      let priceHistory = await refreshPriceHistory()
+      this.parsePriceHistory(priceHistory.data.flat())
 
       let coinPrices = await getCoinPrice(this.$store.state.interests.filter(r => !(r.isTax && (r.soldTaxForBtc || r.soldTaxForEth) && !r.isReward)).map(r => r.name))
       coinPrices.map(p => p.data.data).forEach(p => {
@@ -177,3 +176,8 @@ export default {
   }
 }
 </script>
+<style>
+  .home-table > .v-data-table__wrapper > table > tbody > tr > td{
+    height: 24px !important;
+  }
+</style>

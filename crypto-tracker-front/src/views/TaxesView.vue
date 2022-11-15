@@ -164,7 +164,7 @@ export default {
       this.$store.commit('addTax', item)
     },
     async onRefreshTax(callback) {
-      let coinPrices = await getCoinPrice([...this.$store.state.interests.filter(r => r.isTax && !r.soldTaxForBtc && !r.soldTaxForEth).map(r => r.name), 'BTC'])
+      let coinPrices = await getCoinPrice([...this.$store.state.interests.filter(r => r.isTax && !r.soldTaxForBtc && !r.soldTaxForEth).map(r => r.name), 'BTC', 'ETH'])
       coinPrices.map(p => p.data.data).forEach(p => {
         let coinSum = this.coinsSum.find(s => s.coin === p.base)
         if(coinSum) {
@@ -202,7 +202,7 @@ export default {
         this.coinsSum.push({ coin: a, idx: idx++, sum: 
           this.taxes.filter(t => t.coin === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0),
           amount: this.taxes.filter(t => t.coin === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0),
-          val: (coinCookie && this.$store.state.interests.filter(r => r.isTax && !r.soldTaxForBtc && !r.soldTaxForEth).map(r => r.name).includes(a)) || a === 'BTC' ? this.taxes.filter(t => t.coin === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0) * coinCookie : 0
+          val: (coinCookie && this.$store.state.interests.filter(r => r.isTax && !r.soldTaxForBtc && !r.soldTaxForEth).map(r => r.name).includes(a)) || a === 'BTC' || a === 'ETH' ? this.taxes.filter(t => t.coin === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0) * coinCookie : 0
         })
       })
     },

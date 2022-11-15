@@ -8,6 +8,9 @@
               <v-toolbar-title>Interests</v-toolbar-title>
               <v-divider class="mx-4" inset vertical />
               <v-spacer></v-spacer>
+              <v-btn color="primary" dark class="mb-2 mr-5" @click="delReward()">
+                Delete Records
+              </v-btn>
               <v-dialog v-model="dialog" max-width="800px" persistent>
                 <template v-slot:activator="{ on, attrs }">
                   <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on">
@@ -82,7 +85,7 @@
 </template>
 
 <script>
-import { addInterest, deleteInterest, updateInterest } from '../../api/apollo'
+import { addInterest, deleteInterest, updateInterest, delReward } from '../../api/apollo'
   export default {
     name: 'interests-table',
     data: () => ({
@@ -116,6 +119,7 @@ import { addInterest, deleteInterest, updateInterest } from '../../api/apollo'
       },
     }),
     methods: {
+      delReward,
       editItem (item) {
         this.editedItem = Object.assign({}, item)
         this.dialog = true

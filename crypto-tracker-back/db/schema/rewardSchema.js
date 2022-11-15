@@ -24,5 +24,9 @@ exports.rewardSchema = new mongoose.Schema({
   },
   subtitle: {
     type: String
+  },
+  liquidation : {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Liquidation'
   }
 })

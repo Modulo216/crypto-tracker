@@ -1,0 +1,5 @@
+mutation delReward($id: ID) {
+  delReward(id: $id) {
+    id
+  }
+}

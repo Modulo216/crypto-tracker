@@ -4,7 +4,7 @@ const { ApolloServer } = require('apollo-server-express')
 const { resolvers } = require("./data/resolvers.graphql")
 const { typeDefs } = require("./data/schema.graphql")
 const { getTrxs, getMultiWalletTrxes } = require("./api/coinbase")
-const { getCoinHistory } = require("./api/coingecko")
+const getCoinHistory = require("./api/coingecko")
 const isAfter = require('date-fns/isAfter')
 const endOfYesterday = require('date-fns/endOfYesterday')
 const formatISO = require('date-fns/formatISO')
@@ -16,19 +16,19 @@ const server = new ApolloServer({ typeDefs, resolvers })
 server.applyMiddleware({ app })
 
 app.get('/update-history', async (req, res) => {
-  let exists = await resolvers.Query.findPriceHistory(null, { date: formatISO(endOfYesterday()).slice(0, 10) })
+  let interests = await resolvers.Query.getInterests(null, { $and: [{ name: { $ne: 'USDC' } }, { $or: [ 
+    { $and: [{ soldTaxForBtc: false }, { soldTaxForEth: false }] }, { isReward: true } ]} ] })
   let retVal = []
-  if(exists === null) {
-    let interests = await resolvers.Query.getInterests(null, { $and: [{ name: { $ne: 'USDC' } }, { $or: [ 
-      { $and: [{ soldTaxForBtc: false }, { soldTaxForEth: false }] }, { isReward: true } ]} ] })
-    
-    for (const interest of interests) {
-      let result = await getCoinHistory(interest.nickName)
+  for (const interest of interests) {
+    let exists = await resolvers.Query.findPriceHistory(null, { $and: [{ date: formatISO(endOfYesterday()).slice(0, 10) }, { coin: interest.name }]})
+    if(exists === null) {
+      let result = await getCoinHistory.get(interest.nickName)
       let history = await resolvers.Mutation.addPriceHistoryMany(null, { coin: interest.name, priceHistories: result.data.prices })
       retVal.push(history)
     }
-    retVal.flat()
   }
+  retVal.flat()
+  console.log("UPDATE-HISTORY", retVal)
   res.send(retVal)
 })
 
@@ -104,6 +104,7 @@ app.get('/trxs', async (req, res) => {
 
 app.get('/taxes', async (req, res) => {
   let interests = await resolvers.Query.getInterests(null, { isTax: true })
+  interests.push({name: 'ETH2'})
   let rows = await resolvers.Query.taxExists()
 
   let taxes = await getMultiWalletTrxes(interests.map(i => i.name), rows === 0)
@@ -117,6 +118,7 @@ app.get('/taxes', async (req, res) => {
         (t.coin === 'USDC' && txn.type !== 'interest')) {
         return
       }
+      t.coin = t.coin === 'ETH2' ? 'ETH' : t.coin
 
       let tax = { exchange: "Coinbase", coin: t.coin }
       tax.updatedAt = txn.created_at

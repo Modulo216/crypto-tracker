@@ -53,13 +53,14 @@ async function getMultiWalletTrxes(interests, loadAll) {
   let retVal = []
 
   for (const wallet of filteredAccts) {
+    console.log("COINBASE", wallet.currency)
     if(!interests.includes(wallet.currency)) {
       continue
     }
 
     const getTxns = transactions(wallet)
     if(loadAll) {
-      let page = { next_uri: null, limit: 100 }, trxs = []
+      let page = { next_uri: null, limit: 50 }, trxs = []
       do {
         let {txns, pagination} = await getTxns(page)
         page = pagination
