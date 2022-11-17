@@ -20,9 +20,16 @@ const getPriceHistoryGql = require('./gql/getPriceHistory.gql')
 const getInvestmentsGql = require('./gql/getInvestments.gql')
 const addInvestmentGql = require('./gql/addInvestment.gql')
 const delRewardGql = require('./gql/delReward.gql')
+const addLiquidationGql = require('./gql/addLiquidation.gql')
+const getLiquidationGql = require('./gql/getLiquidation.gql')
 const { isAfter } = require('date-fns')
 
 const httpLink = createHttpLink({ uri: 'http://localhost:5001/graphql' })
+
+async function getLiquidation() {
+  const res = await apolloClient.query({ query: getLiquidationGql })
+  return res.data.getLiquidation
+}
 
 async function delReward(id) {
   const result = await apolloClient.mutate({
@@ -31,7 +38,6 @@ async function delReward(id) {
   })
   return result.data.delReward
 }
-
 
 const defaultOptions = {
   watchQuery: {
@@ -82,6 +88,14 @@ async function addInvestment(investment) {
     variables: { investment }
   })
   return result.data.addInvestment
+}
+
+async function addLiquidation(liquidation) {
+  const result = await apolloClient.mutate({
+    mutation: addLiquidationGql,
+    variables: { liquidation }
+  })
+  return result.data.addLiquidation
 }
 
 async function addChecking(checking) {
@@ -167,4 +181,4 @@ async function deleteChecking(id) {
 }
 
 export { getInterests, addInterest, getTrxs, updateTrx, deleteInterest, getRewards, getInvestments, addInvestment,
-  delReward, getPriceHistory, updateInterest, getChecking, addChecking, updateChecking, deleteChecking, getTaxes, updateTax, addTax }
+  getLiquidation, addLiquidation, delReward, getPriceHistory, updateInterest, getChecking, addChecking, updateChecking, deleteChecking, getTaxes, updateTax, addTax }

@@ -1,9 +1,11 @@
 import { gql } from "apollo-server-express"
 
 export const typeDefs = gql`
-  enum LiquidType {
-    Tax
-    Reward
+  type RewardOrTax {
+    coin: String
+    amount: String
+    value: String
+    updatedAt: String
   }
   type Liquidation {
     id: ID
@@ -13,7 +15,7 @@ export const typeDefs = gql`
     coin: String
     coinAmount: String
     model_type: String
-    liquid: [LiquidType]
+    liquid: [RewardOrTax]
   }
   input LiquidationInput {
     id: ID
@@ -23,7 +25,7 @@ export const typeDefs = gql`
     coin: String
     coinAmount: String
     model_type: String
-    liquid: [LiquidType]
+    liquid: [ID]
   }
   type PriceHistory {
     id: ID
@@ -59,7 +61,6 @@ export const typeDefs = gql`
     value: String
     title: String
     subtitle: String
-    liquidation: Liquidation
   }
   input RewardInput {
     id: ID
@@ -187,8 +188,10 @@ export const typeDefs = gql`
     getInvestments: [Investment]
     getRewards: [Reward]
     getPriceHistory: [PriceHistory]
+    getLiquidation: [Liquidation]
   }
   type Mutation {
+    addLiquidation(liquidation: LiquidationInput): Liquidation
     addChecking(checking: CheckingInput): Checking
     addPriceHistory(priceHistory: PriceHistoryInput): PriceHistory
     addPriceHistoryMany(priceHistories: [[Float]]): ID

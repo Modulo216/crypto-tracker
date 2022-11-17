@@ -1,4 +1,4 @@
-import { Interest, Trx, Checking, Tax, Reward, Investment, PriceHistory } from "../db/dbConnector.js"
+import { Interest, Trx, Checking, Tax, Reward, Investment, PriceHistory, Liquidation } from "../db/dbConnector.js"
 const { isBefore } = require('date-fns')
 const formatISO = require('date-fns/formatISO')
 
@@ -54,9 +54,18 @@ export const resolvers = {
       priceHistory.sort((d1, d2) => new Date(d1.date).getTime() - new Date(d2.date).getTime())
       
       return priceHistory
+    },
+    getLiquidation: async (root) => {
+      let liqus = await Liquidation.find().populate('liquid')
+      return liqus
     }
   },
   Mutation: {
+    addLiquidation: async (root, { liquidation }) => {
+      const { ...rest } = liquidation
+      const newLiquidation = new Liquidation({ ...rest })
+      return await newLiquidation.save()
+    },
     addChecking: async (root, { checking }) => {
       const { ...rest } = checking
       const newChecking = new Checking({ ...rest })
@@ -155,7 +164,7 @@ export const resolvers = {
     },
     delReward: async (root, { req }) => {
       const { ...rest } = req
-      return await Tax.deleteMany({ exchange: "Celsius" })
+      //return await Investment.deleteMany({ coin: "BTC", updatedAt: /2022-04/i })
     }
   },
 }

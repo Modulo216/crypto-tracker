@@ -1,0 +1,5 @@
+query {
+  getLiquidation {
+    id, event, usdAmount, updatedAt, coin, coinAmount, model_type, liquid { coin, amount, value, updatedAt }
+  }
+}

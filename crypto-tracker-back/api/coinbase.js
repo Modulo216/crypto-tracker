@@ -21,7 +21,7 @@ async function getTrxs(walletId, loadAll) {
       }
     } while (page !== undefined && page.next_uri !== null)
   } else {
-    let { txns } = await getTxns({ next_uri: null, limit: 25 })
+    let { txns } = await getTxns({ next_uri: null, limit: 12 })
     if(txns !== null && txns.length > 0) {
       trxs.push(...txns)
     }

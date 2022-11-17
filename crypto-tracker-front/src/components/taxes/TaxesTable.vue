@@ -2,7 +2,7 @@
   <v-container class="pa-1">
     <v-row class="text-center">
       <v-col cols="12">
-        <v-data-table dark dense :loading="loadingTaxes" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :headers="headers" :items="taxes" item-key="id" class="elevation-10" hide-default-footer disable-pagination>
+        <v-data-table v-model="selected" show-select dark dense :loading="loadingTaxes" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :headers="headers" :items="taxes" item-key="id" class="elevation-10" hide-default-footer disable-pagination>
           <template v-slot:top>
             <v-toolbar flat>
               <v-toolbar-title>{{ monthNameActive !== 'ALL' ? `${$store.getters.getMonthNames[monthNameActive.month]} - ${monthNameActive.year}` : 'ALL' }} Taxes</v-toolbar-title>
@@ -25,8 +25,14 @@
                   </v-icon>
                 </v-btn>
               </download-excel>
+              <v-btn color="primary" dark class="ml-2">
+                <v-icon dark>
+                  mdi-water
+                </v-icon>
+              </v-btn>
             </v-toolbar>
           </template>
+          <template v-slot:[`header.data-table-select`]></template>
           <template v-slot:[`item.updatedAt`]="{ item }">
             <span>{{ formatDate(item.updatedAt) }}</span>
           </template>
@@ -130,6 +136,7 @@ export default {
     exchanges: Array
   },
   data: () => ({
+    selected: [],
     sortBy: 'updatedAt',
     sortDesc: true,
     headers: [

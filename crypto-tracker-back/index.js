@@ -56,7 +56,7 @@ app.get('/rewards', async (req, res) => {
 app.get('/investments', async (req, res) => {
   let btcWallet = await resolvers.Query.findInterest(null, { interest : { name: 'BTC' }})
   let ethWallet = await resolvers.Query.findInterest(null, { interest : { name: 'ETH' }})
-  let trxs = await Promise.all([getTrxs(btcWallet.cbaseWalletId, true), getTrxs(ethWallet.cbaseWalletId, true)])
+  let trxs = await Promise.all([getTrxs(btcWallet.cbaseWalletId, false), getTrxs(ethWallet.cbaseWalletId, false)])
 
   trxs.forEach((allTrxs, index, array) => {
     allTrxs.filter(txn => isAfter(new Date(txn.created_at), new Date(2021, 7, 1)) && txn.type === "buy").forEach(trx => {
@@ -65,11 +65,11 @@ app.get('/investments', async (req, res) => {
       }})
     })
 
-    allTrxs.filter(txn => isAfter(new Date(txn.created_at), new Date(2021, 7, 1)) && txn.details.title.includes('Converted to')).forEach(trx => {
-      resolvers.Mutation.addInvestmentImport(null, { investment: { exchangeId: trx.id, updatedAt: trx.created_at, coin: trx.amount.currency, title: trx.details.title,
-        subtitle: trx.details.payment_method_name, amount: trx.amount.amount, spent: '0.00', investType: 'convert', value: '0.00'
-      }})
-    })
+    // allTrxs.filter(txn => isAfter(new Date(txn.created_at), new Date(2021, 7, 1)) && txn.details.title.includes('Converted to')).forEach(trx => {
+    //   resolvers.Mutation.addInvestmentImport(null, { investment: { exchangeId: trx.id, updatedAt: trx.created_at, coin: trx.amount.currency, title: trx.details.title,
+    //     subtitle: trx.details.payment_method_name, amount: trx.amount.amount, spent: '0.00', investType: 'convert', value: '0.00'
+    //   }})
+    // })
 
     let atfTrxs = allTrxs.filter(txn => isAfter(new Date(txn.created_at), new Date(2021, 7, 1)) && txn.type === "advanced_trade_fill")
     new Set(atfTrxs.map(atf => atf.advanced_trade_fill.order_id)).forEach(a => {
