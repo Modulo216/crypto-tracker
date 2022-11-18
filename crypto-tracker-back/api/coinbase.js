@@ -60,7 +60,7 @@ async function getMultiWalletTrxes(interests, loadAll) {
 
     const getTxns = transactions(wallet)
     if(loadAll) {
-      let page = { next_uri: null, limit: 50 }, trxs = []
+      let page = { next_uri: null, limit: 100 }, trxs = []
       do {
         let {txns, pagination} = await getTxns(page)
         page = pagination

@@ -44,8 +44,8 @@ export const resolvers = {
       return investments
     },
     getRewards: async (root) => {
-      let rewards = await Reward.find()
-      rewards.sort((d1, d2) => new Date(d1.updatedAt).getTime() - new Date(d2.updatedAt).getTime())
+      let rewards = await Reward.find().populate('liquidation')
+      //rewards.sort((d1, d2) => new Date(d1.updatedAt).getTime() - new Date(d2.updatedAt).getTime())
       
       return rewards
     },
@@ -64,7 +64,14 @@ export const resolvers = {
     addLiquidation: async (root, { liquidation }) => {
       const { ...rest } = liquidation
       const newLiquidation = new Liquidation({ ...rest })
-      return await newLiquidation.save()
+      const liqu = await newLiquidation.save()
+
+      newLiquidation.liquid.forEach(async id => {
+        const reward = await Reward.findById(id)
+        reward.liquidation = liqu.id
+        await reward.save();
+      })
+      return liqu
     },
     addChecking: async (root, { checking }) => {
       const { ...rest } = checking

@@ -20,7 +20,7 @@
                   </v-icon>
                 </v-btn>
               </download-excel>
-              <v-btn color="primary" dark class="ml-2" @click="showLiquidationDialog = true">
+              <v-btn color="primary" :disabled="selected.length === 0" dark class="ml-2" @click="showLiquidationDialog = true">
                 <v-icon dark>
                   mdi-water
                 </v-icon>
@@ -28,6 +28,9 @@
             </v-toolbar>
           </template>
           <template v-slot:[`header.data-table-select`]></template>
+          <template v-slot:[`item.data-table-select`]="{ item, isSelected, select }">
+            <v-simple-checkbox :value="isSelected" :readonly="item.liquidation !== null" :disabled="item.liquidation !== null" @input="select($event)" />
+          </template>
           <template v-slot:[`item.updatedAt`]="{ item }">
             <span>{{ formatDate(item.updatedAt) }}</span>
           </template>
@@ -37,7 +40,7 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <liquidation-dialog v-model="showLiquidationDialog" :selected="selected" />
+    <liquidation-dialog v-model="showLiquidationDialog" :selected="selected" modelType="Reward" @savedLiquidation="(liq) => { selected.forEach(s => s.liquidation = liq);selected = [] }" />
   </v-container>
 </template>
 <script>

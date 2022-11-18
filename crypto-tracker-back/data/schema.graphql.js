@@ -9,21 +9,23 @@ export const typeDefs = gql`
   }
   type Liquidation {
     id: ID
+    taxable: Boolean
     event: String
     usdAmount: String
     updatedAt: String
-    coin: String
-    coinAmount: String
+    newCoin: String
+    newCoinAmount: String
     model_type: String
     liquid: [RewardOrTax]
   }
   input LiquidationInput {
     id: ID
+    taxable: Boolean
     event: String
     usdAmount: String
     updatedAt: String
-    coin: String
-    coinAmount: String
+    newCoin: String
+    newCoinAmount: String
     model_type: String
     liquid: [ID]
   }
@@ -61,6 +63,7 @@ export const typeDefs = gql`
     value: String
     title: String
     subtitle: String
+    liquidation: Liquidation
   }
   input RewardInput {
     id: ID

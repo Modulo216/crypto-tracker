@@ -1,19 +1,24 @@
 exports.liquidationSchema = void 0
 const mongoose = require('mongoose')
 exports.liquidationSchema = new mongoose.Schema({
-  event: {
+  taxable: { // always
+    type: Boolean,
+    default: false
+  },
+  event: { // always
+    type: String,
+    enum: ['Sell', 'Swap']
+  },
+  usdAmount: { // always (Proceeds) $1.12
     type: String
   },
-  usdAmount: {
+  updatedAt: { // always
     type: String
   },
-  updatedAt: {
+  newCoin: { // Swap -- drop down of interests
     type: String
   },
-  coin: {
-    type: String
-  },
-  coinAmount: {
+  newCoinAmount: { // Swap
     type: String
   },
   model_type: {

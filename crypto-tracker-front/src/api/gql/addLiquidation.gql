@@ -1,5 +1,5 @@
 mutation addLiquidation($liquidation: LiquidationInput!) {
   addLiquidation(liquidation: $liquidation ) {
-    id, event, usdAmount, updatedAt, coin, coinAmount, model_type, liquid { coin, amount, value, updatedAt }
+    id, taxable, event, usdAmount, updatedAt, newCoin, newCoinAmount, model_type, liquid { coin, amount, value, updatedAt }
   }
 }
