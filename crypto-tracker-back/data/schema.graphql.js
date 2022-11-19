@@ -87,6 +87,7 @@ export const typeDefs = gql`
     title: String
     subtitle: String
     activity: String
+    liquidation: Liquidation
   }
   input TaxInput {
     id: ID

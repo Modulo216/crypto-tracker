@@ -32,8 +32,8 @@ export const resolvers = {
       return rewards.length
     },
     getTaxes: async (root) => {
-      let taxes = await Tax.find()
-      taxes.sort((d1, d2) => new Date(d1.updatedAt).getTime() - new Date(d2.updatedAt).getTime())
+      let taxes = await Tax.find().populate('liquidation')
+      //taxes.sort((d1, d2) => new Date(d1.updatedAt).getTime() - new Date(d2.updatedAt).getTime())
       
       return taxes
     },
@@ -67,9 +67,15 @@ export const resolvers = {
       const liqu = await newLiquidation.save()
 
       newLiquidation.liquid.forEach(async id => {
-        const reward = await Reward.findById(id)
-        reward.liquidation = liqu.id
-        await reward.save();
+        if(liqu.model_type === 'Reward') {
+          const reward = await Reward.findById(id)
+          reward.liquidation = liqu.id
+          reward.save()
+        } else if (liqu.model_type === 'Tax') {
+          const tax = await Tax.findById(id)
+          tax.liquidation = liqu.id
+          tax.save()
+        }
       })
       return liqu
     },

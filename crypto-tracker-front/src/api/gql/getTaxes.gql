@@ -1,5 +1,5 @@
 query {
   getTaxes {
-    id, exchangeId, activity, amount, coin, exchange, subtitle, title, updatedAt, value
+    id, exchangeId, activity, amount, coin, exchange, subtitle, title, updatedAt, value, liquidation { taxable, event, usdAmount, updatedAt, newCoin, newCoinAmount } 
   }
 }

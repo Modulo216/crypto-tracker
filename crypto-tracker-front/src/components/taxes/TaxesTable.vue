@@ -25,7 +25,7 @@
                   </v-icon>
                 </v-btn>
               </download-excel>
-              <v-btn color="primary" dark class="ml-2">
+              <v-btn color="primary" :disabled="selected.length === 0 || !selected.map(i => i.coin).every((val, i, arr) => val === arr[0])" dark class="ml-2" @click="showLiquidationDialog = true">
                 <v-icon dark>
                   mdi-water
                 </v-icon>
@@ -33,6 +33,9 @@
             </v-toolbar>
           </template>
           <template v-slot:[`header.data-table-select`]></template>
+          <template v-slot:[`item.data-table-select`]="{ item, isSelected, select }">
+            <v-simple-checkbox :value="isSelected" :readonly="item.liquidation !== null" :disabled="item.liquidation !== null" @input="select($event)" />
+          </template>
           <template v-slot:[`item.updatedAt`]="{ item }">
             <span>{{ formatDate(item.updatedAt) }}</span>
           </template>
@@ -121,12 +124,13 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-
+    <liquidation-dialog v-model="showLiquidationDialog" :selected="selected" modelType="Tax" @savedLiquidation="(liq) => { selected.forEach(s => s.liquidation = liq);selected = [] }" />
   </v-container>
 </template>
 <script>
 import { updateTax, addTax } from '../../api/apollo'
 import { format, parseISO } from 'date-fns'
+import LiquidationDialog from '../liquidationDialog'
 export default {
   props: {
     taxes: Array,
@@ -135,8 +139,12 @@ export default {
     coins: Array,
     exchanges: Array
   },
+  components: {
+    LiquidationDialog
+  },
   data: () => ({
     selected: [],
+    showLiquidationDialog: false,
     sortBy: 'updatedAt',
     sortDesc: true,
     headers: [

@@ -20,7 +20,7 @@
                   </v-icon>
                 </v-btn>
               </download-excel>
-              <v-btn color="primary" :disabled="selected.length === 0" dark class="ml-2" @click="showLiquidationDialog = true">
+              <v-btn color="primary" :disabled="selected.length === 0 || !selected.map(i => i.coin).every((val, i, arr) => val === arr[0])" dark class="ml-2" @click="showLiquidationDialog = true">
                 <v-icon dark>
                   mdi-water
                 </v-icon>

@@ -16,8 +16,7 @@ const server = new ApolloServer({ typeDefs, resolvers })
 server.applyMiddleware({ app })
 
 app.get('/update-history', async (req, res) => {
-  let interests = await resolvers.Query.getInterests(null, { $and: [{ name: { $ne: 'USDC' } }, { $or: [ 
-    { $and: [{ soldTaxForBtc: false }, { soldTaxForEth: false }] }, { isReward: true } ]} ] })
+  let interests = await resolvers.Query.getInterests(null, { nickName: { $ne: '' } })
   let retVal = []
   for (const interest of interests) {
     let exists = await resolvers.Query.findPriceHistory(null, { $and: [{ date: formatISO(endOfYesterday()).slice(0, 10) }, { coin: interest.name }]})

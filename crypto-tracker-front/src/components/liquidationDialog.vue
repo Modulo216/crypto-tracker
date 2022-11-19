@@ -72,20 +72,14 @@ export default {
   },
   methods: {
     async save() {
-      if(this.selected.map(i => i.coin).every((val, i, arr) => val === arr[0])) {
-        const liq = { ...this.liqData, model_type: this.modelType, liquid: this.selected.map(s => s.id) }
-        if(this.liqData.event === 'Sell') {
-          delete liq.newCoin
-          delete liq.newCoinAmount
-        }
-        await addLiquidation(liq)
-        this.show = false
-        this.$emit('savedLiquidation', liq)
-      } else {
-        alert("Multiple Coins selected.")
+      const liq = { ...this.liqData, model_type: this.modelType, liquid: this.selected.map(s => s.id) }
+      if(this.liqData.event === 'Sell') {
+        delete liq.newCoin
+        delete liq.newCoinAmount
       }
-              // let res = await getLiquidation()
-        // console.log("T", res)
+      await addLiquidation(liq)
+      this.show = false
+      this.$emit('savedLiquidation', liq)
     }
   }
 }

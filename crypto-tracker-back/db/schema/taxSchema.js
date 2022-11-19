@@ -27,5 +27,9 @@ exports.taxSchema = new mongoose.Schema({
   },
   activity: {
     type: String
+  },
+  liquidation: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Liquidation'
   }
 })
