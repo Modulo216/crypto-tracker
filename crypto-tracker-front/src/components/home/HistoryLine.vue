@@ -75,15 +75,6 @@ export default {
   computed: {
     investments() {
       return this.$store.state.allInvestments
-    },
-    taxes() {
-      return this.$store.state.allTaxes
-    },
-    rewards() {
-      return this.$store.state.allRewards
-    },
-    interests() {
-      return this.$store.state.interests
     }
   },
   created() {

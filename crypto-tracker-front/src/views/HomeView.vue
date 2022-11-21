@@ -90,6 +90,9 @@ export default {
     rewards() {
       return this.$store.state.allRewards
     },
+    liquidation() {
+      return this.$store.state.allLiquidation
+    }
   },
   watch: {
     investments(newVal) {
@@ -99,7 +102,7 @@ export default {
   methods: {
     async onlyGains() {
       this.loading = true
-      let coinPrices = await getCoinPrice(this.$store.state.interests.filter(r => !(r.isTax && (r.soldTaxForBtc || r.soldTaxForEth) && !r.isReward)).map(r => r.name))
+      let coinPrices = await getCoinPrice(this.$store.state.interests.filter(r => r.nickName !== '').map(r => r.name))
       coinPrices.map(p => p.data.data).forEach(p => {
         $cookies.set(p.base, p.amount)
       })
@@ -110,15 +113,13 @@ export default {
       return ((item.price - item.oldPrice) / item.price) * 100
     },
     sumCoins() {
-      this.$store.state.interests.forEach(r => {
-        if(r.name === 'USDC' || (r.isTax && (r.soldTaxForBtc || r.soldTaxForEth) && !r.isReward)) {
-          return
-        }
+      this.$store.state.interests.filter(r => r.nickName !== '').forEach(r => {
 
         let coinCookie = $cookies.get(r.name) || 0
-        let amount = (this.rewards.filter(f => f.coin === r.name).map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0) +
+        let amount = (this.rewards.filter(f => f.coin === r.name && f.liquidation === null).map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0) +
             this.investments.filter(f => f.coin === r.name).map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0) +
-            this.taxes.filter(f => f.coin === r.name).map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0))
+            this.taxes.filter(f => f.coin === r.name && f.liquidation === null).map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0)) +
+            this.liquidation.filter(f => f.newCoin === r.name).map(f => parseFloat(f.newCoinAmount)).reduce((prev, next) => prev + next, 0)
         this.$store.commit('updateCoinsSum',
           { item: { coin: r.name, price: Number(coinCookie), amount: amount, value: amount * coinCookie,
             spent: this.investments.filter(f => f.coin === r.name).map(f => parseFloat(f.spent)).reduce((prev, next) => prev + next, 0) } 
@@ -133,9 +134,10 @@ export default {
     },
     parsePriceHistory(hist) {
       for (const p of hist) {
-        let coinSum = this.rewards.filter(i => (isBefore(new Date(i.updatedAt), this.getDateAsUtc(p.date)) || isSameDay(new Date(i.updatedAt), this.getDateAsUtc(p.date))) && i.coin === p.coin).map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0) +
-          this.taxes.filter(i => (isBefore(new Date(i.updatedAt), this.getDateAsUtc(p.date)) || isSameDay(new Date(i.updatedAt), this.getDateAsUtc(p.date))) && i.coin === p.coin).map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0) +
-          this.investments.filter(i => (isBefore(new Date(i.updatedAt), this.getDateAsUtc(p.date)) || isSameDay(new Date(i.updatedAt), this.getDateAsUtc(p.date))) && i.coin === p.coin).map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0)
+        let coinSum = this.rewards.filter(i => (isBefore(new Date(i.updatedAt), this.getDateAsUtc(p.date)) || isSameDay(new Date(i.updatedAt), this.getDateAsUtc(p.date))) && i.coin === p.coin && i.liquidation === null).map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0) +
+          this.taxes.filter(i => (isBefore(new Date(i.updatedAt), this.getDateAsUtc(p.date)) || isSameDay(new Date(i.updatedAt), this.getDateAsUtc(p.date))) && i.coin === p.coin && i.liquidation === null).map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0) +
+          this.investments.filter(i => (isBefore(new Date(i.updatedAt), this.getDateAsUtc(p.date)) || isSameDay(new Date(i.updatedAt), this.getDateAsUtc(p.date))) && i.coin === p.coin).map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0) +
+          this.liquidation.filter(i => (isBefore(new Date(i.updatedAt), this.getDateAsUtc(p.date)) || isSameDay(new Date(i.updatedAt), this.getDateAsUtc(p.date))) && i.newCoin === p.coin).map(i => parseFloat(i.newCoinAmount)).reduce((prev, next) => prev + next, 0)
 
         if(coinSum) {
           const itemId = this.priceHistory.findIndex(c => c.date === p.date)
@@ -153,7 +155,7 @@ export default {
       let priceHistory = await refreshPriceHistory()
       this.parsePriceHistory(priceHistory.data.flat())
 
-      let coinPrices = await getCoinPrice(this.$store.state.interests.filter(r => !(r.isTax && (r.soldTaxForBtc || r.soldTaxForEth) && !r.isReward)).map(r => r.name))
+      let coinPrices = await getCoinPrice(this.$store.state.interests.filter(r => r.nickName !== '').map(r => r.name))
       coinPrices.map(p => p.data.data).forEach(p => {
         $cookies.set(p.base, p.amount)
       })

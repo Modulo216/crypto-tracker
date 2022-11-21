@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import parseISO from 'date-fns/parseISO';
-import { getInterests, getRewards, getTaxes, getInvestments } from '../api/apollo'
+import { getInterests, getRewards, getTaxes, getInvestments, getLiquidation } from '../api/apollo'
 
 Vue.use(Vuex)
 
@@ -27,7 +27,8 @@ export default new Vuex.Store({
     interests: [],
     allRewards: [],
     allTaxes: [],
-    allInvestments: []
+    allInvestments: [],
+    allLiquidation: []
   },
   getters: {
     getMonthNames() {
@@ -92,12 +93,16 @@ export default new Vuex.Store({
     addInvestment(state, item) {
       state.allInvestments.push(item)
     },
+    setLiquidation(state, items,) {
+      state.allLiquidation = items
+    }
   },
   actions: {
     populateInterests: (context) => getInterests().then(r => context.commit('setInterests', r)),
     populateRewards: (context) => getRewards().then(r => context.commit('setRewards', r)),
     populateTaxes: (context) => getTaxes().then(r => context.commit('setTaxes', r)),
-    populateInvestments: (context) => getInvestments().then(r => context.commit('setInvestments', r))
+    populateInvestments: (context) => getInvestments().then(r => context.commit('setInvestments', r)),
+    populateLiquidation: (context) => getLiquidation().then(r => context.commit('setLiquidation', r))
   },
   modules: {
   }

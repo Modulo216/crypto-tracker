@@ -26,12 +26,12 @@ export default {
   data: () => ({
     mini: true,
     items: [
-      { title: 'Home', icon: 'mdi-view-dashboard', route: '/' },
-      { title: 'Interests', icon: 'mdi-image', route: '/interests' },
-      { title: 'Spending', icon: 'mdi-image', route: '/spending' },
-      { title: 'Taxes', icon: 'mdi-image', route: '/taxes' },
-      { title: 'Rewards', icon: 'mdi-image', route: '/rewards' },
-      { title: 'Investments', icon: 'mdi-image', route: '/investments' }
+      { title: 'Home', icon: 'mdi-home', route: '/' },
+      { title: 'Rewards', icon: 'mdi-gift', route: '/rewards' },
+      { title: 'Taxes', icon: 'mdi-currency-usd-off ', route: '/taxes' },
+      { title: 'Spending', icon: 'mdi-cart', route: '/spending' },
+      { title: 'Investments', icon: 'mdi-treasure-chest', route: '/investments' },
+      { title: 'Interests', icon: 'mdi-thumb-up', route: '/interests' }
     ]
   }),
   created () {
@@ -39,6 +39,7 @@ export default {
     this.$store.dispatch('populateRewards')
     this.$store.dispatch('populateTaxes')
     this.$store.dispatch('populateInvestments')
+    this.$store.dispatch('populateLiquidation')
   }
 };
 </script>

@@ -14,7 +14,9 @@ export const resolvers = {
       return await PriceHistory.findOne({...query})
     },
     getTrxs: async (root) => {
-      return await Trx.find()
+      let trxs = await Trx.find()
+      trxs.sort((d1, d2) => new Date(d1.updatedAt).getTime() - new Date(d2.updatedAt).getTime())
+      return trxs
     },
     getChecking: async (root) => {
       return await Checking.find()
@@ -33,7 +35,7 @@ export const resolvers = {
     },
     getTaxes: async (root) => {
       let taxes = await Tax.find().populate('liquidation')
-      //taxes.sort((d1, d2) => new Date(d1.updatedAt).getTime() - new Date(d2.updatedAt).getTime())
+      taxes.sort((d1, d2) => new Date(d1.updatedAt).getTime() - new Date(d2.updatedAt).getTime())
       
       return taxes
     },
@@ -45,7 +47,7 @@ export const resolvers = {
     },
     getRewards: async (root) => {
       let rewards = await Reward.find().populate('liquidation')
-      //rewards.sort((d1, d2) => new Date(d1.updatedAt).getTime() - new Date(d2.updatedAt).getTime())
+      rewards.sort((d1, d2) => new Date(d1.updatedAt).getTime() - new Date(d2.updatedAt).getTime())
       
       return rewards
     },

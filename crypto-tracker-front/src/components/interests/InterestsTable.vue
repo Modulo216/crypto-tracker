@@ -37,19 +37,7 @@
                           <v-checkbox v-model="editedItem.isTax" label="Taxable?" />
                         </v-col>
                         <v-col cols="4">
-                          <v-checkbox v-model="editedItem.soldTaxForBtc" label="Sold Tax for BTC?" />
-                        </v-col>
-                        <v-col cols="4">
-                          <v-checkbox v-model="editedItem.soldTaxForEth" label="Sold Tax for ETH?" />
-                        </v-col>
-                        <v-col cols="4">
                           <v-checkbox v-model="editedItem.isReward" label="Rewards?" />
-                        </v-col>
-                        <v-col cols="4">
-                          <v-text-field v-model="editedItem.soldRewardForBtc" label="Amount sold for BTC" />
-                        </v-col>
-                        <v-col cols="4">
-                          <v-text-field v-model="editedItem.soldRewardForEth" label="Amount sold for ETH" />
                         </v-col>
                       </v-row>
                     </v-container>
@@ -94,7 +82,6 @@ import { addInterest, deleteInterest, updateInterest, delReward } from '../../ap
       headers: [
         { text: 'Name', sortable: true, value: 'name' },
         { text: 'Nick name', sortable: false, value: 'nickName' },
-        { text: 'Exchange Wallet', sortable: false, value: 'wallet' },
         { text: 'Tax', sortable: false, value: 'isTax' },
         { text: 'Reward', sortable: false, value: 'isReward' },
         { text: 'Actions', value: 'actions', sortable: false },

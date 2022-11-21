@@ -159,11 +159,7 @@ export const typeDefs = gql`
     cbaseWalletId: String
     wallet: String
     isTax: Boolean
-    soldTaxForBtc: Boolean
-    soldTaxForEth: Boolean
     isReward: Boolean
-    soldRewardForBtc: String
-    soldRewardForEth: String
   }
   input InterestInput {
     id: ID
@@ -173,11 +169,7 @@ export const typeDefs = gql`
     cbaseWalletId: String
     wallet: String
     isTax: Boolean
-    soldTaxForBtc: Boolean
-    soldTaxForEth: Boolean
     isReward: Boolean
-    soldRewardForBtc: String
-    soldRewardForEth: String
   }
   type Query {
     getInterests: [Interest]

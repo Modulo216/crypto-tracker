@@ -46,7 +46,7 @@
   </v-dialog>
 </template>
 <script>
-import { addLiquidation, getLiquidation } from '../api/apollo'
+import { addLiquidation } from '../api/apollo'
 export default {
   props: {
     modelType: String,
@@ -80,6 +80,7 @@ export default {
       await addLiquidation(liq)
       this.show = false
       this.$emit('savedLiquidation', liq)
+      Object.assign(this.$data, this.$options.data())
     }
   }
 }
