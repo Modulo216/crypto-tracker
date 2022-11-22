@@ -24,7 +24,7 @@ const addLiquidationGql = require('./gql/addLiquidation.gql')
 const getLiquidationGql = require('./gql/getLiquidation.gql')
 const { isAfter } = require('date-fns')
 
-const httpLink = createHttpLink({ uri: 'http://localhost:5001/graphql' })
+const httpLink = createHttpLink({ uri: 'http://be:5001/graphql' })
 
 async function getLiquidation() {
   const res = await apolloClient.query({ query: getLiquidationGql })

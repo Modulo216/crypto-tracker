@@ -17,3 +17,5 @@ services:
     image: "ctracker-front"
     ports:
       - "9090:80"
+    links:
+      - "backend:be"
