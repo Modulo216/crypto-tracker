@@ -31,6 +31,7 @@ export default {
       { title: 'Taxes', icon: 'mdi-currency-usd-off ', route: '/taxes' },
       { title: 'Spending', icon: 'mdi-cart', route: '/spending' },
       { title: 'Investments', icon: 'mdi-treasure-chest', route: '/investments' },
+      { title: 'Gains & Losses', icon: 'mdi-water', route: '/capital' },
       { title: 'Interests', icon: 'mdi-thumb-up', route: '/interests' }
     ]
   }),

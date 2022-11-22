@@ -4,11 +4,17 @@ const { trxSchema } = require('./schema/trxSchema.js')
 const { checkingSchema } = require('./schema/checkingSchema.js')
 const { taxSchema } = require('./schema/taxSchema')
 const { rewardSchema } = require('./schema/rewardSchema')
-const { investmentSchema } = require('./schema/investmentSchema')
+const { investmentSchema } = require('./schema/InvestmentSchema')
 const { priceHistorySchema } = require('./schema/priceHistorySchema')
 const { liquidationSchema } = require('./schema/liquidationSchema')
+require('dotenv').config()
 
-mongoose.connect('mongodb://127.0.0.1/my_db', {
+// mongoose.connect('mongodb://127.0.0.1/my_db', {
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true
+// })
+
+mongoose.connect(`mongodb+srv://${process.env.mongo_user}:${process.env.mongo_pass}@cluster0.3cejibv.mongodb.net/my_db?retryWrites=true&w=majority`, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })

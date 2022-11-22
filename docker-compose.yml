@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  backend:
+    env_file:
+        "./crypto-tracker-back/.env"
+    build:
+      context: ./crypto-tracker-back
+      dockerfile: ./Dockerfile
+    image: "ctracker-back"
+    ports:
+      - "5001:5001"
+  frontend:
+    build:
+      context: ./crypto-tracker-front
+      dockerfile: ./Dockerfile
+    image: "ctracker-front"
+    ports:
+      - "9090:80"

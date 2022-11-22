@@ -6,10 +6,16 @@ import SpendingView from '../views/SpendingView.vue'
 import TaxesView from '../views/TaxesView.vue'
 import RewardsView from '../views/RewardsView'
 import InvestmentsView from '../views/InvestmentsView'
+import CapitalView from '../views/CapitalView'
 
 Vue.use(VueRouter)
 
 const routes = [
+  {
+    path: '/capital',
+    name: 'capital',
+    component: CapitalView
+  },
   {
     path: '/',
     name: 'home',
