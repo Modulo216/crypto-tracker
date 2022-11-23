@@ -151,11 +151,7 @@ export const resolvers = {
     },
     addTaxImport: async (root, { tax }) => {
       const { ...rest } = tax
-      let taxExist = await Tax.findOne({ exchangeId: tax.exchangeId })
-      if(!taxExist) {
-        const newTax = new Tax({ ...rest })
-        return await newTax.save()
-      }
+      return await Tax.findOneAndUpdate({ exchangeId: tax.exchangeId }, { $setOnInsert: { ...rest } }, { upsert: true })
     },
     addTax: async (root, { tax }) => {
       const { ...rest } = tax
@@ -164,11 +160,7 @@ export const resolvers = {
     },
     addInvestmentImport: async (root, { investment }) => {
       const { ...rest } = investment
-      let investmentExist = await Investment.findOne({ exchangeId: investment.exchangeId })
-      if(!investmentExist) {
-        const newInvestment = new Investment({ ...rest })
-        return await newInvestment.save()
-      }
+      return await Investment.findOneAndUpdate({ exchangeId: investment.exchangeId }, { $setOnInsert: { ...rest } }, { upsert: true })
     },
     addInvestment: async (root, { investment }) => {
       const { ...rest } = investment

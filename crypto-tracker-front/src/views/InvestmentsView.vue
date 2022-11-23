@@ -107,7 +107,7 @@ import dateMixin from '@/mixins/datesMixin'
       },
       async onRefreshInvestments(callback) {
         let coinPrices = await getCoinPrice(['BTC', 'ETH'])
-        coinPrices.map(p => p.data.data).forEach(p => {
+        coinPrices.data.forEach(p => {
           $cookies.set(p.base, p.amount)
         })
 

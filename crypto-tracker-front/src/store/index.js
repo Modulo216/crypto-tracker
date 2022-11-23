@@ -82,6 +82,12 @@ export default new Vuex.Store({
     addTax(state, item) {
       state.allTaxes.push(item)
     },
+    addTaxMany(state, items) {
+      state.allTaxes.push(...items)
+    },
+    addRewardMany(state, items) {
+      state.allRewards.push(...items)
+    },
     updatedTax(state, item) {
       let indexOf = state.allTaxes.findIndex(i => i.id === item.id)
       Object.assign(state.allTaxes[indexOf], item)

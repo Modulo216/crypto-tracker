@@ -28,7 +28,6 @@
 
 <script>
 import MonthPicker from '../components/shared/MonthPicker'
-import { getCoinPrice } from '../api/endpoints/coinbase'
 const { isBefore, isSameDay } = require('date-fns')
 export default {
   components: {

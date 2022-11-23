@@ -1,9 +1,23 @@
 let coinbase = require('coinbase')
 const { promisify } = require('util')
 require('dotenv').config()
-var fs = require('fs');
+import axios from 'axios'
 
 let client = new coinbase.Client({ 'apiKey': process.env.api_key, 'apiSecret': process.env.api_secret, strictSSL: false })
+
+const axiosClient = axios.create({
+  baseURL: `https://api.coinbase.com`,
+  headers: {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json'
+  }
+})
+
+async function getCoinPrice(coins) {
+  let coinPrices = await Promise.all([...coins.map(coin => axiosClient.get(`/v2/prices/${coin}-USD/spot`))])
+  let retVal = coinPrices.map(p => p.data.data)
+  return retVal
+}
 
 async function getTrxs(walletId, loadAll) {
   try {
@@ -79,7 +93,7 @@ async function getMultiWalletTrxes(interests, loadAll) {
         } while (page !== undefined && page.next_uri !== null)
         retVal.push({ coin: wallet.currency, transactions: trxs })
       } else {
-        let { txns } = await getTxns({ next_uri: null, limit: 25 })
+        let { txns } = await getTxns({ next_uri: null, limit: 20 })
         if(txns !== null && txns.length > 0) {
           retVal.push({ coin: wallet.currency, transactions: txns })
         }
@@ -92,4 +106,4 @@ async function getMultiWalletTrxes(interests, loadAll) {
   }
 }
 
-export { getTrxs, getMultiWalletTrxes }
+export { getTrxs, getMultiWalletTrxes, getCoinPrice }

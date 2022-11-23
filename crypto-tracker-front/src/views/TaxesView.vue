@@ -165,7 +165,7 @@ export default {
     },
     async onRefreshTax(callback) {
       let coinPrices = await getCoinPrice(this.$store.state.interests.filter(r => r.nickName !== '').map(r => r.name))
-      coinPrices.map(p => p.data.data).forEach(p => {
+      coinPrices.data.forEach(p => {
         let coinSum = this.coinsSum.find(s => s.coin === p.base)
         if(coinSum) {
           coinSum.val = coinSum.amount * p.amount
@@ -174,12 +174,9 @@ export default {
       })
 
       let res = await refreshTaxes()
-      if(res.status === 200) {
-        this.$store.dispatch('populateTaxes')
-        callback("done")
-      } else {
-        alert("PROBLEM")
-      }
+      let unique = res.data.filter(p => !this.allTaxes.some(t => t.exchangeId === p.exchangeId))
+      this.$store.commit('addTaxMany', unique)
+      callback("done")
     },
     setSums(dateMonth) {
       this.activitySum = []

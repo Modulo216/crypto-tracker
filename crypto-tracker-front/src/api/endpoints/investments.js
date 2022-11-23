@@ -1,5 +1,5 @@
-import {axiosClient} from "../axios";
+import {axiosClient} from "../axios"
 
 export function refreshInvestments() {
-  return axiosClient.get('/investments');
+  return axiosClient.get('/investments')
 }

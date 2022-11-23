@@ -1,12 +1,11 @@
-import {cbaseAxioClient} from "../axios";
+import {axiosClient} from "../axios"
 
-export function getCoinPrice(coins) {
-  let endpoints = []
+export async function getCoinPrice(coins) {
   coins.push('USDC')
-  
+  let queryParams = '?c='
   coins.forEach(coin => {
-    endpoints.push(cbaseAxioClient.get(`/v2/prices/${coin}-USD/spot`))
+    queryParams += `${coin}&c=`
   })
-
-  return Promise.all([...endpoints])
+  let params = queryParams.slice(0, -3)
+  return await axiosClient.get(`/coin-prices${params}`)
 }

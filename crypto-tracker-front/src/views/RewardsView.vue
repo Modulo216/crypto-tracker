@@ -90,8 +90,8 @@ export default {
       }
     },
     async onRefreshRewards(callback) {
-      let coinPrices = await getCoinPrice(this.$store.state.interests.filter(r => r.isReward).map(r => r.name))
-      coinPrices.map(p => p.data.data).forEach(p => {
+      let coinPrices = await getCoinPrice(this.$store.state.interests.filter(r => r.nickName !== '').map(r => r.name))
+      coinPrices.data.forEach(p => {
         let coinSum = this.coinsSum.find(s => s.coin === p.base)
         if(coinSum) {
           coinSum.val = coinSum.amount * p.amount
@@ -100,12 +100,9 @@ export default {
       })
       
       let res = await refreshRewards()
-      if(res.status === 200) {
-        this.$store.dispatch('populateRewards')
-        callback("done")
-      } else {
-        alert("PROBLEM")
-      }
+      let unique = res.data.filter(p => !this.allRewards.some(t => t.exchangeId === p.exchangeId))
+      this.$store.commit('addRewardMany', unique)
+      callback("done")
     },
     setSums(dateMonth) {
       this.coinsSum = []

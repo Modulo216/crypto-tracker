@@ -103,7 +103,7 @@ export default {
     async onlyGains() {
       this.loading = true
       let coinPrices = await getCoinPrice(this.$store.state.interests.filter(r => r.nickName !== '').map(r => r.name))
-      coinPrices.map(p => p.data.data).forEach(p => {
+      coinPrices.data.forEach(p => {
         $cookies.set(p.base, p.amount)
       })
       this.sumCoins()
@@ -156,7 +156,7 @@ export default {
       this.parsePriceHistory(priceHistory.data.flat())
 
       let coinPrices = await getCoinPrice(this.$store.state.interests.filter(r => r.nickName !== '').map(r => r.name))
-      coinPrices.map(p => p.data.data).forEach(p => {
+      coinPrices.data.forEach(p => {
         $cookies.set(p.base, p.amount)
       })
       this.sumCoins()
