@@ -28,7 +28,8 @@ export default new Vuex.Store({
     allRewards: [],
     allTaxes: [],
     allInvestments: [],
-    allLiquidation: []
+    allLiquidation: [],
+    historyChartData: []
   },
   getters: {
     getMonthNames() {
@@ -71,11 +72,12 @@ export default new Vuex.Store({
       let indexOf = state.interests.findIndex(i => i.id === item.id)
       Object.assign(state.interests[indexOf], item)
     },
-
+    setChartHistory(state, items) {
+      state.historyChartData = items
+    },
     setRewards(state, items) {
       state.allRewards = items
     },
-
     setTaxes(state, items) {
       state.allTaxes = items
     },
@@ -92,7 +94,6 @@ export default new Vuex.Store({
       let indexOf = state.allTaxes.findIndex(i => i.id === item.id)
       Object.assign(state.allTaxes[indexOf], item)
     },
-
     setInvestments(state, items) {
       state.allInvestments = items
     },

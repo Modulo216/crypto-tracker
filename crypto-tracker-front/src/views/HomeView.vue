@@ -62,22 +62,24 @@ import { getPriceHistory } from '../api/apollo'
 const { isBefore, isSameDay } = require('date-fns')
 export default {
   name: 'home-view',
-  data () {
-    return {
-      profitHistory: [],
-      priceHistory: [],
-      loading: false
-    }
-  },
+  data: () => ({
+    profitHistory: [],
+    priceHistory: [],
+    loading: false
+  }),
   components: {
     LineChart,
     HistoryLine,
     CoinHistoryLine
   },
   async created() {
-    getPriceHistory().then(hist => {
-      this.parsePriceHistory(hist)
-    })
+    if(this.$store.state.historyChartData.length === 0) {
+      getPriceHistory().then(hist => {
+        this.parsePriceHistory(hist)
+      })
+    } else {
+      this.priceHistory = this.$store.state.historyChartData
+    }
     this.profitHistory = JSON.parse($cookies.get("profitHistory")) || []
   },
   computed: {
@@ -148,6 +150,7 @@ export default {
           }
         }
       }
+      this.$store.commit('setChartHistory', this.priceHistory)
     },
     async refreshValue() {
       this.loading = true
