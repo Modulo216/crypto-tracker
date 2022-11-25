@@ -11,7 +11,7 @@ export const resolvers = {
       return await Interest.findOne({ name: interest.name })
     },
     findPriceHistory: async (root, query) => {
-      return await PriceHistory.findOne({...query})
+      return await PriceHistory.findOne({...query}).lean()
     },
     getTrxs: async (root) => {
       let trxs = await Trx.find()
@@ -52,7 +52,7 @@ export const resolvers = {
       return rewards
     },
     getPriceHistory: async (root) => {
-      let priceHistory = await PriceHistory.find()
+      let priceHistory = await PriceHistory.find().lean()
       priceHistory.sort((d1, d2) => new Date(d1.date).getTime() - new Date(d2.date).getTime())
       
       return priceHistory
@@ -102,23 +102,10 @@ export const resolvers = {
         await PriceHistory.findByIdAndRemove(p.id)
       })
     },
-    addPriceHistoryMany: async (root, {coin, priceHistories}) => {  
-      let arr = []
-
-      for (const p of priceHistories) {
-        let then = formatISO(new Date(p[0])).slice(0, 10)
-        let exists = await resolvers.Query.findPriceHistory(root, {date: then, coin: coin})
-        if(formatISO(new Date()).slice(0, 10) !== then && exists === null) {
-          let priceHistory = new PriceHistory({date: then, price: p[1].toString(), coin: coin})
-          arr.push(priceHistory)
-        }
-      }
-
+    addPriceHistoryMany: (root, {arr}) => {  
       if(arr.length > 0) {
-        await PriceHistory.insertMany(arr)
+        PriceHistory.insertMany(arr)
       }
-
-      return arr
     },
     addRewardImport: async (root, { reward }) => {
       const { ...rest } = reward

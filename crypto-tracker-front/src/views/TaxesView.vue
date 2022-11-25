@@ -173,7 +173,7 @@ export default {
         $cookies.set(p.base, p.amount)
       })
 
-      let res = await refreshTaxes()
+      let res = await refreshTaxes(this.$store.state.interests.filter(r => r.isTax).map(r => r.name))
       let unique = res.data.filter(p => !this.allTaxes.some(t => t.exchangeId === p.exchangeId))
       this.$store.commit('addTaxMany', unique)
       callback("done")

@@ -40,7 +40,7 @@ async function getTrxs(walletId, loadAll) {
         }
       } while (page !== undefined && page.next_uri !== null)
     } else {
-      let { txns } = await getTxns({ next_uri: null, limit: 12 })
+      let { txns } = await getTxns({ next_uri: null, limit: 10 })
       if(txns !== null && txns.length > 0) {
         trxs.push(...txns)
       }
@@ -80,7 +80,7 @@ async function getMultiWalletTrxes(interests, loadAll) {
     let retVal = []
 
     for (const wallet of filteredAccts) {
-      console.log("COINBASE", wallet.currency)
+      console.log("COINBASE", wallet.currency, interests.includes(wallet.currency))
       if(!interests.includes(wallet.currency)) {
         continue
       }
@@ -97,7 +97,7 @@ async function getMultiWalletTrxes(interests, loadAll) {
         } while (page !== undefined && page.next_uri !== null)
         retVal.push({ coin: wallet.currency, transactions: trxs })
       } else {
-        let { txns } = await getTxns({ next_uri: null, limit: 20 })
+        let { txns } = await getTxns({ next_uri: null, limit: 15 })
         if(txns !== null && txns.length > 0) {
           retVal.push({ coin: wallet.currency, transactions: txns })
         }

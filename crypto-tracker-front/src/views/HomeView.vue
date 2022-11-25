@@ -167,9 +167,8 @@ export default {
       if(this.profitHistory.length === 33) {
         this.profitHistory.shift()
       }
-      let time = new Date();
-      let dateVal = `${time.getDate()} ${time.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })}`
 
+      let dateVal = `${new Date().getDate()} ${new Date().toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })}`
       this.profitHistory.push({date: dateVal, sum: this.$store.state.homeCoinsSum.map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0) - this.$store.state.homeCoinsSum.map(t => parseFloat(t.spent)).reduce((prev, next) => prev + next, 0)})
       $cookies.set("profitHistory", JSON.stringify(this.profitHistory))
       this.loading = false

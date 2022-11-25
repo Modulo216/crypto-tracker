@@ -6,7 +6,6 @@ const { typeDefs } = require("./data/schema.graphql")
 const { getTrxs, getMultiWalletTrxes, getCoinPrice } = require("./api/coinbase")
 const getCoinHistory = require("./api/coingecko")
 const isAfter = require('date-fns/isAfter')
-const endOfYesterday = require('date-fns/endOfYesterday')
 const formatISO = require('date-fns/formatISO')
 const app = express()
 const port = 5001
@@ -44,15 +43,21 @@ app.get('/_health', async (req, res) => {
 app.get('/update-history', async (req, res, next) => {
   try {
     let interests = await resolvers.Query.getInterests(null, { nickName: { $ne: '' } })
-    let retVal = []
+    let arr = []
     for (const interest of interests) {
       let result = await getCoinHistory.get(interest.nickName)
-      let history = await resolvers.Mutation.addPriceHistoryMany(null, { coin: interest.name, priceHistories: result.data.prices })
-      retVal.push(history)
+      for (const p of result.data.prices) {
+        let then = formatISO(new Date(p[0])).slice(0, 10)
+        if(formatISO(new Date()).slice(0, 10) === then || await resolvers.Query.findPriceHistory(null, {date: then, coin: interest.name}) !== null) {
+          continue
+        }
+        arr.push({date: then, price: p[1].toString(), coin: interest.name})
+      }
     }
-    retVal.flat()
-    console.log("UPDATE-HISTORY", retVal)
-    res.send(retVal)
+    resolvers.Mutation.addPriceHistoryMany(null, { arr })
+    arr.flat()
+    console.log("UPDATE-HISTORY", arr)
+    res.send(arr)
   } catch (error) {
     next(error)
   }
@@ -61,8 +66,7 @@ app.get('/update-history', async (req, res, next) => {
 app.get('/rewards', async (req, res, next) => {
   try {
     let retVal = []
-    let interests = await resolvers.Query.getInterests(null, { isReward: true })
-    let rewards = await getMultiWalletTrxes(interests.map(i => i.name), false)
+    let rewards = await getMultiWalletTrxes(req.query.c, false)
     for (const t of rewards) {
       let txns = t.transactions.filter(txn => isAfter(new Date(txn.created_at), new Date(2021, 7, 1)) && txn.description !== null && (txn.description === 'Spending reward from Coinbase Card' || txn.description.includes('Debit Card Rewards')))
       for (const txn of txns) {
@@ -125,9 +129,7 @@ app.get('/trxs', async (req, res, next) => {
 app.get('/taxes', async (req, res, next) => {
   try {
     let retVal = []
-    let interests = await resolvers.Query.getInterests(null, { isTax: true })
-    interests.push({name: 'ETH2'})
-    let taxes = await getMultiWalletTrxes(interests.map(i => i.name), false)
+    let taxes = await getMultiWalletTrxes(req.query.c, false)
 
     for (const t of taxes) {
       let txns = t.transactions.filter(txn => isAfter(new Date(txn.created_at), new Date(2021, 7, 1)) && txn.type !== 'trade'

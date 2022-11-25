@@ -99,7 +99,7 @@ export default {
         $cookies.set(p.base, p.amount)
       })
       
-      let res = await refreshRewards()
+      let res = await refreshRewards(this.$store.state.interests.filter(r => r.isReward).map(r => r.name))
       let unique = res.data.filter(p => !this.allRewards.some(t => t.exchangeId === p.exchangeId))
       this.$store.commit('addRewardMany', unique)
       callback("done")
