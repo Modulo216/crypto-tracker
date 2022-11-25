@@ -174,7 +174,7 @@ export default {
   },
   methods: {
     async onRefreshTrx(callback) {
-      let res = await refreshTrxs()
+      let res = await refreshTrxs(this.$store.state.interests.find(r => r.name === 'USDC').cbaseWalletId)
       if(res.status === 200) {
         this.loadTrxs()
         callback("done")
