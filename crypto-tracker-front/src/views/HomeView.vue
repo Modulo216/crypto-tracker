@@ -59,7 +59,7 @@ import LineChart from '../components/home/Line.vue'
 import HistoryLine from '@/components/home/HistoryLine'
 import CoinHistoryLine from '@/components/home/CoinHistoryLine'
 import { getPriceHistory } from '../api/apollo'
-const { isBefore, isSameDay } = require('date-fns')
+const { isBefore, isSameDay, endOfYesterday, formatISO } = require('date-fns')
 export default {
   name: 'home-view',
   data: () => ({
@@ -74,9 +74,7 @@ export default {
   },
   async created() {
     if(this.$store.state.historyChartData.length === 0) {
-      getPriceHistory().then(hist => {
-        this.parsePriceHistory(hist)
-      })
+      getPriceHistory().then(hist => this.parsePriceHistory(hist))
     } else {
       this.priceHistory = this.$store.state.historyChartData
     }
@@ -155,8 +153,10 @@ export default {
     async refreshValue() {
       this.loading = true
 
-      let priceHistory = await refreshPriceHistory()
-      this.parsePriceHistory(priceHistory.data.flat())
+      if(!this.$store.state.interests.filter(r => r.nickName !== '').every(i => this.priceHistory.find(p => p.date === formatISO(endOfYesterday()).slice(0, 10) && p.coins.some(c => c.coin === i.name)))) {
+        let priceHistory = await refreshPriceHistory()
+        this.parsePriceHistory(priceHistory.data.flat())
+      }
 
       let coinPrices = await getCoinPrice(this.$store.state.interests.filter(r => r.nickName !== '').map(r => r.name))
       coinPrices.data.forEach(p => {

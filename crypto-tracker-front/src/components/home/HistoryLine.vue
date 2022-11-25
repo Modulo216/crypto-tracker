@@ -116,7 +116,7 @@ export default {
             backgroundColor: [],
             data: [],
             borderColor: "gray",
-            pointRadius: 2,
+            pointRadius: 1.5,
             pointHoverRadius: 10
           },
           {

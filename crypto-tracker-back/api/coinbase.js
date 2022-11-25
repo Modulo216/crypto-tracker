@@ -14,9 +14,13 @@ const axiosClient = axios.create({
 })
 
 async function getCoinPrice(coins) {
-  let coinPrices = await Promise.all([...coins.map(coin => axiosClient.get(`/v2/prices/${coin}-USD/spot`))])
-  let retVal = coinPrices.map(p => p.data.data)
-  return retVal
+  try {
+    let coinPrices = await Promise.all([...coins.map(coin => axiosClient.get(`/v2/prices/${coin}-USD/spot`))])
+    let retVal = coinPrices.map(p => p.data.data)
+    return retVal
+  } catch (error) {
+    throw new Error(error)
+  }
 }
 
 async function getTrxs(walletId, loadAll) {

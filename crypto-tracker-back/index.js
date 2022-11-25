@@ -15,10 +15,19 @@ app.use(cors());
 const server = new ApolloServer({ typeDefs, resolvers })
 server.applyMiddleware({ app })
 
-app.get('/coin-prices', async (req, res) => {
-  let coins = req.query.c
-  let prices = await getCoinPrice(coins)
-  res.send(prices)
+const errorHandler = (error, request, response, next) => {
+  console.log( `error ${error.message}`)
+  const status = error.status || 400
+  response.status(status).send(error.message)
+}
+
+app.get('/coin-prices', async (req, res, next) => {
+  try {
+    let prices = await getCoinPrice(req.query.c)
+    res.send(prices)
+  } catch (error) {
+    next(error)
+  }
 })
 
 app.get('/_health', async (req, res) => {
@@ -37,12 +46,9 @@ app.get('/update-history', async (req, res, next) => {
     let interests = await resolvers.Query.getInterests(null, { nickName: { $ne: '' } })
     let retVal = []
     for (const interest of interests) {
-      let exists = await resolvers.Query.findPriceHistory(null, { $and: [{ date: formatISO(endOfYesterday()).slice(0, 10) }, { coin: interest.name }]})
-      if(exists === null) {
-        let result = await getCoinHistory.get(interest.nickName)
-        let history = await resolvers.Mutation.addPriceHistoryMany(null, { coin: interest.name, priceHistories: result.data.prices })
-        retVal.push(history)
-      }
+      let result = await getCoinHistory.get(interest.nickName)
+      let history = await resolvers.Mutation.addPriceHistoryMany(null, { coin: interest.name, priceHistories: result.data.prices })
+      retVal.push(history)
     }
     retVal.flat()
     console.log("UPDATE-HISTORY", retVal)
@@ -149,6 +155,7 @@ app.get('/taxes', async (req, res, next) => {
     next(error)
   }
 })
+app.use(errorHandler)
 
 app.listen(port, async () => {
   console.log(`Dolphin app listening on port ${port}!`)
