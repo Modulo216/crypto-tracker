@@ -134,7 +134,7 @@ export const resolvers = {
       return await Trx.findOneAndUpdate({ exchangeId: trx.exchangeId }, { $setOnInsert: { ...rest } }, { upsert: true })
     },
     updateTrx: async (root, { trx }) => {
-      return await Trx.findByIdAndUpdate(trx.id, trx, { new: true })
+      return await Trx.findOneAndUpdate({ exchangeId: trx.exchangeId }, trx)
     },
     addTaxImport: async (root, { tax }) => {
       const { ...rest } = tax

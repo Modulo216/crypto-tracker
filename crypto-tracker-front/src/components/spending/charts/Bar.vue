@@ -25,6 +25,8 @@ import {
   LinearScale
 } from 'chart.js'
 import eachMonthOfInterval from 'date-fns/eachMonthOfInterval'
+import lastDayOfMonth from 'date-fns/lastDayOfMonth'
+import startOfYear from 'date-fns/startOfYear'
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
 export default {
@@ -61,29 +63,34 @@ export default {
       type: Array,
       default: () => []
     },
-    allTrxs: Array
+  },
+  computed: {
+    allTrxs() {
+      return this.$store.state.spendingTrxs
+    }
+  },
+  created() {
+    if(this.$store.state.spendingTrxs.length > 0) {
+      this.buildTable(this.$store.state.spendingTrxs)
+    }
   },
   watch: {
     allTrxs(newAllTrxs) {
+      this.buildTable(newAllTrxs)
+    }
+  },
+  methods: {
+    buildTable(newAllTrxs) {
       this.chartData.labels = [...this.$store.getters.getMonthNames.slice(0, new Date().getMonth()+1)]
 
-      const monthInterval = eachMonthOfInterval({start: new Date(new Date().getUTCFullYear(), 0, 1), end: new Date(new Date().getUTCFullYear(), 11, 1) })
-      let week1 = [], week2 = [], week3 = [], week4 = [], week5 = []
-      monthInterval.forEach(m => {
-        if(new Date().getMonth() >= m.getMonth()) {
-          week1.push(newAllTrxs.filter(t => new Date(t.updatedAt).getMonth() === m.getMonth() && new Date(t.updatedAt).getDate() <= 7).map(w => parseFloat(w.amount)).reduce((prev, next) => prev + next, 0))
-          week2.push(newAllTrxs.filter(t => new Date(t.updatedAt).getMonth() === m.getMonth() && new Date(t.updatedAt).getDate() >= 8 && new Date(t.updatedAt).getDate() <= 14).map(w => parseFloat(w.amount)).reduce((prev, next) => prev + next, 0))
-          week3.push(newAllTrxs.filter(t => new Date(t.updatedAt).getMonth() === m.getMonth() && new Date(t.updatedAt).getDate() >= 15 && new Date(t.updatedAt).getDate() <= 21).map(w => parseFloat(w.amount)).reduce((prev, next) => prev + next, 0))
-          week4.push(newAllTrxs.filter(t => new Date(t.updatedAt).getMonth() === m.getMonth() && new Date(t.updatedAt).getDate() >= 22 && new Date(t.updatedAt).getDate() <= 28).map(w => parseFloat(w.amount)).reduce((prev, next) => prev + next, 0))
-          week5.push(newAllTrxs.filter(t => new Date(t.updatedAt).getMonth() === m.getMonth() && new Date(t.updatedAt).getDate() >= 29 && new Date(t.updatedAt).getDate() <= 31).map(w => parseFloat(w.amount)).reduce((prev, next) => prev + next, 0))
-        }
+      eachMonthOfInterval({ start: startOfYear(new Date()), end: lastDayOfMonth(new Date()) }).forEach(m => {
+        let trxDate = (t) => new Date(t.updatedAt)
+        this.chartData.datasets[0].data.push(parseInt(newAllTrxs.filter(t => trxDate(t).getMonth() === m.getMonth() && trxDate(t).getDate() <= 7).map(w => parseFloat(w.amount)).reduce((prev, next) => prev + next, 0)))
+        this.chartData.datasets[1].data.push(parseInt(newAllTrxs.filter(t => trxDate(t).getMonth() === m.getMonth() && trxDate(t).getDate() >= 8 && trxDate(t).getDate() <= 14).map(w => parseFloat(w.amount)).reduce((prev, next) => prev + next, 0)))
+        this.chartData.datasets[2].data.push(parseInt(newAllTrxs.filter(t => trxDate(t).getMonth() === m.getMonth() && trxDate(t).getDate() >= 15 && trxDate(t).getDate() <= 21).map(w => parseFloat(w.amount)).reduce((prev, next) => prev + next, 0)))
+        this.chartData.datasets[3].data.push(parseInt(newAllTrxs.filter(t => trxDate(t).getMonth() === m.getMonth() && trxDate(t).getDate() >= 22 && trxDate(t).getDate() <= 28).map(w => parseFloat(w.amount)).reduce((prev, next) => prev + next, 0)))
+        this.chartData.datasets[4].data.push(parseInt(newAllTrxs.filter(t => trxDate(t).getMonth() === m.getMonth() && trxDate(t).getDate() >= 29).map(w => parseFloat(w.amount)).reduce((prev, next) => prev + next, 0)))
       })
-
-      this.chartData.datasets[0].data = [...week1.map(w => parseInt(w))]
-      this.chartData.datasets[1].data = [...week2.map(w => parseInt(w))]
-      this.chartData.datasets[2].data = [...week3.map(w => parseInt(w))]
-      this.chartData.datasets[3].data = [...week4.map(w => parseInt(w))]
-      this.chartData.datasets[4].data = [...week5.map(w => parseInt(w))]
     }
   },
   data() {

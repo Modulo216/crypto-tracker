@@ -29,7 +29,9 @@ export default new Vuex.Store({
     allTaxes: [],
     allInvestments: [],
     allLiquidation: [],
-    historyChartData: []
+    historyChartData: [],
+    spendingTrxs: [],
+    spendingChecking: []
   },
   getters: {
     getMonthNames() {
@@ -58,6 +60,19 @@ export default new Vuex.Store({
         state.homeCoinsSum[itemId].value = item.value
         state.homeCoinsSum[itemId].price = item.price
       }
+    },
+    setSpending(state, {trxs, checking}) {
+      state.spendingTrxs = trxs
+      state.spendingChecking = checking
+    },
+    addspendingChecking(state, item) {
+      state.spendingChecking.push(item)
+    },
+    removeSpendingChecking(state, itemId) {
+      state.spendingChecking.splice(state.spendingChecking.findIndex(i => i.id === itemId), 1)
+    },
+    addTrxs(state, items) {
+      state.spendingTrxs.push(...items)
     },
     setInterests(state, items) {
       state.interests = items

@@ -98,10 +98,7 @@
             </v-expansion-panel>
           </v-expansion-panels>
           <v-col lg="12">
-            <pie :trxs="trxs" class="mt-3"/>
-          </v-col>
-          <v-col lg="12">
-            <bar :allTrxs="allTrxs" />
+            <bar />
           </v-col>
         </v-row>
       </v-col>
@@ -153,8 +150,15 @@ export default {
     ],
     panel: [0]
   }),
-  created() {
-    this.loadTrxs()
+  async created() {
+    if(this.$store.state.spendingTrxs.length === 0 || this.$store.state.spendingChecking.length === 0) {
+      let spend = await Promise.all([getTrxs(), getChecking()])
+      this.$store.commit('setSpending', {trxs: spend[0], checking: spend[1]})
+    }
+    this.allTrxs = this.$store.state.spendingTrxs
+    this.allChecking = this.$store.state.spendingChecking
+    this.merchantNames = this.allTrxs.filter(t => t.merchant !== null).map(({merchant}) => merchant)
+    this.onMonthClick(this.monthNameActive !== '' ? this.monthNameActive : {month: new Date().getUTCMonth(), year: new Date().getUTCFullYear()})
   },
   computed: {
     getCardSpent() {
@@ -175,21 +179,10 @@ export default {
   methods: {
     async onRefreshTrx(callback) {
       let res = await refreshTrxs(this.$store.state.interests.find(r => r.name === 'USDC').cbaseWalletId)
-      if(res.status === 200) {
-        this.loadTrxs()
-        callback("done")
-      } else {
-        alert("PROBLEM")
-      }
-    },
-    loadTrxs() {
-      Promise.all([getTrxs(), getChecking()]).then(values => {
-        this.allTrxs = [...values[0]]
-        this.allChecking = [...values[1]]
-        this.merchantNames = this.allTrxs.filter(t => t.merchant !== null).map(({merchant}) => merchant)
-
-        this.onMonthClick(this.monthNameActive !== '' ? this.monthNameActive : {month: new Date().getUTCMonth(), year: new Date().getUTCFullYear()})
-      })
+      let unique = res.data.filter(p => !this.allTrxs.some(t => t.exchangeId === p.exchangeId))
+      this.$store.commit('addTrxs', unique)
+      callback("done")
+      this.onMonthClick(this.monthNameActive !== '' ? this.monthNameActive : {month: new Date().getUTCMonth(), year: new Date().getUTCFullYear()})
     },
     onMonthClick(dateMonth) {
       if(this.selectedRow !== undefined) {
@@ -210,7 +203,7 @@ export default {
       this.getMerchantSpending()
     },
     onTrxUpdated(item) {
-      this.$set(this.allTrxs, this.allTrxs.indexOf(t => t.id === item.id), item);
+      this.$set(this.allTrxs, this.allTrxs.indexOf(t => t.exchangeId === item.exchangeId), item);
       this.onMonthClick(this.monthNameActive)
     },
     getAsCurrency(numb) {
@@ -222,6 +215,7 @@ export default {
     onRemoveItem(item) {
       this.allChecking.splice(this.allChecking.indexOf(item), 1)
       this.checkings.splice(this.checkings.indexOf(item), 1)
+      this.$store.commit('removeSpendingChecking', item.id)
       deleteChecking(item.id)
     },
     onSaveItem(item) {
@@ -231,8 +225,8 @@ export default {
         Object.assign(this.checkings[this.checkings.findIndex(f => f.id === item.id)], item)
       } else {
         addChecking(item).then(i => {
-          this.allChecking.push(i)
           this.checkings.push(i)
+          this.$store.commit('addspendingChecking', i)
         })
       }
     },

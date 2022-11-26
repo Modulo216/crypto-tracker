@@ -113,13 +113,16 @@ app.get('/investments', async (req, res, next) => {
 
 app.get('/trxs', async (req, res, next) => {
   try {
+    let retVal = []
     let trxs = await getTrxs(req.query.cwi, false)
     let txns = trxs.filter(txn => isAfter(new Date(txn.created_at), new Date(2022, 0, 1)) && txn.type === 'cardspend')
     for (const txn of txns) {
-      await resolvers.Mutation.addTrx(null, { trx: { amount: txn.native_amount.amount.replace(/^-/, ''), exchange: "coinbase", 
-        updatedAt: txn.created_at, trxType: txn.type, exchangeId: txn.id, title: txn.details.title,subtitle: txn.details.subtitle } })
+      let trx = { amount: txn.native_amount.amount.replace(/^-/, ''), exchange: "coinbase", updatedAt: txn.created_at,
+      trxType: txn.type, exchangeId: txn.id, title: txn.details.title,subtitle: txn.details.subtitle }
+      await resolvers.Mutation.addTrx(null, { trx: trx })
+      retVal.push(trx)
     }
-    res.send('OK')
+    res.send(retVal)
   } catch (error) {
     next(error)
   }
