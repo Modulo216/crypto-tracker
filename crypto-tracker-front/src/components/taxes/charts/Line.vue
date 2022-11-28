@@ -122,13 +122,15 @@ export default {
             backgroundColor: [],
             data: [],
             borderColor: "red",
+            pointRadius: .5,
           },
           {
             label: 'Value',
             borderDash: [5, 5],
             backgroundColor: [],
             data: [],
-            borderColor: "#bae755",
+            borderColor: "black",
+            pointRadius: .5,
           }
         ]
       },

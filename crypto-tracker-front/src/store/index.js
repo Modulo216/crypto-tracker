@@ -74,6 +74,10 @@ export default new Vuex.Store({
     addTrxs(state, items) {
       state.spendingTrxs.push(...items)
     },
+    updateTrxs(state, item) {
+      let indexOf = state.spendingTrxs.findIndex(i => i.exchangeId === item.exchangeId)
+      Object.assign(state.spendingTrxs[indexOf], item)
+    },
     setInterests(state, items) {
       state.interests = items
     },

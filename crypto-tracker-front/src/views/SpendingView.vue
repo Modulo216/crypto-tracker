@@ -2,10 +2,10 @@
   <v-container fluid>
     <v-row>
       <v-col cols="1">
-        <month-picker :trxs="allTrxs" @monthClick="onMonthClick" />
+        <month-picker :trxs="$store.state.spendingTrxs" @monthClick="onMonthClick" />
       </v-col>
       <v-col cols="6">
-        <spending-table :trxs="trxs" :monthNameActive="monthNameActive" :merchantNames="merchantNames" @trxUpdated="onTrxUpdated" @refreshTrx="onRefreshTrx" />
+        <spending-table :trxs="trxs" :monthNameActive="monthNameActive" :merchantNames="$store.state.spendingTrxs.filter(t => t.merchant !== null).map(({merchant}) => merchant)" @trxUpdated="onTrxUpdated" @refreshTrx="onRefreshTrx" />
       </v-col>
       <v-col cols="5">
         <v-row no-gutters class="pt-1">
@@ -52,7 +52,7 @@
                       hide-default-footer
                       dense
                       disable-pagination
-                      :headers="categoryHeaders"
+                      :headers="[{ text: 'Category', sortable: false, value: 'category' },{ text: 'Spend', sortable: false, value: 'spending' },{ text: 'Avg', sortable: false, value: 'avg' }]"
                       :items="categorySpending"
                       item-key="category"
                       class="elevation-10 row-pointer">
@@ -78,7 +78,7 @@
                           dark
                           hide-default-footer
                           dense
-                          :headers="merchantHeaders"
+                          :headers="[{ text: 'Merchant', sortable: false, value: 'merchant' },{ text: 'Amt', sortable: true, value: 'amount' }]"
                           :items="merchantSpending"
                           item-key="merchant"
                           class="elevation-10 flex-table d-flex row-pointer">
@@ -109,10 +109,9 @@
 <script>
 import SpendingTable from '../components/spending/SpendingTable'
 import MonthPicker from '../components/shared/MonthPicker'
-import Pie from '../components/spending/charts/Pie'
 import Bar from '../components/spending/charts/Bar'
 import CheckingInput from '../components/spending/CheckingInput'
-import { getTrxs, getChecking, deleteChecking, addChecking, updateChecking } from '../api/apollo'
+import { getTrxs, getChecking, deleteChecking, addChecking } from '../api/apollo'
 import eachMonthOfInterval from 'date-fns/eachMonthOfInterval'
 import endOfMonth from 'date-fns/endOfMonth'
 import isWithinInterval from 'date-fns/isWithinInterval'
@@ -123,31 +122,18 @@ export default {
   components: {
     SpendingTable,
     MonthPicker,
-    Pie,
     Bar,
     CheckingInput
   },
   mixins: [dateMixin],
   data: () => ({
-    allTrxs: [],
     trxs: [],
-    allChecking: [],
     checkings: [],
-    merchantNames: [],
     averages: [],
     categorySpending: [],
     merchantSpending: [],
     selectedRow: undefined,
     monthNameActive: '',
-    categoryHeaders: [
-      { text: 'Category', sortable: false, value: 'category' },
-      { text: 'Spend', sortable: false, value: 'spending' },
-      { text: 'Avg', sortable: false, value: 'avg' }
-    ],
-    merchantHeaders: [
-      { text: 'Merchant', sortable: false, value: 'merchant' },
-      { text: 'Amt', sortable: true, value: 'amount' }
-    ],
     panel: [0]
   }),
   async created() {
@@ -155,9 +141,6 @@ export default {
       let spend = await Promise.all([getTrxs(), getChecking()])
       this.$store.commit('setSpending', {trxs: spend[0], checking: spend[1]})
     }
-    this.allTrxs = this.$store.state.spendingTrxs
-    this.allChecking = this.$store.state.spendingChecking
-    this.merchantNames = this.allTrxs.filter(t => t.merchant !== null).map(({merchant}) => merchant)
     this.onMonthClick(this.monthNameActive !== '' ? this.monthNameActive : {month: new Date().getUTCMonth(), year: new Date().getUTCFullYear()})
   },
   computed: {
@@ -179,7 +162,7 @@ export default {
   methods: {
     async onRefreshTrx(callback) {
       let res = await refreshTrxs(this.$store.state.interests.find(r => r.name === 'USDC').cbaseWalletId)
-      let unique = res.data.filter(p => !this.allTrxs.some(t => t.exchangeId === p.exchangeId))
+      let unique = res.data.filter(p => !this.$store.state.spendingTrxs.some(t => t.exchangeId === p.exchangeId))
       this.$store.commit('addTrxs', unique)
       callback("done")
       this.onMonthClick(this.monthNameActive !== '' ? this.monthNameActive : {month: new Date().getUTCMonth(), year: new Date().getUTCFullYear()})
@@ -191,19 +174,19 @@ export default {
       this.monthNameActive = dateMonth
 
       if(dateMonth === 'ALL') {
-        this.trxs = this.allTrxs
-        this.checkings = this.allChecking
+        this.trxs = this.$store.state.spendingTrxs
+        this.checkings = this.$store.state.spendingChecking
         this.getCategorySpending()
       } else {
-        this.trxs = this.allTrxs.filter(t => this.dateIsInRange(t.updatedAt, dateMonth))
-        this.checkings = this.allChecking.filter(q => this.dateIsInRange(q.date, dateMonth))
+        this.trxs = this.$store.state.spendingTrxs.filter(t => this.dateIsInRange(t.updatedAt, dateMonth))
+        this.checkings = this.$store.state.spendingChecking.filter(q => this.dateIsInRange(q.date, dateMonth))
         this.getCategorySpending(dateMonth)
       }
 
       this.getMerchantSpending()
     },
     onTrxUpdated(item) {
-      this.$set(this.allTrxs, this.allTrxs.indexOf(t => t.exchangeId === item.exchangeId), item);
+      this.$store.commit('updateTrxs', item)
       this.onMonthClick(this.monthNameActive)
     },
     getAsCurrency(numb) {
@@ -213,22 +196,15 @@ export default {
       })
     },
     onRemoveItem(item) {
-      this.allChecking.splice(this.allChecking.indexOf(item), 1)
       this.checkings.splice(this.checkings.indexOf(item), 1)
       this.$store.commit('removeSpendingChecking', item.id)
       deleteChecking(item.id)
     },
     onSaveItem(item) {
-      if(item.id !== undefined) {
-        updateChecking(item)
-        Object.assign(this.allChecking[this.allChecking.findIndex(f => f.id === item.id)], item)
-        Object.assign(this.checkings[this.checkings.findIndex(f => f.id === item.id)], item)
-      } else {
-        addChecking(item).then(i => {
-          this.checkings.push(i)
-          this.$store.commit('addspendingChecking', i)
-        })
-      }
+      addChecking(item).then(i => {
+        this.checkings.push(i)
+        this.$store.commit('addspendingChecking', i)
+      })
     },
     getCategorySpending(dateMonth) {
       this.categorySpending = []
@@ -238,7 +214,7 @@ export default {
       monthInterval.forEach(d => { spendingArr.push({
         dateMonth: d.getMonth(),
         categories: [...this.$store.getters.getCategories.map(c => { return { category: c, total: 
-          this.allTrxs.filter(t => isWithinInterval(new Date(t.updatedAt), { start: d, end: endOfMonth(d) }) && t.category === c)
+          this.$store.state.spendingTrxs.filter(t => isWithinInterval(new Date(t.updatedAt), { start: d, end: endOfMonth(d) }) && t.category === c)
             .map(({amount}) => parseFloat(amount))
             .reduce((prev, next) => prev + next, 0)
           }})]
@@ -292,15 +268,15 @@ export default {
       if(this.trxs.every(t => t.category === e.category)) {
         row.select(false)
         if(this.monthNameActive === 'ALL') {
-          this.trxs = this.allTrxs
+          this.trxs = this.$store.state.spendingTrxs
         } else {
-          this.trxs = this.allTrxs.filter(t => this.dateIsInRange(t.updatedAt, this.monthNameActive))
+          this.trxs = this.$store.state.spendingTrxs.filter(t => this.dateIsInRange(t.updatedAt, this.monthNameActive))
         }
       } else {
         if(this.monthNameActive === 'ALL') {
-          this.trxs = this.allTrxs.filter(t => t.category === e.category)
+          this.trxs = this.$store.state.spendingTrxs.filter(t => t.category === e.category)
         } else {
-          this.trxs = this.allTrxs.filter(t => this.dateIsInRange(t.updatedAt, this.monthNameActive) && t.category === e.category)
+          this.trxs = this.$store.state.spendingTrxs.filter(t => this.dateIsInRange(t.updatedAt, this.monthNameActive) && t.category === e.category)
         }
       }
       this.selectedRow = row
@@ -314,15 +290,15 @@ export default {
       if(this.trxs.every(t => t.merchant === e.merchant)) {
         row.select(false)
         if(this.monthNameActive === 'ALL') {
-          this.trxs = this.allTrxs
+          this.trxs = this.$store.state.spendingTrxs
         } else {
-          this.trxs = this.allTrxs.filter(t => this.dateIsInRange(t.updatedAt, this.monthNameActive))
+          this.trxs = this.$store.state.spendingTrxs.filter(t => this.dateIsInRange(t.updatedAt, this.monthNameActive))
         }
       } else {
         if(this.monthNameActive === 'ALL') {
-          this.trxs = this.allTrxs.filter(t => t.merchant === e.merchant)
+          this.trxs = this.$store.state.spendingTrxs.filter(t => t.merchant === e.merchant)
         } else {
-          this.trxs = this.allTrxs.filter(t => this.dateIsInRange(t.updatedAt, this.monthNameActive) && t.merchant === e.merchant)
+          this.trxs = this.$store.state.spendingTrxs.filter(t => this.dateIsInRange(t.updatedAt, this.monthNameActive) && t.merchant === e.merchant)
         }
       }
       this.selectedRow = row

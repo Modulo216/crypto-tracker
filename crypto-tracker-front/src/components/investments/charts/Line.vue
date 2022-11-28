@@ -121,6 +121,7 @@ export default {
             backgroundColor: 'red',
             data: [],
             borderColor: "black",
+            pointRadius: 0,
           },
           {
             label: 'value',
@@ -128,6 +129,7 @@ export default {
             backgroundColor: 'blue',
             data: [],
             borderColor: "gray",
+            pointRadius: 0
           }
         ]
       },

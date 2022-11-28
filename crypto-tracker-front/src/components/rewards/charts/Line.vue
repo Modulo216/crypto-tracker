@@ -25,6 +25,7 @@ import {
   CategoryScale,
   PointElement
 } from 'chart.js'
+import ChartDataLabels from 'chartjs-plugin-datalabels'
 import chroma from "chroma-js"
 import dateMixin from '@/mixins/datesMixin'
 ChartJS.register(
@@ -34,8 +35,11 @@ ChartJS.register(
   LineElement,
   LinearScale,
   CategoryScale,
-  PointElement
+  PointElement,
+  ChartDataLabels
 )
+ChartJS.defaults.set('plugins.datalabels', { color: '#FFF' })
+ChartJS.defaults.set('font', { size: 12 })
 
 export default {
   name: 'LineChart',
@@ -121,14 +125,16 @@ export default {
             borderDash: [3, 7],
             backgroundColor: [],
             data: [],
-            borderColor: "red",
+            borderColor: "blue",
+            pointRadius: .5,
           },
           {
             label: 'Value',
             borderDash: [5, 5],
             backgroundColor: [],
             data: [],
-            borderColor: "#bae755",
+            borderColor: "black",
+            pointRadius: .5,
           }
         ]
       },
