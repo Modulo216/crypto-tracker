@@ -28,6 +28,16 @@
           :items="$store.state.homeCoinsSum"
           item-key="coin"
           class="elevation-10 home-table">
+          <template v-slot:[`item.coin`]="{ item }">
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <div style="cursor: pointer" class="rounded text-center" v-bind="attrs" v-on="on">
+                  {{ item.coin }}
+                </div>
+              </template>
+              <span>{{ item.amount.toFixed(8) }}</span>
+            </v-tooltip>
+          </template>
           <template v-slot:[`item.value`]="{ item }">
             <span>{{ getAsCurrency(item.value) }}</span>
           </template>

@@ -46,7 +46,7 @@
                 <v-row no-gutters>
                   <v-col lg="6" xs="12" class="pa-1">
                     <v-data-table
-                      @click:row="categoryClick"
+                      @click:row="rowClick"
                       single-select
                       dark
                       hide-default-footer
@@ -70,7 +70,7 @@
                     <section style="display:flex;flex-direction:column;height:539px;">
                       <v-card style="display:flex;overflow:hidden;">
                         <v-data-table
-                          @click:row="merchantClick"
+                          @click:row="rowClick"
                           single-select
                           style="width:100%"
                           fixed-header
@@ -176,14 +176,12 @@ export default {
       if(dateMonth === 'ALL') {
         this.trxs = this.$store.state.spendingTrxs
         this.checkings = this.$store.state.spendingChecking
-        this.getCategorySpending()
+        this.getSpending()
       } else {
         this.trxs = this.$store.state.spendingTrxs.filter(t => this.dateIsInRange(t.updatedAt, dateMonth))
         this.checkings = this.$store.state.spendingChecking.filter(q => this.dateIsInRange(q.date, dateMonth))
-        this.getCategorySpending(dateMonth)
+        this.getSpending(dateMonth)
       }
-
-      this.getMerchantSpending()
     },
     onTrxUpdated(item) {
       this.$store.commit('updateTrxs', item)
@@ -206,8 +204,10 @@ export default {
         this.$store.commit('addspendingChecking', i)
       })
     },
-    getCategorySpending(dateMonth) {
+    getSpending(dateMonth) {
       this.categorySpending = []
+      this.merchantSpending = []
+      let idx = 0
       const monthInterval = eachMonthOfInterval({start: new Date(new Date().getUTCFullYear(), 0, 1), end: new Date(new Date().getUTCFullYear(), 11, 1) })
     
       let spendingArr = []
@@ -231,26 +231,22 @@ export default {
 
       this.$store.getters.getCategories.forEach(c => {
         if(dateMonth) {
-          this.categorySpending.push({ category: c, 
+          this.categorySpending.push({ category: c, idx: idx++, 
             spending: spendingArr.find(d => d.dateMonth === dateMonth.month).categories.find(cat => cat.category === c).total,
             avg: averageArr.find(d => d.dateMonth === dateMonth.month && d.category === c).avg
           })
         } else {
-          this.categorySpending.push({ category: c, 
+          this.categorySpending.push({ category: c, idx: idx++, 
             spending: spendingArr.map(s => s.categories).flat().filter(cat => cat.category === c).map(({total}) => parseFloat(total)).reduce((prev, next) => prev + next, 0),
             avg: averageArr.filter(d => d.category === c).map(({avg}) => parseFloat(avg)).reduce((avg, value, _, { length }) => avg + value / length, 0)
           })
         }
       })
-    },
-    getMerchantSpending() {
-      this.merchantSpending = []
-      this.trxs.map(({merchant}) => merchant).forEach(m => {
-        if(!this.merchantSpending.some(merch => merch.merchant === m)) {
-          this.merchantSpending.push({ merchant: m,
-            amount: this.trxs.filter(t => t.merchant === m).map(({amount}) => parseFloat(amount)).reduce((prev, next) => prev + next, 0)
-          })
-        }
+
+      new Set(this.trxs.map(({merchant}) => merchant)).forEach(m => {
+        this.merchantSpending.push({ merchant: m, idx: idx++,
+          amount: this.trxs.filter(t => t.merchant === m).map(({amount}) => parseFloat(amount)).reduce((prev, next) => prev + next, 0)
+        })
       })
       this.merchantSpending.sort((a,b) => b.amount - a.amount);
     },
@@ -259,49 +255,23 @@ export default {
       let scale = chroma.scale(['#4CAF50', '#FAFAFA', '#F44336']).domain([0,2])
       return `background-color: ${ scale(val).hex() }`
     },
-    categoryClick(e, row) {
+    rowClick(e, row) {
       if(this.selectedRow !== undefined) {
         this.selectedRow.select(false)
       }
-      row.select(true)
 
-      if(this.trxs.every(t => t.category === e.category)) {
-        row.select(false)
-        if(this.monthNameActive === 'ALL') {
-          this.trxs = this.$store.state.spendingTrxs
-        } else {
-          this.trxs = this.$store.state.spendingTrxs.filter(t => this.dateIsInRange(t.updatedAt, this.monthNameActive))
-        }
+      if(this.selectedRow !== undefined && this.selectedRow.item.idx ===  e.idx) {
+        this.selectedRow = undefined
+        this.trxs = this.$store.state.spendingTrxs.filter(t => this.monthNameActive === 'ALL' ? true : this.dateIsInRange(t.updatedAt, this.monthNameActive))
       } else {
-        if(this.monthNameActive === 'ALL') {
-          this.trxs = this.$store.state.spendingTrxs.filter(t => t.category === e.category)
-        } else {
-          this.trxs = this.$store.state.spendingTrxs.filter(t => this.dateIsInRange(t.updatedAt, this.monthNameActive) && t.category === e.category)
+        if(e.hasOwnProperty('category')) {
+          this.trxs = this.$store.state.spendingTrxs.filter(t => t.category === e.category && (this.monthNameActive === 'ALL' ? true : this.dateIsInRange(t.updatedAt, this.monthNameActive)))
+        } else if(e.hasOwnProperty('merchant')) {
+          this.trxs = this.$store.state.spendingTrxs.filter(t => t.merchant === e.merchant && (this.monthNameActive === 'ALL' ? true : this.dateIsInRange(t.updatedAt, this.monthNameActive)))
         }
+        row.select(true)
+        this.selectedRow = row
       }
-      this.selectedRow = row
-    },
-    merchantClick(e, row) {
-      if(this.selectedRow !== undefined) {
-        this.selectedRow.select(false)
-      }
-      row.select(true)
-
-      if(this.trxs.every(t => t.merchant === e.merchant)) {
-        row.select(false)
-        if(this.monthNameActive === 'ALL') {
-          this.trxs = this.$store.state.spendingTrxs
-        } else {
-          this.trxs = this.$store.state.spendingTrxs.filter(t => this.dateIsInRange(t.updatedAt, this.monthNameActive))
-        }
-      } else {
-        if(this.monthNameActive === 'ALL') {
-          this.trxs = this.$store.state.spendingTrxs.filter(t => t.merchant === e.merchant)
-        } else {
-          this.trxs = this.$store.state.spendingTrxs.filter(t => this.dateIsInRange(t.updatedAt, this.monthNameActive) && t.merchant === e.merchant)
-        }
-      }
-      this.selectedRow = row
     }
   }
 }

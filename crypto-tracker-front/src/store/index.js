@@ -59,6 +59,8 @@ export default new Vuex.Store({
         state.homeCoinsSum[itemId].oldPrice = state.homeCoinsSum[itemId].price
         state.homeCoinsSum[itemId].value = item.value
         state.homeCoinsSum[itemId].price = item.price
+        state.homeCoinsSum[itemId].spent = item.spent
+        state.homeCoinsSum[itemId].amount = item.amount
       }
     },
     setSpending(state, {trxs, checking}) {
@@ -118,6 +120,9 @@ export default new Vuex.Store({
     },
     addInvestment(state, item) {
       state.allInvestments.push(item)
+    },
+    addInvestments(state, items) {
+      state.allInvestments.push(...items)
     },
     setLiquidation(state, items,) {
       state.allLiquidation = items

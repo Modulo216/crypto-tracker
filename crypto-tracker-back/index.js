@@ -72,7 +72,7 @@ app.get('/rewards', async (req, res, next) => {
       for (const txn of txns) {
         let reward = { exchange: "Coinbase", coin: t.coin, updatedAt: txn.created_at, exchangeId: txn.id,
           amount: txn.amount.amount, value: txn.native_amount.amount, title: txn.details.title, subtitle: txn.details.subtitle }
-        await resolvers.Mutation.addRewardImport(null, { reward: { ...reward } })
+        await resolvers.Mutation.addRewardImport(null, { reward: reward  })
         reward.liquidation = null
         retVal.push(reward)
       }
@@ -85,6 +85,7 @@ app.get('/rewards', async (req, res, next) => {
 
 app.get('/investments', async (req, res, next) => {
   try {
+    let retVal = []
     let interests = await resolvers.Query.getInterests(null, { $or: [{ name: 'BTC'}, { name: 'ETH' }]})
     let allTrxs = await Promise.all([getTrxs(interests.find(i => i.name === 'BTC').cbaseWalletId, false), getTrxs(interests.find(i => i.name === 'ETH').cbaseWalletId, false)])
     let buyTrxs = allTrxs.flat().filter(txn => isAfter(new Date(txn.created_at), new Date(2021, 7, 1)) && txn.type === "buy")
@@ -92,20 +93,22 @@ app.get('/investments', async (req, res, next) => {
     let atfSet = new Set(atfTrxs.map(atf => atf.advanced_trade_fill.order_id))
     
     for (const trx of buyTrxs) {
-      await resolvers.Mutation.addInvestmentImport(null, { investment: { exchangeId: trx.id, updatedAt: trx.created_at, coin: trx.amount.currency, title: trx.details.title,
-        subtitle: trx.details.subtitle, amount: trx.amount.amount, spent: trx.native_amount.amount, investType: 'buy', value: '0.00'
-      }})
+      let inv = { exchangeId: trx.id, updatedAt: trx.created_at, coin: trx.amount.currency, title: trx.details.title,
+        subtitle: trx.details.subtitle, amount: trx.amount.amount, spent: trx.native_amount.amount, investType: 'buy', value: '0.00' }
+      await resolvers.Mutation.addInvestmentImport(null, { investment: inv })
+      retVal.push(inv)
     }
 
     for (const atfId of atfSet) {
       let aftTrx = atfTrxs.filter(f => f.advanced_trade_fill.order_id === atfId)
-      await resolvers.Mutation.addInvestmentImport(null, { investment: { exchangeId: atfId, updatedAt: aftTrx[0].created_at, coin: aftTrx[0].amount.currency, title: aftTrx[0].details.title, subtitle: aftTrx[0].details.subtitle,
+      let inv = { exchangeId: atfId, updatedAt: aftTrx[0].created_at, coin: aftTrx[0].amount.currency, title: aftTrx[0].details.title, subtitle: aftTrx[0].details.subtitle,
         amount: aftTrx.map(t => t.amount).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0).toString(),
         spent: aftTrx.map(t => t.native_amount).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0).toString(), investType: 'atf',
-        fillPrice: aftTrx[0].advanced_trade_fill.fill_price, value: '0.00'
-      }})
+        fillPrice: aftTrx[0].advanced_trade_fill.fill_price, value: '0.00' }
+      await resolvers.Mutation.addInvestmentImport(null, { investment: inv})
+      retVal.push(inv)
     }
-    res.send('OK')
+    res.send(retVal)
   } catch (error) {
     next(error)
   }

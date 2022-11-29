@@ -104,7 +104,7 @@ export default {
         this.chartData.datasets[1].data.push(
           (this.investments.filter(t => isAfter(new Date(m.year, m.month, 30), new Date(t.updatedAt))).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0) *
             ((idx + 1 === monthYears.length) ? $cookies.get(this.investments[0].coin) || 0 : 
-            this.investments.filter(t => new Date(t.updatedAt).getUTCMonth() === m.month && new Date(t.updatedAt).getUTCFullYear() === m.year && t.fillPrice).map(t => parseFloat(t.fillPrice)).reduce((avg, value, _, { length }) => avg + value / length, 0))
+            this.investments.filter(t => new Date(t.updatedAt).getUTCMonth() === m.month && new Date(t.updatedAt).getUTCFullYear() === m.year).map(t => parseFloat(t.fillPrice)).reduce((avg, value, _, { length }) => avg + value / length, 0))
           ).toFixed(2)
         )
       })

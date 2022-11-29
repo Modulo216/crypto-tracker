@@ -81,6 +81,9 @@ export default {
   },
   methods: {
     buildTable(newAllTrxs) {
+      for(let i = 0;i <= 4;i++) {
+        this.chartData.datasets[i].data = []
+      }
       this.chartData.labels = [...this.$store.getters.getMonthNames.slice(0, new Date().getMonth()+1)]
 
       eachMonthOfInterval({ start: startOfYear(new Date()), end: lastDayOfMonth(new Date()) }).forEach(m => {

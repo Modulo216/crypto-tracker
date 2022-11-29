@@ -49,7 +49,6 @@
 
 <script>
 import MonthPicker from '../components/shared/MonthPicker'
-import { getInvestments } from '../api/apollo'
 import { getCoinPrice } from '../api/endpoints/coinbase'
 import { refreshInvestments } from '../api/endpoints/investments'
 import InvestmentsTable from '../components/investments/InvestmentsTable'
@@ -77,11 +76,11 @@ import dateMixin from '@/mixins/datesMixin'
         return this.$store.state.allInvestments
       }
     },
-    watch: {
-      allInvestments(newAllTheRewards) {
-        this.loadInvestments()
-      }
-    },
+    // watch: {
+    //   allInvestments(newAllTheRewards) {
+    //     this.loadInvestments()
+    //   }
+    // },
     methods: {
       loadInvestments() {
         this.onMonthClick('ALL')
@@ -112,12 +111,10 @@ import dateMixin from '@/mixins/datesMixin'
         })
 
         let res = await refreshInvestments()
-        if(res.status === 200) {
-          this.$store.dispatch('populateInvestments')
-          callback("done")
-        } else {
-          alert("PROBLEM")
-        }
+        let unique = res.data.filter(p => !this.allInvestments.some(t => t.exchangeId === p.exchangeId))
+        this.$store.commit('addInvestments', unique)
+        callback("done")
+        this.loadInvestments()
       },
       getAsCurrency(numb) {
         return numb.toLocaleString('en-US', {
