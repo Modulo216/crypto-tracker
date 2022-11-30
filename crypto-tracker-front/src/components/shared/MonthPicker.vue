@@ -1,10 +1,10 @@
 <template>
   <v-container>
     <span>
-    <div v-for="(monthYear, index) in monthYears" :key="index" style="font-size:14px">
-      <a @click="$emit('monthClick', monthYear)">{{ $store.getters.getMonthNames[monthYear.month] }} - {{ monthYear.year.toString().slice(-2) }}</a>
+    <div v-for="(monthYear, index) in monthYears" :key="index" :style="`${active === index ? 'font-size:16px;font-weight:bold' : 'font-size:14px'}`">
+      <a @click="active = index;$emit('monthClick', monthYear)">{{ $store.getters.getMonthNames[monthYear.month] }} - {{ monthYear.year.toString().slice(-2) }}</a>
     </div>
-    <a @click="$emit('monthClick', 'ALL')">All</a>
+    <a :style="`${active === monthYears.length ? 'font-size:16px;font-weight:bold' : 'font-size:14px'}`" @click="active = monthYears.length;$emit('monthClick', 'ALL')">All</a>
     </span>
   </v-container>
 </template>
@@ -15,14 +15,17 @@ export default {
     trxs: Array
   },
   data: () => ({
-    monthYears: []
+    monthYears: [],
+    active: 0
   }),
   created() {
-    this.populateItems()    
+    this.populateItems()
+    this.active = this.monthYears.length - (this.$route.name === 'investments' ? 0 : 1)
   },
   watch: {
     trxs(newTrxs) {
       this.populateItems()
+      this.active = this.monthYears.length - (this.$route.name === 'investments' ? 0 : 1)
     }
   },
   methods: {

@@ -76,11 +76,11 @@ import dateMixin from '@/mixins/datesMixin'
         return this.$store.state.allInvestments
       }
     },
-    // watch: {
-    //   allInvestments(newAllTheRewards) {
-    //     this.loadInvestments()
-    //   }
-    // },
+    watch: {
+      allInvestments(newAllTheRewards) {
+        this.loadInvestments()
+      }
+    },
     methods: {
       loadInvestments() {
         this.onMonthClick('ALL')
@@ -114,7 +114,7 @@ import dateMixin from '@/mixins/datesMixin'
         let unique = res.data.filter(p => !this.allInvestments.some(t => t.exchangeId === p.exchangeId))
         this.$store.commit('addInvestments', unique)
         callback("done")
-        this.loadInvestments()
+        // this.loadInvestments()
       },
       getAsCurrency(numb) {
         return numb.toLocaleString('en-US', {

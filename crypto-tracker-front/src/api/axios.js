@@ -8,12 +8,4 @@ const axiosClient = axios.create({
   }
 })
 
-const cbaseAxioClient = axios.create({
-  baseURL: `https://api.coinbase.com`,
-  headers: {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json'
-  }
-})
-
-export { axiosClient, cbaseAxioClient}
+export { axiosClient }

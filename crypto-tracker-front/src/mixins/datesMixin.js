@@ -12,7 +12,8 @@ const adjustForUTCOffset = date => {
 let dateMixin = {
   methods: {
     dateIsInRange(dateString, monthYear) {
-      let utcDate = adjustForUTCOffset(new Date(dateString))
+      //let utcDate = adjustForUTCOffset(new Date(dateString))
+      let utcDate = new Date(dateString)
       return monthYear.month === utcDate.getMonth() && monthYear.year === utcDate.getFullYear()
     }
   }

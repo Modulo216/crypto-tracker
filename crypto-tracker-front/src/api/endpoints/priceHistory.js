@@ -1,5 +1,9 @@
 import {axiosClient} from "../axios";
 
 export function refreshPriceHistory() {
-  return axiosClient.get('/update-history');
+  try {
+    return axiosClient.get('/update-history')
+  } catch (error) {
+    alert(error)
+  }
 }

@@ -1,5 +1,9 @@
 import {axiosClient} from "../axios";
 
 export function refreshTrxs(cbaseWalletId) {
-  return axiosClient.get(`/trxs?cwi=${cbaseWalletId}`);
+  try {
+    return axiosClient.get(`/trxs?cwi=${cbaseWalletId}`)
+  } catch (error) {
+    alert(error)
+  }
 }

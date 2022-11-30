@@ -1,5 +1,9 @@
 import {axiosClient} from "../axios"
 
 export function refreshInvestments() {
-  return axiosClient.get('/investments')
+  try {
+    return axiosClient.get('/investments')
+  } catch (error) {
+    alert(error)
+  }
 }
