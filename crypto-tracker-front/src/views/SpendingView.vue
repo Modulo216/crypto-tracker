@@ -141,7 +141,7 @@ export default {
       let spend = await Promise.all([getTrxs(), getChecking()])
       this.$store.commit('setSpending', {trxs: spend[0], checking: spend[1]})
     }
-    this.onMonthClick(this.monthNameActive !== '' ? this.monthNameActive : {month: new Date().getUTCMonth(), year: new Date().getUTCFullYear()})
+    this.onMonthClick(this.monthNameActive !== '' ? this.monthNameActive : {month: new Date().getMonth(), year: new Date().getFullYear()})
   },
   computed: {
     getCardSpent() {
@@ -165,7 +165,7 @@ export default {
       let unique = res.data.filter(p => !this.$store.state.spendingTrxs.some(t => t.exchangeId === p.exchangeId))
       this.$store.commit('addTrxs', unique)
       callback("done")
-      this.onMonthClick(this.monthNameActive !== '' ? this.monthNameActive : {month: new Date().getUTCMonth(), year: new Date().getUTCFullYear()})
+      this.onMonthClick(this.monthNameActive !== '' ? this.monthNameActive : {month: new Date().getMonth(), year: new Date().getFullYear()})
     },
     onMonthClick(dateMonth) {
       if(this.selectedRow !== undefined) {

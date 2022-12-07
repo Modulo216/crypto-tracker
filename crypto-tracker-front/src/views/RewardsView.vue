@@ -67,7 +67,7 @@ export default {
   },
   methods: {
     loadRewards() {
-      this.onMonthClick(this.monthNameActive !== '' ? this.monthNameActive : {month: new Date().getUTCMonth(), year: new Date().getUTCFullYear()})
+      this.onMonthClick(this.monthNameActive !== '' ? this.monthNameActive : {month: new Date().getMonth(), year: new Date().getFullYear()})
     },
     getAsCurrency(numb) {
       return numb.toLocaleString('en-US', {

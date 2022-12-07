@@ -34,6 +34,9 @@
               <v-col cols="3" v-if="liqData.event === 'Swap'">
                 <v-text-field v-model="liqData.newCoinAmount" label="New Coin Amount" />
               </v-col>
+              <v-col cols="3">
+                {{ selected[0].coin }}<br />{{ selected.map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0) }}
+              </v-col>
             </v-row>
           </v-container>
         </v-card-text>
