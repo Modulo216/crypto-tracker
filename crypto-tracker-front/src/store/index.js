@@ -63,6 +63,9 @@ export default new Vuex.Store({
         state.homeCoinsSum[itemId].amount = item.amount
       }
     },
+    removeCoinsSum(state, coin) {
+      state.homeCoinsSum.splice(state.homeCoinsSum.findIndex(i => i.coin === coin), 1)
+    },
     setSpending(state, {trxs, checking}) {
       state.spendingTrxs = trxs
       state.spendingChecking = checking
@@ -112,8 +115,32 @@ export default new Vuex.Store({
       state.allRewards.push(...items)
     },
     updatedTax(state, item) {
-      let indexOf = state.allTaxes.findIndex(i => i.id === item.id)
+      let indexOf = state.allTaxes.findIndex(i => i.exchangeId === item.exchangeId)
       Object.assign(state.allTaxes[indexOf], item)
+    },
+    updateLiqItems(state, { items, liq }) {
+      items.forEach(item => {
+        item.liquidation = true
+        if(liq.model_type === 'Tax') {
+          Vue.set(state.allTaxes, state.allTaxes.findIndex(i => i.exchangeId === item.exchangeId), item)
+        } else if(liq.model_type === 'Reward') {
+          Vue.set(state.allRewards, state.allRewards.findIndex(i => i.exchangeId === item.exchangeId), item)
+        }
+      })
+
+      if(state.homeCoinsSum.length > 0) {
+        const itemId = state.homeCoinsSum.findIndex(c => c.coin === items[0].coin)
+        state.homeCoinsSum[itemId].amount = state.homeCoinsSum[itemId].amount - items.map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0)
+        state.homeCoinsSum[itemId].value = state.homeCoinsSum[itemId].amount * state.homeCoinsSum[itemId].price
+
+        if(liq.event === 'Swap') {
+          const swapCoinId = state.homeCoinsSum.findIndex(c => c.coin === liq.newCoin)
+          state.homeCoinsSum[swapCoinId].amount = state.homeCoinsSum[swapCoinId].amount + parseFloat(liq.newCoinAmount)
+          state.homeCoinsSum[swapCoinId].value = state.homeCoinsSum[swapCoinId].amount * state.homeCoinsSum[swapCoinId].price
+        }
+      }
+      
+      state.historyChartData = []
     },
     setInvestments(state, items) {
       state.allInvestments = items
@@ -126,7 +153,10 @@ export default new Vuex.Store({
     },
     setLiquidation(state, items,) {
       state.allLiquidation = items
-    }
+    },
+    addLiquidation(state, item) {
+      state.allLiquidation.push(item)
+    },
   },
   actions: {
     populateInterests: (context) => getInterests().then(r => context.commit('setInterests', r)),

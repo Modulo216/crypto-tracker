@@ -99,6 +99,7 @@
           </v-expansion-panels>
           <v-col lg="12">
             <bar />
+            <line-chart />
           </v-col>
         </v-row>
       </v-col>
@@ -110,6 +111,7 @@
 import SpendingTable from '../components/spending/SpendingTable'
 import MonthPicker from '../components/shared/MonthPicker'
 import Bar from '../components/spending/charts/Bar'
+import LineChart from '../components/spending/charts/Line'
 import CheckingInput from '../components/spending/CheckingInput'
 import { getTrxs, getChecking, deleteChecking, addChecking } from '../api/apollo'
 import eachMonthOfInterval from 'date-fns/eachMonthOfInterval'
@@ -123,6 +125,7 @@ export default {
     SpendingTable,
     MonthPicker,
     Bar,
+    LineChart,
     CheckingInput
   },
   mixins: [dateMixin],

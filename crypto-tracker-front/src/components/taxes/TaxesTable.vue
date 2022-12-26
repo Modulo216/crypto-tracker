@@ -13,11 +13,11 @@
                   mdi-refresh
                 </v-icon>
               </v-btn>
-              <v-btn color="primary" dark class="ml-2" @click="dialog = true" :disabled="loadingTaxes">
+              <!-- <v-btn color="primary" dark class="ml-2" @click="dialog = true" :disabled="loadingTaxes">
                 <v-icon dark>
                   mdi-plus-thick
                 </v-icon>
-              </v-btn>
+              </v-btn> -->
               <download-excel :data="taxes">
                 <v-btn color="primary" dark class="ml-2">
                   <v-icon dark>
@@ -29,6 +29,7 @@
                 <v-icon dark>
                   mdi-water
                 </v-icon>
+                <span v-if="selected.length > 0">{{ selected.map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0)}}</span>
               </v-btn>
             </v-toolbar>
           </template>
@@ -66,7 +67,7 @@
       </v-col>
     </v-row>
 
-    <v-dialog v-model="dialog" max-width="800px">
+    <!-- <v-dialog v-model="dialog" max-width="800px">
       <v-card>
         <v-card-title>
           <span class="text-h5">New Tax Event</span>
@@ -123,8 +124,8 @@
           <v-btn color="blue darken-1" text @click="addTax">Save</v-btn>
         </v-card-actions>
       </v-card>
-    </v-dialog>
-    <liquidation-dialog v-model="showLiquidationDialog" :selected="selected" modelType="Tax" @savedLiquidation="(liq) => { selected.forEach(s => s.liquidation = liq);selected = [] }" />
+    </v-dialog> -->
+    <liquidation-dialog v-model="showLiquidationDialog" :selected="selected" modelType="Tax" @savedLiquidation="(liq) => { $store.commit('updateLiqItems', { items: selected, liq: liq });selected = [] }" />
   </v-container>
 </template>
 <script>
@@ -156,41 +157,41 @@ export default {
       { text: 'Tax', sortable: true, value: 'value' }
     ],
     loadingTaxes: false,
-    dateModal: false,
-    dialog: false,
-    defaultItem: {
-      updatedAt: format(parseISO(new Date().toISOString()), 'yyyy-MM-dd'),
-      exchange: '',
-      activity: '',
-      coin: '',
-      amount: '',
-      value: '',
-    },
-    editItem: {
-      updatedAt: format(parseISO(new Date().toISOString()), 'yyyy-MM-dd'),
-      exchange: '',
-      activity: '',
-      coin: '',
-      amount: '',
-      value: '',
-    },
+    // dateModal: false,
+    // dialog: false,
+    // defaultItem: {
+    //   updatedAt: format(parseISO(new Date().toISOString()), 'yyyy-MM-dd'),
+    //   exchange: '',
+    //   activity: '',
+    //   coin: '',
+    //   amount: '',
+    //   value: '',
+    // },
+    // editItem: {
+    //   updatedAt: format(parseISO(new Date().toISOString()), 'yyyy-MM-dd'),
+    //   exchange: '',
+    //   activity: '',
+    //   coin: '',
+    //   amount: '',
+    //   value: '',
+    // },
   }),
-  computed: {
-    formatDateDb() {
-      return this.editItem.updatedAt ? format(parseISO(this.editItem.updatedAt), 'MM/dd/yy') : ''
-    },
-  },
+  // computed: {
+  //   formatDateDb() {
+  //     return this.editItem.updatedAt ? format(parseISO(this.editItem.updatedAt), 'MM/dd/yy') : ''
+  //   },
+  // },
   methods: {
     save(e) {
       updateTax(e)
       this.$emit('taxUpdated', e)
     },
-    addTax() {
-      addTax(this.editItem)
-      this.$emit('taxAdded', this.editItem)
-      this.editItem = Object.assign({}, this.defaultItem)
-      this.dialog = false
-    },
+    // addTax() {
+    //   addTax(this.editItem)
+    //   this.$emit('taxAdded', this.editItem)
+    //   this.editItem = Object.assign({}, this.defaultItem)
+    //   this.dialog = false
+    // },
     getAsCurrency(numb) {
       return numb.toLocaleString('en-US', {
         style: 'currency',

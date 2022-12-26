@@ -33,27 +33,25 @@
                     </v-data-table>
                   </v-col>
                   <v-col lg="6" sm="12" class="pa-1">
+                    <v-card class="mb-2" dark>
+                      <v-card-text class="subtitle-1 pa-0 d-flex">
+                        <div class="px-1" style="flex: 0 0 50%;">Tax: <span class="red--text">{{ getAsCurrency(taxes.map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0)) }}</span></div>
+                        <div class="px-1">Val: <span class="green--text">{{ getAsCurrency(coinsSum.map(t => parseFloat(t.val)).reduce((prev, next) => prev + next, 0)) }}</span></div>
+                      </v-card-text>
+                    </v-card>
                     <v-data-table
-                      @click:row="rowClick"
-                      single-select
                       dark
                       hide-default-footer
                       dense
                       disable-pagination
-                      :headers="[{ text: 'Exchange', value: 'exchange' },{ text: 'Sum', value: 'sum' }]"
-                      :items="exchangeSum"
-                      item-key="exchange"
+                      :headers="[{ text: 'Year', value: 'year' },{ text: 'Sum', value: 'sum' }]"
+                      :items="yearsSum"
+                      item-key="year"
                       class="elevation-10 row-pointer">
                       <template v-slot:[`item.sum`]="{ item }">
                         <span>{{ getAsCurrency(item.sum) }}</span>
                       </template>
                     </v-data-table>
-                    <v-card class="my-2" dark>
-                      <v-card-text class="subtitle-1 pa-3 d-flex">
-                        <div style="flex: 0 0 50%;">Tax: <span class="red--text">{{ getAsCurrency(taxes.map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0)) }}</span></div>
-                        <div>Val: <span class="green--text">{{ getAsCurrency(coinsSum.map(t => parseFloat(t.val)).reduce((prev, next) => prev + next, 0)) }}</span></div>
-                      </v-card-text>
-                    </v-card>
                   </v-col>
                   <v-col lg="12" sm="12" class="pa-1">
                     <v-data-table
@@ -113,7 +111,7 @@ export default {
   data: () => ({
     taxes: [],
     activitySum: [],
-    exchangeSum: [],
+    yearsSum: [],
     coinsSum: [],
     monthNameActive: '',
     panel: [0],
@@ -180,7 +178,7 @@ export default {
     },
     setSums(dateMonth) {
       this.activitySum = []
-      this.exchangeSum = []
+      this.yearsSum = []
       this.coinsSum = []
       let idx = 0
 
@@ -189,9 +187,9 @@ export default {
           this.taxes.filter(t => t.activity === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0)
         })
       })
-      new Set(this.taxes.map(t => t.exchange)).forEach(a => {
-        this.exchangeSum.push({ exchange: a, idx: idx++, sum: 
-          this.taxes.filter(t => t.exchange === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0)
+      new Set(this.allTaxes.map(l => l.updatedAt.substring(0,4))).forEach(a => {
+        this.yearsSum.push({ year: a, sum: 
+          this.allTaxes.filter(t => t.updatedAt.substring(0,4) === a).map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0)
         })
       })
       new Set(this.taxes.map(t => t.coin)).forEach(a => {
@@ -214,8 +212,6 @@ export default {
       } else {
         if(e.hasOwnProperty('coin')) {
           this.taxes = this.allTaxes.filter(t => t.coin === e.coin && (this.monthNameActive === 'ALL' ? true : this.dateIsInRange(t.updatedAt, this.monthNameActive)))
-        } else if(e.hasOwnProperty('exchange')) {
-          this.taxes = this.allTaxes.filter(t => t.exchange === e.exchange && (this.monthNameActive === 'ALL' ? true : this.dateIsInRange(t.updatedAt, this.monthNameActive)))
         } else {
           this.taxes = this.allTaxes.filter(t => t.activity === e.activity && (this.monthNameActive === 'ALL' ? true : this.dateIsInRange(t.updatedAt, this.monthNameActive)))
         }

@@ -1,8 +1,12 @@
 import {axiosClient} from "../axios"
 
-export function refreshInvestments() {
+export async function refreshInvestments() {
   try {
-    return axiosClient.get('/investments')
+    const response = await axiosClient.get('/investments')
+    if(response.status !== 200) {
+      throw new Error(response.statusText)
+    }
+    return response
   } catch (error) {
     alert(error)
   }

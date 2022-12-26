@@ -24,6 +24,7 @@
                 <v-icon dark>
                   mdi-water
                 </v-icon>
+                <span v-if="selected.length > 0">{{ selected.map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0)}}</span>
               </v-btn>
             </v-toolbar>
           </template>
@@ -40,7 +41,7 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <liquidation-dialog v-model="showLiquidationDialog" :selected="selected" modelType="Reward" @savedLiquidation="(liq) => { selected.forEach(s => s.liquidation = liq);selected = [] }" />
+    <liquidation-dialog v-model="showLiquidationDialog" :selected="selected" modelType="Reward" @savedLiquidation="(liq) => { $store.commit('updateLiqItems', { items: selected, liq: liq });selected = [] }" />
   </v-container>
 </template>
 <script>

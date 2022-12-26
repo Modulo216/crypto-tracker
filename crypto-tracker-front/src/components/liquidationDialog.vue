@@ -29,13 +29,16 @@
                 <v-checkbox v-model="liqData.taxable" label="Taxable?" />
               </v-col>
               <v-col cols="3" v-if="liqData.event === 'Swap'">
-                <v-select label="New Coin" v-model="liqData.newCoin" :items="this.$store.state.interests.map(r => r.name)" />
+                <v-select @change="changeNewCoin" label="New Coin" v-model="liqData.newCoin" :items="this.$store.state.interests.map(r => r.name)" />
               </v-col>
               <v-col cols="3" v-if="liqData.event === 'Swap'">
                 <v-text-field v-model="liqData.newCoinAmount" label="New Coin Amount" />
               </v-col>
               <v-col cols="3">
                 {{ selected.length > 0 ? selected[0].coin : '' }}<br />{{ selected.map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0) }}
+              </v-col>
+              <v-col cols="3">
+                Old Value<br />{{ getAsCurrency(selected.map(item => parseFloat(item.value)).reduce((prev, next) => prev + next, 0)) }}
               </v-col>
             </v-row>
           </v-container>
@@ -69,11 +72,29 @@ export default {
   }),
   computed: {
     show: {
-      get () { return this.value },
+      get () { 
+        if(this.value) {
+          let price = $cookies.get(this.selected[0].coin) || 0
+          this.liqData.usdAmount = (price * this.selected.map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0)).toFixed(2)
+          let newCoinPrice = $cookies.get(this.liqData.newCoin) || 0
+          this.liqData.newCoinAmount = (this.liqData.usdAmount / newCoinPrice).toFixed(8)
+        }
+        return this.value
+      },
       set (value) { this.$emit('input', value) }
     }
   },
   methods: {
+    getAsCurrency(numb) {
+      return numb.toLocaleString('en-US', {
+        style: 'currency',
+        currency: 'USD',
+      })
+    },
+    async changeNewCoin(newCoin) {
+      const newCoinPrice = await $cookies.get(newCoin)
+      this.liqData.newCoinAmount = newCoinPrice === null ? 0 : (this.liqData.usdAmount / newCoinPrice).toFixed(8)
+    },
     async save() {
       const liq = { ...this.liqData, model_type: this.modelType, liquid: this.selected.map(s => s.id) }
       if(this.liqData.event === 'Sell') {
@@ -82,6 +103,8 @@ export default {
       }
       await addLiquidation(liq)
       this.show = false
+      liq.liquid = this.selected
+      this.$store.commit('addLiquidation', liq)
       this.$emit('savedLiquidation', liq)
       Object.assign(this.$data, this.$options.data())
     }

@@ -204,7 +204,7 @@ export const typeDefs = gql`
     addInvestment(investment: InvestmentInput): Investment
     addInvestmentImport(investment: InvestmentInput): Investment
     updateTax(tax: TaxInput): Tax
-    deletePriceHistoryMany(priceHistory: PriceHistoryInput): ID
+    deletePriceHistoryMany(interest: InterestInput!): Int
     delReward(id: ID): Reward
   }
 `

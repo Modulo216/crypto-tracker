@@ -1,0 +1,3 @@
+mutation deletePriceHistoryMany($interest: InterestInput!) {
+  deletePriceHistoryMany(interest: $interest)
+}

@@ -111,23 +111,6 @@ export default {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          // zoom: {
-          //   pan: {
-          //     enabled: false,
-          //   },
-          //   zoom: {
-          //     wheel: {
-          //       enabled: true
-          //     },
-          //     pinch: {
-          //       enabled: true
-          //     },
-          //     drag: {
-          //       enabled: true
-          //     },
-          //     mode: 'x',
-          //   },
-          // },
           legend: {
             onHover: (evt, item, legend) => {
               legend.chart.data.datasets.map(t => t.borderColor).forEach((color, index, colors) => {

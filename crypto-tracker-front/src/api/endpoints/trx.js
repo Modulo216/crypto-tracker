@@ -1,8 +1,12 @@
 import {axiosClient} from "../axios";
 
-export function refreshTrxs(cbaseWalletId) {
+export async function refreshTrxs(cbaseWalletId) {
   try {
-    return axiosClient.get(`/trxs?cwi=${cbaseWalletId}`)
+    const response = await axiosClient.get(`/trxs?cwi=${cbaseWalletId}`)
+    if(response.status !== 200) {
+      throw new Error(response.statusText)
+    }
+    return response
   } catch (error) {
     alert(error)
   }

@@ -2,7 +2,7 @@
   <v-container fluid>
     <v-row>
       <v-col cols="1">
-        <month-picker :trxs="this.allInvestments" @monthClick="onMonthClick" />
+        <month-picker :trxs="allInvestments" @monthClick="onMonthClick" />
       </v-col>
       <v-col cols="6">
         <investments-table :investments="investments" :monthNameActive="monthNameActive" @refreshInvestments="onRefreshInvestments" @investmentAdded="onInvestmentAdded" />

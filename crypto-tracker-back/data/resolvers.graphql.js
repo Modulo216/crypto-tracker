@@ -94,13 +94,9 @@ export const resolvers = {
       
       return await newPriceHistory.save()
     },
-    deletePriceHistoryMany: async (root, { priceHistory }) => {
-      let priceHistories = await PriceHistory.find()
-      let toDel = priceHistories.filter(i => isBefore(getDateAsUtc(i.date), getDateAsUtc(priceHistory.date)) && i.coin === priceHistory.coin)
-
-      toDel.forEach(async p => {
-        await PriceHistory.findByIdAndRemove(p.id)
-      })
+    deletePriceHistoryMany: async (root, { interest }) => {
+      let items = await PriceHistory.deleteMany({ coin: interest.name })
+      return items.deletedCount
     },
     addPriceHistoryMany: (root, {arr}) => {  
       if(arr.length > 0) {

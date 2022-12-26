@@ -43,6 +43,7 @@
                     </v-container>
                   </v-card-text>
                   <v-card-actions>
+                    <v-btn color="blue darken-1" text @click="delPriceHistory">Remove History</v-btn>
                     <v-spacer></v-spacer>
                     <v-btn color="blue darken-1" text @click="closeDialog">Cancel</v-btn>
                     <v-btn color="blue darken-1" text @click="save">Save</v-btn>
@@ -73,7 +74,7 @@
 </template>
 
 <script>
-import { addInterest, deleteInterest, updateInterest, delReward } from '../../api/apollo'
+import { addInterest, deleteInterest, updateInterest, delReward, delPriceHistory } from '../../api/apollo'
   export default {
     name: 'interests-table',
     data: () => ({
@@ -111,7 +112,9 @@ import { addInterest, deleteInterest, updateInterest, delReward } from '../../ap
         this.editedItem = Object.assign({}, item)
         this.dialog = true
       },
-
+      async delPriceHistory() {
+        await delPriceHistory(this.editedItem)
+      },
       deleteItem (item) {
         this.editedItem = Object.assign({}, item)
         this.dialogDelete = true
@@ -135,6 +138,10 @@ import { addInterest, deleteInterest, updateInterest, delReward } from '../../ap
           updateInterest(this.editedItem)
           this.$store.commit('updatedInterest', this.editedItem)
         }
+        if(this.editedItem.nickName === '') {
+          this.$store.commit('removeCoinsSum', this.editedItem.name)
+        }
+        this.$store.commit('setChartHistory', [])
         this.closeDialog()
       },
     }
