@@ -1,7 +1,7 @@
 <template>
   <v-container fluid>
     <v-row>
-      <v-col cols="8">
+      <v-col cols="9">
         <v-data-table dark dense :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :headers="headers" :items="liquidations" item-key="id" class="elevation-10" hide-default-footer disable-pagination>
           <template v-slot:[`item.updatedAt`]="{ item }">
             <span>{{ formatDate(item.updatedAt) }}</span>
@@ -17,17 +17,17 @@
           <template v-slot:[`item.days`]="{ item }">
             <span>{{ differenceInDays($store.getters.getUtcDate(item.updatedAt), new Date(item.liquid[0].updatedAt)) }}</span>
           </template>
+          <template v-slot:[`item.usdAmount`]="{ item }">
+            <span>{{ getAsCurrency(parseFloat(item.usdAmount)) }}</span>
+          </template>
           <template v-slot:[`item.profit`]="{ item }">
-            <div v-if="item.taxable" class="px-3 py-1 black--text rounded text-center" :style="`width:70px;background-color: ${ getGainLoss(item) > 0 ? '#4CAF50' : getGainLoss(item) === 0 ? '#FAFAFA' : '#F44336' }`">
+            <div class="px-3 py-1 black--text rounded text-center" :style="`width:70px;background-color: ${ getGainLoss(item) > 0 ? '#4CAF50' : getGainLoss(item) === 0 ? '#FAFAFA' : '#F44336' }`">
               {{ getAsCurrency(getGainLoss(item)) }}
-            </div>
-            <div v-if="!item.taxable" class="px-3 py-1 white--text rounded text-center" style="width:70px; background-color:cornflowerblue">
-              {{ getAsCurrency(parseFloat(item.usdAmount)) }}
             </div>
           </template>
         </v-data-table>
       </v-col>
-      <v-col cols="4">
+      <v-col cols="3">
         <v-row>
           <v-col lg="12" sm="12">
             <v-data-table
@@ -53,7 +53,7 @@
               hide-default-footer
               dense
               disable-pagination
-              :headers="[{ text: 'Year', value: 'year' },{ text: 'Short', value: 'shortTerm' },{ text: 'Long', value: 'longTerm' },{ text: 'Not Taxable', value: 'notTaxable' },{ text: 'Earned', value: 'earned' }]"
+              :headers="[{ text: 'Year', value: 'year' },{ text: 'Short', value: 'shortTerm' },{ text: 'Long', value: 'longTerm' },{ text: '$$$', value: 'dollars' }]"
               :items="sellData"
               item-key="year"
               class="elevation-10" />
@@ -77,8 +77,9 @@ export default {
       { text: 'Source', sortable: false, value: 'model_type' },
       { text: 'Event', sortable: false, value: 'event' },
       { text: 'Coin', sortable: false, value: 'coin' },
-      { text: 'Amount', sortable: false, value: 'newCoinAmount' },
       { text: 'Days', sortable: false, value: 'days' },
+      { text: 'Amount', sortable: false, value: 'newCoinAmount' },
+      { text: 'USD', sortable: false, value: 'usdAmount' },
       { text: 'Gain / Loss', sortable: false, value: 'profit' }
     ],
   }),
@@ -109,14 +110,14 @@ export default {
       this.swapData.push( { coin: '$$$', amount: amount.toFixed(2), value: amount, origValue: amount } )
 
       new Set(this.liquidations.map(l => l.updatedAt.substring(0,4))).forEach(c => {
-        let shortTerm = this.liquidations.filter(t => t.taxable && t.updatedAt.substring(0,4) === c && Math.abs(differenceInYears(new Date(t.updatedAt), new Date(t.liquid[0].updatedAt))) === 0).map(item => parseFloat(item.usdAmount)).reduce((prev, next) => prev + next, 0) -
-          this.liquidations.filter(t => t.taxable && t.updatedAt.substring(0,4) === c && Math.abs(differenceInYears(new Date(t.updatedAt), new Date(t.liquid[0].updatedAt))) === 0).map(item => item.liquid).flat().map(item => parseFloat(item.value)).reduce((prev, next) => prev + next, 0) 
-        let longTerm = this.liquidations.filter(t => t.taxable && t.updatedAt.substring(0,4) === c && Math.abs(differenceInYears(new Date(t.updatedAt), new Date(t.liquid[0].updatedAt))) >= 1).map(item => parseFloat(item.usdAmount)).reduce((prev, next) => prev + next, 0) -
-          this.liquidations.filter(t => t.taxable && t.updatedAt.substring(0,4) === c && Math.abs(differenceInYears(new Date(t.updatedAt), new Date(t.liquid[0].updatedAt))) >= 1).map(item => item.liquid).flat().map(item => parseFloat(item.value)).reduce((prev, next) => prev + next, 0)
-
-        let notTaxable = this.liquidations.filter(t => !t.taxable && t.updatedAt.substring(0,4) === c).map(item => parseFloat(item.usdAmount)).reduce((prev, next) => prev + next, 0)
+        let shortTerm = this.liquidations.filter(t => t.updatedAt.substring(0,4) === c && Math.abs(differenceInYears(new Date(t.updatedAt), new Date(t.liquid[0].updatedAt))) === 0).map(item => parseFloat(item.usdAmount)).reduce((prev, next) => prev + next, 0) -
+          this.liquidations.filter(t => t.updatedAt.substring(0,4) === c && Math.abs(differenceInYears(new Date(t.updatedAt), new Date(t.liquid[0].updatedAt))) === 0).map(item => item.liquid).flat().map(item => parseFloat(item.value)).reduce((prev, next) => prev + next, 0) 
+        let longTerm = this.liquidations.filter(t => t.updatedAt.substring(0,4) === c && Math.abs(differenceInYears(new Date(t.updatedAt), new Date(t.liquid[0].updatedAt))) >= 1).map(item => parseFloat(item.usdAmount)).reduce((prev, next) => prev + next, 0) -
+          this.liquidations.filter(t => t.updatedAt.substring(0,4) === c && Math.abs(differenceInYears(new Date(t.updatedAt), new Date(t.liquid[0].updatedAt))) >= 1).map(item => item.liquid).flat().map(item => parseFloat(item.value)).reduce((prev, next) => prev + next, 0)
         
-        this.sellData.push({ year: c, shortTerm: this.getAsCurrency(shortTerm), longTerm: this.getAsCurrency(longTerm), notTaxable: this.getAsCurrency(notTaxable), earned: this.getAsCurrency(notTaxable + shortTerm + longTerm)})
+        let dollars = this.liquidations.filter(t => t.updatedAt.substring(0,4) === c && t.event === 'Sell').map(item => parseFloat(item.usdAmount)).reduce((prev, next) => prev + next, 0)
+
+        this.sellData.push({ year: c, shortTerm: this.getAsCurrency(shortTerm), longTerm: this.getAsCurrency(longTerm), dollars: this.getAsCurrency(dollars) })
       })
     },
     formatDate(d) {

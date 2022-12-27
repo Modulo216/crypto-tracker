@@ -26,7 +26,7 @@
                 <v-text-field v-model="liqData.usdAmount" label="$ Proceeds" />
               </v-col>
               <v-col cols="3">
-                <v-checkbox v-model="liqData.taxable" label="Taxable?" />
+
               </v-col>
               <v-col cols="3" v-if="liqData.event === 'Swap'">
                 <v-select @change="changeNewCoin" label="New Coin" v-model="liqData.newCoin" :items="this.$store.state.interests.map(r => r.name)" />
