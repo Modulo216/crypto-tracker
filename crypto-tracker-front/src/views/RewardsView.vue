@@ -26,6 +26,12 @@
             <div>Value: <span class="green--text">{{ getAsCurrency(coinsSum.map(t => parseFloat(t.val)).reduce((prev, next) => prev + next, 0)) }}</span></div>
           </v-card-text>
         </v-card>
+        <v-card class="my-2" dark>
+          <v-card-text class="subtitle-1 pa-3 d-flex">
+            <div style="flex: 0 0 50%;">Rate: {{ ((rewards.map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0) / $store.state.spendingTrxs.filter(t => dateIsInRange(t.updatedAt, monthNameActive)).map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0)) * 100).toFixed(2) }}%</div>
+            <div>Actual: {{ ((coinsSum.map(t => parseFloat(t.val)).reduce((prev, next) => prev + next, 0) / $store.state.spendingTrxs.filter(t => dateIsInRange(t.updatedAt, monthNameActive)).map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0)) * 100).toFixed(2) }}%</div>
+          </v-card-text>
+        </v-card>
         <line-chart :allRewards="allRewards" class="mt-2"/>
       </v-col>
     </v-row>

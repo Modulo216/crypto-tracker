@@ -2,7 +2,7 @@
   <v-container fluid>
     <v-row>
       <v-col cols="1">
-        <month-picker :trxs="$store.state.spendingTrxs" @monthClick="onMonthClick" />
+        <month-picker :trxs="$store.state.spendingTrxs.filter(s => s.updatedAt.substring(0,4) === '2023')" @monthClick="onMonthClick" />
       </v-col>
       <v-col cols="6">
         <spending-table :trxs="trxs" :monthNameActive="monthNameActive" :merchantNames="$store.state.spendingTrxs.filter(t => t.merchant !== null).map(({merchant}) => merchant)" @trxUpdated="onTrxUpdated" @refreshTrx="onRefreshTrx" />

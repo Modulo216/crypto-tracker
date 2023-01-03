@@ -66,12 +66,12 @@ export default {
   },
   computed: {
     allTrxs() {
-      return this.$store.state.spendingTrxs
+      return this.$store.state.spendingTrxs.filter(s => s.updatedAt.substring(0,4) === '2023')
     }
   },
   created() {
     if(this.$store.state.spendingTrxs.length > 0) {
-      this.buildTable(this.$store.state.spendingTrxs)
+      this.buildTable(this.$store.state.spendingTrxs.filter(s => s.updatedAt.substring(0,4) === '2023'))
     }
   },
   watch: {

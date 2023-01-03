@@ -82,7 +82,7 @@ export default {
   },
   computed: {
     allTrxs() {
-      return this.$store.state.spendingTrxs
+      return this.$store.state.spendingTrxs.filter(s => s.updatedAt.substring(0,4) === '2023')
     },
     allChecking() {
       return this.$store.state.spendingChecking

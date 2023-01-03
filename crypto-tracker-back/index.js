@@ -4,6 +4,7 @@ const { ApolloServer } = require('apollo-server-express')
 const { resolvers } = require("./data/resolvers.graphql")
 const { typeDefs } = require("./data/schema.graphql")
 const { getTrxs, getMultiWalletTrxes, getCoinPrice } = require("./api/coinbase")
+const { order } = require('./api/binance')
 const getCoinHistory = require("./api/coingecko")
 const isAfter = require('date-fns/isAfter')
 const formatISO = require('date-fns/formatISO')
@@ -118,7 +119,7 @@ app.get('/trxs', async (req, res, next) => {
   try {
     let retVal = []
     let trxs = await getTrxs(req.query.cwi, false)
-    let txns = trxs.filter(txn => isAfter(new Date(txn.created_at), new Date(2022, 0, 1)) && txn.type === 'cardspend')
+    let txns = trxs.filter(txn => isAfter(new Date(txn.created_at), new Date(new Date().getUTCFullYear(), 0, 1)) && txn.type === 'cardspend')
     for (const txn of txns) {
       let trx = { amount: txn.native_amount.amount.replace(/^-/, ''), exchange: "coinbase", updatedAt: txn.created_at,
       trxType: txn.type, exchangeId: txn.id, title: txn.details.title,subtitle: txn.details.subtitle }
@@ -165,5 +166,6 @@ app.get('/taxes', async (req, res, next) => {
 app.use(errorHandler)
 
 app.listen(port, async () => {
+  //await order()
   console.log(`Dolphin app listening on port ${port}!`)
 })
