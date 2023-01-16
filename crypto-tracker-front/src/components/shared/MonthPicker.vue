@@ -24,6 +24,7 @@ export default {
   },
   watch: {
     trxs(newTrxs) {
+      this.monthYears = []
       this.populateItems()
       this.active = this.monthYears.length - (this.$route.name === 'investments' ? 0 : 1)
     }

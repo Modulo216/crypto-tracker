@@ -118,19 +118,32 @@ export default new Vuex.Store({
       let indexOf = state.allTaxes.findIndex(i => i.exchangeId === item.exchangeId)
       Object.assign(state.allTaxes[indexOf], item)
     },
-    updateLiqItems(state, { items, liq }) {
-      items.forEach(item => {
-        item.liquidation = true
-        if(liq.model_type === 'Tax') {
-          Vue.set(state.allTaxes, state.allTaxes.findIndex(i => i.exchangeId === item.exchangeId), item)
-        } else if(liq.model_type === 'Reward') {
-          Vue.set(state.allRewards, state.allRewards.findIndex(i => i.exchangeId === item.exchangeId), item)
-        }
+    updateLiqItems(state, liq) {
+      liq.taxes.forEach(item => {
+        item.liquidation = liq.id
+        let itemIdx = item.exchangeId ? state.allTaxes.findIndex(i => i.exchangeId === item.exchangeId) : state.allTaxes.findIndex(i => i.id === item.id)
+        Vue.set(state.allTaxes, itemIdx, item)
+      })
+
+      liq.rewards.forEach(item => {
+        item.liquidation = liq.id
+        Vue.set(state.allRewards, state.allRewards.findIndex(i => i.exchangeId === item.exchangeId), item)
+      })
+
+      liq.investments.forEach(item => {
+        item.liquidation = liq.id
+        Vue.set(state.allInvestments, state.allInvestments.findIndex(i => i.id === item.id), item)
+      })
+
+      liq.liquidations.forEach(item => {
+        let newItem = state.allLiquidation.find(i => i.id === item.id)
+        newItem.liquidation = liq.id
+        Vue.set(state.allLiquidation, state.allLiquidation.findIndex(i => i.id === item.id), newItem)
       })
 
       if(state.homeCoinsSum.length > 0) {
-        const itemId = state.homeCoinsSum.findIndex(c => c.coin === items[0].coin)
-        state.homeCoinsSum[itemId].amount = state.homeCoinsSum[itemId].amount - items.map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0)
+        const itemId = state.homeCoinsSum.findIndex(c => c.coin === liq.coin)
+        state.homeCoinsSum[itemId].amount = state.homeCoinsSum[itemId].amount - liq.coinAmount
         state.homeCoinsSum[itemId].value = state.homeCoinsSum[itemId].amount * state.homeCoinsSum[itemId].price
 
         if(liq.event === 'Swap') {

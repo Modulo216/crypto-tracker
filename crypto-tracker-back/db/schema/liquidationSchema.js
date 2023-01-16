@@ -21,12 +21,24 @@ exports.liquidationSchema = new mongoose.Schema({
   newCoinAmount: { // Swap
     type: String
   },
-  model_type: {
-    type: String,
-    enum: ['Reward', 'Tax', 'Investment']
-  },
-  liquid: [{
+  taxes: [{
     type: mongoose.Schema.Types.ObjectId,
-    refPath: 'model_type'
-  }]
+    ref:'Tax'
+  }],
+  rewards: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref:'Reward'
+  }],
+  investments: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref:'Investment'
+  }],
+  liquidations: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref:'Liquidation'
+  }],
+  liquidation: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Liquidation'
+  }
 })

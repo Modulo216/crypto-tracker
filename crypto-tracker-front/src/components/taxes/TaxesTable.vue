@@ -29,7 +29,7 @@
                 <v-icon dark>
                   mdi-water
                 </v-icon>
-                <span v-if="selected.length > 0">{{ selected.map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0)}}</span>
+                <span v-if="selected.length > 0">{{ selected.map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0).toFixed(8)}}</span>
               </v-btn>
             </v-toolbar>
           </template>
@@ -125,7 +125,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog> -->
-    <liquidation-dialog v-model="showLiquidationDialog" :selected="selected" modelType="Tax" @savedLiquidation="(liq) => { $store.commit('updateLiqItems', { items: selected, liq: liq });selected = [] }" />
+    <liquidation-dialog v-model="showLiquidationDialog" :selected="selected" modelType="taxes" @savedLiquidation="selected = []" />
   </v-container>
 </template>
 <script>

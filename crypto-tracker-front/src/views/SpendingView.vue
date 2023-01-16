@@ -2,7 +2,8 @@
   <v-container fluid>
     <v-row>
       <v-col cols="1">
-        <month-picker :trxs="$store.state.spendingTrxs.filter(s => s.updatedAt.substring(0,4) === '2023')" @monthClick="onMonthClick" />
+        <v-select label="Year" v-model="selectedYear" :items="['2022', '2023']" />
+        <month-picker :trxs="$store.state.spendingTrxs.filter(s => s.updatedAt.substring(0,4) === selectedYear)" @monthClick="onMonthClick" />
       </v-col>
       <v-col cols="6">
         <spending-table :trxs="trxs" :monthNameActive="monthNameActive" :merchantNames="$store.state.spendingTrxs.filter(t => t.merchant !== null).map(({merchant}) => merchant)" @trxUpdated="onTrxUpdated" @refreshTrx="onRefreshTrx" />
@@ -98,8 +99,8 @@
             </v-expansion-panel>
           </v-expansion-panels>
           <v-col lg="12">
-            <bar />
-            <line-chart />
+            <bar :selectedYear="selectedYear"/>
+            <line-chart :selectedYear="selectedYear" />
           </v-col>
         </v-row>
       </v-col>
@@ -117,6 +118,8 @@ import { getTrxs, getChecking, deleteChecking, addChecking } from '../api/apollo
 import eachMonthOfInterval from 'date-fns/eachMonthOfInterval'
 import endOfMonth from 'date-fns/endOfMonth'
 import isWithinInterval from 'date-fns/isWithinInterval'
+import lastDayOfMonth from 'date-fns/lastDayOfMonth'
+import startOfYear from 'date-fns/startOfYear'
 import { refreshTrxs } from '../api/endpoints/trx'
 import chroma from "chroma-js";
 import dateMixin from '@/mixins/datesMixin'
@@ -130,6 +133,7 @@ export default {
   },
   mixins: [dateMixin],
   data: () => ({
+    selectedYear: '2023',
     trxs: [],
     checkings: [],
     averages: [],
@@ -162,6 +166,12 @@ export default {
       return this.checkings.filter(i => i.type === 'checkingIn').map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0) - this.getTotalSpent
     }
   },
+  watch: {
+    selectedYear() {
+      const maxDate = new Date(Math.max(...this.$store.state.spendingTrxs.filter(s => s.updatedAt.substring(0,4) === this.selectedYear).map(s => new Date(s.updatedAt))))
+      this.onMonthClick({ month: maxDate.getMonth(), year: maxDate.getFullYear() })
+    }
+  },
   methods: {
     async onRefreshTrx(callback) {
       let res = await refreshTrxs(this.$store.state.interests.find(r => r.name === 'USDC').cbaseWalletId)
@@ -177,8 +187,8 @@ export default {
       this.monthNameActive = dateMonth
 
       if(dateMonth === 'ALL') {
-        this.trxs = this.$store.state.spendingTrxs
-        this.checkings = this.$store.state.spendingChecking
+        this.trxs = this.$store.state.spendingTrxs.filter(s => s.updatedAt.substring(0,4) === this.selectedYear)
+        this.checkings = this.$store.state.spendingChecking.filter(s => s.date.substring(0,4) === this.selectedYear)
         this.getSpending()
       } else {
         this.trxs = this.$store.state.spendingTrxs.filter(t => this.dateIsInRange(t.updatedAt, dateMonth))
@@ -211,7 +221,7 @@ export default {
       this.categorySpending = []
       this.merchantSpending = []
       let idx = 0
-      const monthInterval = eachMonthOfInterval({start: new Date(new Date().getUTCFullYear(), 0, 1), end: new Date(new Date().getUTCFullYear(), 11, 1) })
+      const monthInterval = eachMonthOfInterval({ start: startOfYear(new Date(parseInt(this.selectedYear), 0, 1)), end: lastDayOfMonth(new Date()) })
     
       let spendingArr = []
       monthInterval.forEach(d => { spendingArr.push({
@@ -265,12 +275,12 @@ export default {
 
       if(this.selectedRow !== undefined && this.selectedRow.item.idx ===  e.idx) {
         this.selectedRow = undefined
-        this.trxs = this.$store.state.spendingTrxs.filter(t => this.monthNameActive === 'ALL' ? true : this.dateIsInRange(t.updatedAt, this.monthNameActive))
+        this.trxs = this.$store.state.spendingTrxs.filter(t => this.monthNameActive === 'ALL' ? t.updatedAt.substring(0,4) === this.selectedYear : this.dateIsInRange(t.updatedAt, this.monthNameActive))
       } else {
         if(e.hasOwnProperty('category')) {
-          this.trxs = this.$store.state.spendingTrxs.filter(t => t.category === e.category && (this.monthNameActive === 'ALL' ? true : this.dateIsInRange(t.updatedAt, this.monthNameActive)))
+          this.trxs = this.$store.state.spendingTrxs.filter(t => t.category === e.category && (this.monthNameActive === 'ALL' ? t.updatedAt.substring(0,4) === this.selectedYear : this.dateIsInRange(t.updatedAt, this.monthNameActive)))
         } else if(e.hasOwnProperty('merchant')) {
-          this.trxs = this.$store.state.spendingTrxs.filter(t => t.merchant === e.merchant && (this.monthNameActive === 'ALL' ? true : this.dateIsInRange(t.updatedAt, this.monthNameActive)))
+          this.trxs = this.$store.state.spendingTrxs.filter(t => t.merchant === e.merchant && (this.monthNameActive === 'ALL' ? t.updatedAt.substring(0,4) === this.selectedYear : this.dateIsInRange(t.updatedAt, this.monthNameActive)))
         }
         row.select(true)
         this.selectedRow = row

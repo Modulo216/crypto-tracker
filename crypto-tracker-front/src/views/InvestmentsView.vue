@@ -127,9 +127,9 @@ import dateMixin from '@/mixins/datesMixin'
         new Set(this.investments.map(t => t.coin)).forEach(a => {
           let coinCookie = $cookies.get(a)
           this.coinsSum.push({ coin: a, amount: 
-            this.investments.filter(t => t.coin === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0),
-            spent: this.investments.filter(t => t.coin === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.spent)).reduce((prev, next) => prev + next, 0),
-            value: this.investments.filter(t => t.coin === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0) * coinCookie
+            this.investments.filter(t => t.coin === a && t.liquidation === null && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0),
+            spent: this.investments.filter(t => t.coin === a && t.liquidation === null && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.spent)).reduce((prev, next) => prev + next, 0),
+            value: this.investments.filter(t => t.coin === a && t.liquidation === null && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0) * coinCookie
           })
         })
       },

@@ -30,5 +30,9 @@ exports.investmentSchema = new mongoose.Schema({
   },
   value: {
     type: String
+  },
+  liquidation: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Liquidation'
   }
 })

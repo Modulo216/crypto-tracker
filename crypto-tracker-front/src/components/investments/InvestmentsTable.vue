@@ -2,7 +2,7 @@
   <v-container class="pa-1">
     <v-row class="text-center">
       <v-col cols="12">
-        <v-data-table dark dense :loading="loadingInvestments" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :headers="headers" :items="investments" item-key="id" class="elevation-10" hide-default-footer disable-pagination>
+        <v-data-table v-model="selected" show-select dark dense :loading="loadingInvestments" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :headers="headers" :items="investments" item-key="id" class="elevation-10" hide-default-footer disable-pagination>
           <template v-slot:top>
             <v-toolbar flat>
               <v-toolbar-title>{{ monthNameActive !== 'ALL' ? `${$store.getters.getMonthNames[monthNameActive.month]} - ${monthNameActive.year}` : 'ALL' }} Investments</v-toolbar-title>
@@ -25,7 +25,17 @@
                   </v-icon>
                 </v-btn>
               </download-excel>
+              <v-btn color="primary" :disabled="selected.length === 0 || !selected.map(i => i.coin).every((val, i, arr) => val === arr[0])" dark class="ml-2" @click="showLiquidationDialog = true">
+                <v-icon dark>
+                  mdi-water
+                </v-icon>
+                <span v-if="selected.length > 0">{{ selected.map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0).toFixed(8)}}</span>
+              </v-btn>
             </v-toolbar>
+          </template>
+          <template v-slot:[`header.data-table-select`]></template>
+          <template v-slot:[`item.data-table-select`]="{ item, isSelected, select }">
+            <v-simple-checkbox :value="isSelected" :readonly="item.liquidation !== null" :disabled="item.liquidation !== null" @input="select($event)" />
           </template>
           <template v-slot:[`item.amount`]="{ item }">
             <span>{{ Number(item.amount).toFixed(8) }}</span>
@@ -78,16 +88,23 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <liquidation-dialog v-model="showLiquidationDialog" :selected="selected" modelType="investments" @savedLiquidation="selected = []" />
   </v-container>
 </template>
 <script>
 import { addInvestment } from '../../api/apollo'
+import LiquidationDialog from '../liquidationDialog'
 export default {
   props: {
     investments: Array,
     monthNameActive: {},
   },
+  components: {
+    LiquidationDialog
+  },
   data: () => ({
+    showLiquidationDialog: false,
+    selected: [],
     loadingInvestments: false,
     sortBy: 'updatedAt',
     sortDesc: true,

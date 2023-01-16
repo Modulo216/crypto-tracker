@@ -40,7 +40,7 @@ export const resolvers = {
       return taxes
     },
     getInvestments: async (root) => {
-      let investments = await Investment.find()
+      let investments = await Investment.find().populate('liquidation')
       investments.sort((d1, d2) => new Date(d1.updatedAt).getTime() - new Date(d2.updatedAt).getTime())
       
       return investments
@@ -58,28 +58,51 @@ export const resolvers = {
       return priceHistory
     },
     getLiquidation: async (root) => {
-      let liqus = await Liquidation.find().populate('liquid')
+      // Array of Rewards, Taxes, Investment, Liquidation
+      let liqus = await Liquidation.find().populate('rewards').populate('taxes').populate('investments').populate('liquidations').populate('liquidation')
       liqus.sort((d1, d2) => new Date(d1.updatedAt).getTime() - new Date(d2.updatedAt).getTime())
       return liqus
     }
   },
   Mutation: {
     addLiquidation: async (root, { liquidation }) => {
+      if(liquidation.event === 'Sell') {
+        delete liquidation.newCoin
+        delete liquidation.newCoinAmount
+      }
       const { ...rest } = liquidation
       const newLiquidation = new Liquidation({ ...rest })
       const liqu = await newLiquidation.save()
 
-      newLiquidation.liquid.forEach(async id => {
-        if(liqu.model_type === 'Reward') {
-          const reward = await Reward.findById(id)
-          reward.liquidation = liqu.id
-          reward.save()
-        } else if (liqu.model_type === 'Tax') {
-          const tax = await Tax.findById(id)
-          tax.liquidation = liqu.id
-          tax.save()
-        }
+      newLiquidation.taxes.forEach(async id => {
+        const tax = await Tax.findById(id)
+        tax.liquidation = liqu.id
+        tax.save()
       })
+      
+      newLiquidation.rewards.forEach(async id => {
+        const reward = await Reward.findById(id)
+        reward.liquidation = liqu.id
+        reward.save()
+      })
+
+      newLiquidation.investments.forEach(async id => {
+        const investment = await Investment.findById(id)
+        investment.liquidation = liqu.id
+        investment.save()
+      })
+
+      newLiquidation.liquidations.forEach(async id => {
+        const liq = await Liquidation.findById(id)
+        liq.liquidation = liqu.id
+        liq.save()
+      })
+
+      await liqu.populate('rewards')
+      await liqu.populate('taxes')
+      await liqu.populate('investments')
+      await liqu.populate('liquidations')
+
       return liqu
     },
     addChecking: async (root, { checking }) => {

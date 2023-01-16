@@ -1,12 +1,6 @@
 import { gql } from "apollo-server-express"
 
 export const typeDefs = gql`
-  type RewardOrTax {
-    coin: String
-    amount: String
-    value: String
-    updatedAt: String
-  }
   type Liquidation {
     id: ID
     taxable: Boolean
@@ -15,8 +9,15 @@ export const typeDefs = gql`
     updatedAt: String
     newCoin: String
     newCoinAmount: String
-    model_type: String
-    liquid: [RewardOrTax]
+    coin: String
+    coinAmount: String
+    coinValue: String
+    coinUpdatedAt: String
+    taxes: [Tax]
+    rewards: [Reward]
+    investments: [Investment]
+    liquidations: [Liquidation]
+    liquidation: Liquidation
   }
   input LiquidationInput {
     id: ID
@@ -26,8 +27,10 @@ export const typeDefs = gql`
     updatedAt: String
     newCoin: String
     newCoinAmount: String
-    model_type: String
-    liquid: [ID]
+    taxes: [ID]
+    rewards: [ID]
+    investments: [ID]
+    liquidations: [ID]
   }
   type PriceHistory {
     id: ID
@@ -113,6 +116,7 @@ export const typeDefs = gql`
     investType: String
     fillPrice: String
     value: String
+    liquidation: Liquidation
   }
   input InvestmentInput {
     id: ID

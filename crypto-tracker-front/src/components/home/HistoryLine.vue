@@ -75,6 +75,9 @@ export default {
   computed: {
     investments() {
       return this.$store.state.allInvestments
+    },
+    taxes() {
+      return this.$store.state.allTaxes
     }
   },
   created() {
@@ -89,6 +92,7 @@ export default {
     populateChart() {
       this.chartData.datasets[0].data = []
       this.chartData.datasets[1].data = []
+      this.chartData.datasets[2].data = []
       this.chartData.labels = []
 
       this.priceHistory.forEach(h => {
@@ -96,6 +100,9 @@ export default {
         this.chartData.datasets[0].data.push(h.coins.map(i => i.value).reduce((prev, next) => prev + next, 0))
         this.chartData.datasets[1].data.push(
           this.investments.filter(t => isBefore(new Date(t.updatedAt), this.getDateAsUtc(h.date)) || isSameDay(new Date(t.updatedAt), this.getDateAsUtc(h.date))).map(t => parseFloat(t.spent)).reduce((prev, next) => prev + next, 0)
+        )
+        this.chartData.datasets[2].data.push(
+          this.taxes.filter(t => t.coin === 'USDC' && (isBefore(new Date(t.updatedAt), this.getDateAsUtc(h.date)) || isSameDay(new Date(t.updatedAt), this.getDateAsUtc(h.date)))).map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0)
         )
       })
     },
@@ -113,9 +120,9 @@ export default {
             datalabels: {
               display: false
             },
-            backgroundColor: [],
             data: [],
             borderColor: "gray",
+            backgroundColor: 'black',
             pointRadius: 1.5,
             pointHoverRadius: 10
           },
@@ -123,10 +130,19 @@ export default {
             datalabels: {
               display: false
             },
-            backgroundColor: [],
             data: [],
             borderColor: 'black',
             backgroundColor: 'gray',
+            pointRadius: 1.5,
+            pointHoverRadius: 10
+          },
+          {
+            datalabels: {
+              display: false
+            },
+            data: [],
+            borderColor: 'green',
+            backgroundColor: 'green',
             pointRadius: 1,
             pointHoverRadius: 10
           }

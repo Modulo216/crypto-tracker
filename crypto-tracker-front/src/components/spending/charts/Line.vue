@@ -74,6 +74,7 @@ export default {
       type: Array,
       default: () => []
     },
+    selectedYear: String
   },
   created() {
     if(this.allTrxs.length > 0 && this.allChecking.length > 0) {
@@ -82,7 +83,7 @@ export default {
   },
   computed: {
     allTrxs() {
-      return this.$store.state.spendingTrxs.filter(s => s.updatedAt.substring(0,4) === '2023')
+      return this.$store.state.spendingTrxs.filter(s => s.updatedAt.substring(0,4) === this.selectedYear)
     },
     allChecking() {
       return this.$store.state.spendingChecking
@@ -99,6 +100,9 @@ export default {
   },
   watch: {
     allItems() {
+      this.populateChart()
+    },
+    selectedYear() {
       this.populateChart()
     }
   },

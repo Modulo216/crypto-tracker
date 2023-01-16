@@ -127,9 +127,9 @@ export default {
 
         let coinCookie = $cookies.get(r.name) || 0
         let amount = (this.rewards.filter(f => f.coin === r.name && f.liquidation === null).map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0) +
-            this.investments.filter(f => f.coin === r.name).map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0) +
+            this.investments.filter(f => f.coin === r.name && f.liquidation === null).map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0) +
             this.taxes.filter(f => f.coin === r.name && f.liquidation === null).map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0)) +
-            this.liquidation.filter(f => f.newCoin === r.name).map(f => parseFloat(f.newCoinAmount)).reduce((prev, next) => prev + next, 0)
+            this.liquidation.filter(f => f.newCoin === r.name && f.liquidation === null).map(f => parseFloat(f.newCoinAmount)).reduce((prev, next) => prev + next, 0)
         this.$store.commit('updateCoinsSum',
           { item: { coin: r.name, price: Number(coinCookie), amount: amount, value: amount * coinCookie,
             spent: this.investments.filter(f => f.coin === r.name).map(f => parseFloat(f.spent)).reduce((prev, next) => prev + next, 0) } 
@@ -146,8 +146,8 @@ export default {
       for (const p of hist) {
         let coinSum = this.rewards.filter(i => (isBefore(new Date(i.updatedAt), this.getDateAsUtc(p.date)) || isSameDay(new Date(i.updatedAt), this.getDateAsUtc(p.date))) && i.coin === p.coin && i.liquidation === null).map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0) +
           this.taxes.filter(i => (isBefore(new Date(i.updatedAt), this.getDateAsUtc(p.date)) || isSameDay(new Date(i.updatedAt), this.getDateAsUtc(p.date))) && i.coin === p.coin && i.liquidation === null).map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0) +
-          this.investments.filter(i => (isBefore(new Date(i.updatedAt), this.getDateAsUtc(p.date)) || isSameDay(new Date(i.updatedAt), this.getDateAsUtc(p.date))) && i.coin === p.coin).map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0) +
-          this.liquidation.filter(i => (isBefore(this.getDateAsUtc(i.updatedAt), this.getDateAsUtc(p.date)) || isSameDay(this.getDateAsUtc(i.updatedAt), this.getDateAsUtc(p.date))) && i.newCoin === p.coin).map(i => parseFloat(i.newCoinAmount)).reduce((prev, next) => prev + next, 0)
+          this.investments.filter(i => (isBefore(new Date(i.updatedAt), this.getDateAsUtc(p.date)) || isSameDay(new Date(i.updatedAt), this.getDateAsUtc(p.date))) && i.coin === p.coin && i.liquidation === null).map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0) +
+          this.liquidation.filter(i => (isBefore(this.getDateAsUtc(i.updatedAt), this.getDateAsUtc(p.date)) || isSameDay(this.getDateAsUtc(i.updatedAt), this.getDateAsUtc(p.date))) && i.newCoin === p.coin && i.liquidation === null).map(i => parseFloat(i.newCoinAmount)).reduce((prev, next) => prev + next, 0)
 
         if(coinSum) {
           const itemId = this.priceHistory.findIndex(c => c.date === p.date)
