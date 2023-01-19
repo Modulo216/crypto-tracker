@@ -109,6 +109,7 @@ export default {
   methods: {
     populateChart() {
       this.chartData.datasets[0].data = []
+      this.chartData.datasets[1].data = []
       this.chartData.labels = []
       let monthYears = []
 
@@ -128,6 +129,7 @@ export default {
         savedArr.push(totalSaved)
 
         this.chartData.datasets[0].data.push(savedArr.reduce((prev, next) => prev + next, 0).toFixed(2))
+        this.chartData.datasets[1].data.push(totalSaved.toFixed(2))
         this.chartData.labels.push(this.$store.getters.getMonthNames[m.month])
       })
     }
@@ -141,6 +143,13 @@ export default {
             label: 'Value',
             data: [],
             borderColor: "black",
+            backgroundColor: 'black',
+            pointRadius: 2,
+          },
+          {
+            label: 'Value',
+            data: [],
+            borderColor: "blue",
             backgroundColor: 'blue',
             pointRadius: 2,
           }

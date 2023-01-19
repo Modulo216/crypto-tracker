@@ -1,6 +1,6 @@
 query {
   getLiquidation {
-    id, taxable, event, usdAmount, updatedAt, newCoin, newCoinAmount, taxes { coin, amount, value, updatedAt, exchangeId }, rewards { coin, amount, value, updatedAt, exchangeId },
+    id, event, usdAmount, updatedAt, newCoin, newCoinAmount, taxes { coin, amount, value, updatedAt, exchangeId }, rewards { coin, amount, value, updatedAt, exchangeId },
     coin, coinAmount, coinValue, coinUpdatedAt, investments { coin, amount, spent, updatedAt, id },
     liquidations { event, usdAmount, updatedAt, newCoin, newCoinAmount, id, coin, coinValue, coinAmount, coinUpdatedAt },
     liquidation { id }

@@ -5,17 +5,24 @@
         <line-chart :items="profitHistory" />
       </v-col>
       <v-col cols="3">
-        <v-card class="my-2" dark>
-          <v-card-text class="subtitle-1 pa-1 d-flex">
-            <div style="flex: 0 0 30%;">
+        <v-card class="my-2" dark color="#616161">
+          <v-card-text class="subtitle-1 pa-1 d-flex" style="align-items: center;justify-content: space-evenly">
+            <div class="black--text text--darken-1">{{ getAsCurrency($store.state.homeCoinsSum.map(t => parseFloat(t.spent)).reduce((prev, next) => prev + next, 0)) }}</div>
+            <v-divider vertical dark />
+            <div class="gray--text">{{ getAsCurrency($store.state.homeCoinsSum.map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0)) }}</div>
+            <v-divider vertical />
+            <div class="green--text">
+              {{ getAsCurrency(taxes.filter(t => t.coin === 'USDC').map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0) +
+                  liquidation.filter(t => t.event === 'Sell').map(t => parseFloat(t.usdAmount)).reduce((prev, next) => prev + next, 0)) }}
+            </div>
+            <v-divider vertical />
+            <div>
               <v-btn color="primary" dark @contextmenu.prevent="onlyGains" @click="refreshValue" :loading="loading" :disabled="loading">
                 <v-icon dark>
                   mdi-refresh
                 </v-icon>
               </v-btn>
             </div>
-            <div class="pt-1" style="flex: 0 0 35%;"><span class="red--text">{{ getAsCurrency($store.state.homeCoinsSum.map(t => parseFloat(t.spent)).reduce((prev, next) => prev + next, 0)) }}</span></div>
-            <div class="pt-1"><span class="green--text">{{ getAsCurrency($store.state.homeCoinsSum.map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0)) }}</span></div>
           </v-card-text>
         </v-card>
         <v-data-table
@@ -57,7 +64,9 @@
         </v-data-table>
       </v-col>
     </v-row>
+    <v-divider dark class="my-3"></v-divider>
     <history-line :priceHistory="priceHistory" />
+    <v-divider dark class="my-3"></v-divider>
     <coin-history-line :priceHistory="priceHistory" />
   </v-container>
 </template>
@@ -68,7 +77,7 @@ import { refreshPriceHistory } from '../api/endpoints/priceHistory'
 import LineChart from '../components/home/Line.vue'
 import HistoryLine from '@/components/home/HistoryLine'
 import CoinHistoryLine from '@/components/home/CoinHistoryLine'
-import { getPriceHistory } from '../api/apollo'
+import { getPHistory } from '../api/apollo'
 const { isBefore, isSameDay, endOfYesterday, formatISO } = require('date-fns')
 export default {
   name: 'home-view',
@@ -83,10 +92,11 @@ export default {
     CoinHistoryLine
   },
   async created() {
-    if(this.$store.state.historyChartData.length === 0) {
-      getPriceHistory().then(hist => this.parsePriceHistory(hist))
-    } else {
+    if(this.$store.state.historyChartData.length > 0) {
       this.priceHistory = this.$store.state.historyChartData
+    } else if(this.investments.length && this.taxes.length && this.rewards.length && this.liquidation.length) {
+      this.sumCoins()
+      getPHistory().then(hist => this.parsePriceHistory(hist))
     }
     this.profitHistory = JSON.parse($cookies.get("profitHistory")) || []
   },
@@ -102,11 +112,17 @@ export default {
     },
     liquidation() {
       return this.$store.state.allLiquidation
+    },
+    allCoins() {
+      return this.$store.state.allInvestments + this.$store.state.allTaxes + this.$store.state.allRewards + this.$store.state.allLiquidation
     }
   },
   watch: {
-    investments(newVal) {
-      this.sumCoins()
+    allCoins(newVal) {
+      if(this.investments.length && this.taxes.length && this.rewards.length && this.liquidation.length) {
+        this.sumCoins()
+        getPHistory().then(hist => this.parsePriceHistory(hist))
+      }
     }
   },
   methods: {
@@ -144,18 +160,22 @@ export default {
     },
     parsePriceHistory(hist) {
       for (const p of hist) {
-        let coinSum = this.rewards.filter(i => (isBefore(new Date(i.updatedAt), this.getDateAsUtc(p.date)) || isSameDay(new Date(i.updatedAt), this.getDateAsUtc(p.date))) && i.coin === p.coin && i.liquidation === null).map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0) +
-          this.taxes.filter(i => (isBefore(new Date(i.updatedAt), this.getDateAsUtc(p.date)) || isSameDay(new Date(i.updatedAt), this.getDateAsUtc(p.date))) && i.coin === p.coin && i.liquidation === null).map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0) +
-          this.investments.filter(i => (isBefore(new Date(i.updatedAt), this.getDateAsUtc(p.date)) || isSameDay(new Date(i.updatedAt), this.getDateAsUtc(p.date))) && i.coin === p.coin && i.liquidation === null).map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0) +
-          this.liquidation.filter(i => (isBefore(this.getDateAsUtc(i.updatedAt), this.getDateAsUtc(p.date)) || isSameDay(this.getDateAsUtc(i.updatedAt), this.getDateAsUtc(p.date))) && i.newCoin === p.coin && i.liquidation === null).map(i => parseFloat(i.newCoinAmount)).reduce((prev, next) => prev + next, 0)
-
-        if(coinSum) {
-          const itemId = this.priceHistory.findIndex(c => c.date === p.date)
-          if(itemId === -1) {
-            this.priceHistory.push({ date: p.date, coins: [{ coin: p.coin, coinSum, value: coinSum * p.price }] })
-          } else {
-            this.priceHistory[itemId].coins.push({ coin: p.coin, coinSum, value: coinSum * p.price })
+        for (const price of p.prices) {
+          let coinSum = (this.rewards.filter(i => (isBefore(new Date(i.updatedAt), this.getDateAsUtc(p.updatedAt)) || isSameDay(new Date(i.updatedAt), this.getDateAsUtc(p.updatedAt))) && i.coin === price.coin).map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0) +
+            this.taxes.filter(i => (isBefore(new Date(i.updatedAt), this.getDateAsUtc(p.updatedAt)) || isSameDay(new Date(i.updatedAt), this.getDateAsUtc(p.updatedAt))) && i.coin === price.coin).map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0) +
+            this.investments.filter(i => (isBefore(new Date(i.updatedAt), this.getDateAsUtc(p.updatedAt)) || isSameDay(new Date(i.updatedAt), this.getDateAsUtc(p.updatedAt))) && i.coin === price.coin).map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0) +
+            this.liquidation.filter(i => (isBefore(this.getDateAsUtc(i.updatedAt), this.getDateAsUtc(p.updatedAt)) || isSameDay(this.getDateAsUtc(i.updatedAt), this.getDateAsUtc(p.updatedAt))) && i.newCoin === price.coin).map(i => parseFloat(i.newCoinAmount)).reduce((prev, next) => prev + next, 0)) -
+            this.liquidation.filter(i => (isBefore(this.getDateAsUtc(i.updatedAt), this.getDateAsUtc(p.updatedAt)) || isSameDay(this.getDateAsUtc(i.updatedAt), this.getDateAsUtc(p.updatedAt))) && i.coin === price.coin).map(i => parseFloat(i.coinAmount)).reduce((prev, next) => prev + next, 0)
+          
+            if(coinSum) {
+            const itemId = this.priceHistory.findIndex(c => c.date === p.updatedAt.slice(0, 10))
+            if(itemId === -1) {
+              this.priceHistory.push({ date: p.updatedAt.slice(0, 10), coins: [{ coin: price.coin, coinSum, value: coinSum * price.price }] })
+            } else {
+              this.priceHistory[itemId].coins.push({ coin: price.coin, coinSum, value: coinSum * price.price })
+            }
           }
+        
         }
       }
       this.$store.commit('setChartHistory', this.priceHistory)
@@ -163,9 +183,9 @@ export default {
     async refreshValue() {
       this.loading = true
 
-      if(!this.$store.state.interests.filter(r => r.nickName !== '').every(i => this.priceHistory.find(p => p.date === formatISO(endOfYesterday()).slice(0, 10) && p.coins.some(c => c.coin === i.name)))) {
+      if(this.priceHistory.find(p => p.date === formatISO(endOfYesterday()).slice(0, 10)) === undefined) {
         let priceHistory = await refreshPriceHistory()
-        this.parsePriceHistory(priceHistory.data.flat())
+        this.parsePriceHistory(priceHistory.data)
       }
 
       let coinPrices = await getCoinPrice(this.$store.state.interests.filter(r => r.nickName !== '').map(r => r.name))

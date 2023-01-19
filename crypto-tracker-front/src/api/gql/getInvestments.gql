@@ -1,5 +1,5 @@
 query {
   getInvestments {
-    id, exchangeId, coin, updatedAt, amount, spent, subtitle, title, fillPrice, value, liquidation { taxable, event, usdAmount, updatedAt, newCoin, newCoinAmount }
+    id, exchangeId, coin, updatedAt, amount, spent, fillPrice, value, liquidation { event, usdAmount, updatedAt, newCoin, newCoinAmount }
   }
 }

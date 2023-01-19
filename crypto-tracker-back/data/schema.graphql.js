@@ -32,6 +32,23 @@ export const typeDefs = gql`
     investments: [ID]
     liquidations: [ID]
   }
+  type CoinPrice {
+    coin: String
+    price: Float
+  }
+  input CoinPriceInput {
+    coin: String
+    price: Float
+  }
+  type PHistory {
+    id: ID
+    updatedAt: Date
+    prices: [CoinPrice]
+  }
+  input PHistoryInput {
+    updatedAt: Date
+    prices: [CoinPriceInput]
+  }
   type PriceHistory {
     id: ID
     date: String
@@ -185,16 +202,19 @@ export const typeDefs = gql`
     rewardExists: Int
     getTaxes: [Tax]
     findPriceHistory(priceHistory: PriceHistoryInput): PriceHistory
+    findPHistory(pHistory: PHistoryInput): [PHistory]
     getInvestments: [Investment]
     getRewards: [Reward]
     getPriceHistory: [PriceHistory]
     getLiquidation: [Liquidation]
+    getPHistory: [PHistory]
   }
   type Mutation {
     addLiquidation(liquidation: LiquidationInput): Liquidation
     addChecking(checking: CheckingInput): Checking
     addPriceHistory(priceHistory: PriceHistoryInput): PriceHistory
     addPriceHistoryMany(priceHistories: [[Float]]): ID
+    addPHistoryMany(pHistory: [[Float]]): ID
     updateChecking(checking: CheckingInput): Checking
     addInterest(interest: InterestInput): Interest
     updateInterest(interest: InterestInput): Interest

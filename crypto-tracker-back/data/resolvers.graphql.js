@@ -1,4 +1,4 @@
-import { Interest, Trx, Checking, Tax, Reward, Investment, PriceHistory, Liquidation } from "../db/dbConnector.js"
+import { Interest, Trx, Checking, Tax, Reward, Investment, PriceHistory, Liquidation, PHistory } from "../db/dbConnector.js"
 const { isBefore } = require('date-fns')
 const formatISO = require('date-fns/formatISO')
 
@@ -12,6 +12,9 @@ export const resolvers = {
     },
     findPriceHistory: async (root, query) => {
       return await PriceHistory.findOne({...query}).lean()
+    },
+    findPHistory: async (root, query) => {
+      return await PHistory.findOne({...query}).lean()
     },
     getTrxs: async (root) => {
       let trxs = await Trx.find()
@@ -62,6 +65,12 @@ export const resolvers = {
       let liqus = await Liquidation.find().populate('rewards').populate('taxes').populate('investments').populate('liquidations').populate('liquidation')
       liqus.sort((d1, d2) => new Date(d1.updatedAt).getTime() - new Date(d2.updatedAt).getTime())
       return liqus
+    },
+    getPHistory: async (root) => {
+      let history = await PHistory.find().lean()
+      history.sort((d1, d2) => d1.updatedAt.getTime() - d2.updatedAt.getTime())
+
+      return history
     }
   },
   Mutation: {
@@ -124,6 +133,11 @@ export const resolvers = {
     addPriceHistoryMany: (root, {arr}) => {  
       if(arr.length > 0) {
         PriceHistory.insertMany(arr)
+      }
+    },
+    addPHistoryMany: (root, arr) => {  
+      if(arr.length > 0) {
+        PHistory.insertMany(arr)
       }
     },
     addRewardImport: async (root, { reward }) => {

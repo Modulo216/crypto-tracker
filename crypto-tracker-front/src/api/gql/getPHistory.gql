@@ -1,0 +1,5 @@
+query {
+  getPHistory {
+    updatedAt, prices { coin, price }
+  }
+}

@@ -3,16 +3,16 @@ const cors = require('cors');
 const { ApolloServer } = require('apollo-server-express')
 const { resolvers } = require("./data/resolvers.graphql")
 const { typeDefs } = require("./data/schema.graphql")
+import { typeDefs as scalarTypeDefs, resolvers as scalarResolvers } from 'graphql-scalars'
 const { getTrxs, getMultiWalletTrxes, getCoinPrice } = require("./api/coinbase")
 const { order } = require('./api/binance')
 const getCoinHistory = require("./api/coingecko")
-const isAfter = require('date-fns/isAfter')
-const formatISO = require('date-fns/formatISO')
+import { formatISO, isAfter } from 'date-fns'
 const app = express()
 const port = 5001
 
 app.use(cors());
-const server = new ApolloServer({ typeDefs, resolvers })
+const server = new ApolloServer({ typeDefs: [...scalarTypeDefs, typeDefs], resolvers: { ...scalarResolvers, ...resolvers } })
 server.applyMiddleware({ app })
 
 const errorHandler = (error, request, response, next) => {
@@ -25,6 +25,34 @@ app.get('/coin-prices', async (req, res, next) => {
   try {
     let prices = await getCoinPrice(req.query.c)
     res.send(prices)
+  } catch (error) {
+    next(error)
+  }
+})
+
+app.get('/update-history2', async (req, res, next) => {
+  try {
+    let interests = await resolvers.Query.getInterests(null, { nickName: { $ne: '' } })
+    let arr = []
+    let pHistoryArr = []
+    for (const interest of interests) {
+      let result = await getCoinHistory.get(interest.nickName)
+      for (const p of result.data.prices.filter(p => new Date().getDate() !== new Date(p[0]).getDate())) {        
+        arr.push({date: new Date(p[0]).setHours(0,0,0,0), price: p[1], coin: interest.name})
+      }
+    }
+
+    for (const uniqueDate of new Set(arr.map(a => a.date))) {
+      if (await resolvers.Query.findPHistory(null, { updatedAt: { $gte: new Date(uniqueDate).setHours(0,0,0,0), $lte: new Date(uniqueDate).setHours(23,59,59,999) }}) !== null) {
+        continue
+      }
+      let pHistory = { updatedAt: new Date(uniqueDate), prices: [ ...arr.filter(a => a.date === uniqueDate).map(a => { return { coin: a.coin, price: a.price }}) ] }
+      pHistoryArr.push(pHistory)
+    }
+    resolvers.Mutation.addPHistoryMany(null, pHistoryArr)
+
+    console.log("UPDATE-HISTORY", pHistoryArr)
+    res.send(pHistoryArr)
   } catch (error) {
     next(error)
   }

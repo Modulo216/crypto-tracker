@@ -99,7 +99,9 @@
             </v-expansion-panel>
           </v-expansion-panels>
           <v-col lg="12">
-            <bar :selectedYear="selectedYear"/>
+            <v-divider dark class="my-3" />
+            <bar class="mt-3" :selectedYear="selectedYear"/>
+            <v-divider dark class="my-3" />
             <line-chart :selectedYear="selectedYear" />
           </v-col>
         </v-row>

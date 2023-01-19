@@ -2,7 +2,7 @@ import {axiosClient} from "../axios";
 
 export async function refreshPriceHistory() {
   try {
-    const response = await axiosClient.get('/update-history')
+    const response = await axiosClient.get('/update-history2')
     if(response.status !== 200) {
       throw new Error(response.statusText)
     }

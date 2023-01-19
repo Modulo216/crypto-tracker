@@ -131,6 +131,10 @@ export default {
                 }
               })
               legend.chart.update()
+            },
+            labels: {
+              color: 'white',
+              boxWidth: 35
             }
           }
         },

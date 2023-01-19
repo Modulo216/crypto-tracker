@@ -6,6 +6,7 @@ const { taxSchema } = require('./schema/taxSchema')
 const { rewardSchema } = require('./schema/rewardSchema')
 const { investmentSchema } = require('./schema/InvestmentSchema')
 const { priceHistorySchema } = require('./schema/priceHistorySchema')
+const { pHistorySchema } = require('./schema/pHistorySchema')
 const { liquidationSchema } = require('./schema/liquidationSchema')
 require('dotenv').config()
 
@@ -53,6 +54,7 @@ const Tax = mongoose.model('Tax', taxSchema)
 const Reward = mongoose.model('Reward', rewardSchema)
 const Investment = mongoose.model('Investment', investmentSchema)
 const PriceHistory = mongoose.model('PriceHistory', priceHistorySchema)
+const PHistory = mongoose.model('PHistory', pHistorySchema)
 const Liquidation = mongoose.model('Liquidation', liquidationSchema)
 
-export { Interest, Trx, Checking, Tax, Reward, Investment, PriceHistory, Liquidation }
+export { Interest, Trx, Checking, Tax, Reward, Investment, PriceHistory, Liquidation, PHistory }

@@ -1,6 +1,6 @@
 mutation addLiquidation($liquidation: LiquidationInput!) {
   addLiquidation(liquidation: $liquidation ) {
-    id, taxable, event, usdAmount, updatedAt, newCoin, newCoinAmount, taxes { coin, amount, value, updatedAt, exchangeId, exchange, activity, id }, rewards { coin, amount, value, updatedAt, exchangeId, id },
+    id, event, usdAmount, updatedAt, newCoin, newCoinAmount, taxes { coin, amount, value, updatedAt, exchangeId, exchange, activity, id }, rewards { coin, amount, value, updatedAt, exchangeId, id },
     coin, coinAmount, coinValue, coinUpdatedAt, investments { coin, amount, spent, updatedAt, id, fillPrice },
     liquidations { event, usdAmount, updatedAt, newCoin, newCoinAmount, id }
   }

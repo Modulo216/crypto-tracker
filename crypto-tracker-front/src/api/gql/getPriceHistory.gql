@@ -1,5 +1,5 @@
 query {
   getPriceHistory {
-    id, date, coin, price
+    date, coin, price
   }
 }

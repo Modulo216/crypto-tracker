@@ -76,7 +76,7 @@ export default {
     },
     formatDate(d) {
       let theDate = new Date(d)
-      return ("0" + (theDate.getMonth() + 1)).slice(-2) + '/' + ("0" + theDate.getDate()).slice(-2)
+      return ("0" + (theDate.getMonth() + 1)).slice(-2) + '/' + ("0" + theDate.getDate()).slice(-2) + '/' + theDate.getFullYear().toString().slice(-2)
     },
     async emitRefresh() {
       this.loadingRewards = true

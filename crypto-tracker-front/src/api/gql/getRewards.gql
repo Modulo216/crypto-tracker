@@ -1,5 +1,5 @@
 query {
   getRewards {
-    id, exchangeId, coin, updatedAt, amount, value, title, subtitle, liquidation { taxable, event, usdAmount, updatedAt, newCoin, newCoinAmount } 
+    id, exchangeId, coin, updatedAt, amount, value, liquidation { event, usdAmount, updatedAt, newCoin, newCoinAmount } 
   }
 }

@@ -38,8 +38,10 @@
             <div>Value: <span class="green--text">{{ getAsCurrency(coinsSum.map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0)) }}</span></div>
           </v-card-text>
         </v-card>
+        <v-divider dark class="my-3" />
         <h3 class="pl-3">Bitcoin</h3>
         <line-chart :investments="allInvestments.filter(i => i.coin === 'BTC')" class="mt-2"/>
+        <v-divider dark class="my-3" />
         <h3 class="pl-3">Ethereum</h3>
         <line-chart :investments="allInvestments.filter(i => i.coin === 'ETH')" class="mt-2"/>
       </v-col>

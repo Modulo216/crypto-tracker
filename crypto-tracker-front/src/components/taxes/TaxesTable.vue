@@ -201,9 +201,9 @@ export default {
     formatDate(d) {
       let theDate = new Date(d)
       if(d.length === 10) {
-        return ("0" + (theDate.getUTCMonth() + 1)).slice(-2) + '/' + ("0" + theDate.getUTCDate()).slice(-2)
+        return ("0" + (theDate.getUTCMonth() + 1)).slice(-2) + '/' + ("0" + theDate.getUTCDate()).slice(-2) + '/' + theDate.getFullYear().toString().slice(-2)
       } else {
-        return ("0" + (theDate.getMonth() + 1)).slice(-2) + '/' + ("0" + theDate.getDate()).slice(-2)
+        return ("0" + (theDate.getMonth() + 1)).slice(-2) + '/' + ("0" + theDate.getDate()).slice(-2) + '/' + theDate.getFullYear().toString().slice(-2)
       }
     },
     async emitRefresh() {

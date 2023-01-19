@@ -81,9 +81,9 @@
             </v-expansion-panel>
           </v-expansion-panels>
           <v-col lg="12">
+            <v-divider dark class="my-3" />
             <bar :allTaxes="allTaxes" class="mt-2" />
-          </v-col>
-          <v-col lg="12">
+            <v-divider dark class="my-3" />
             <line-chart :allRewards="allTaxes" class="mt-2" />
           </v-col>
         </v-row>

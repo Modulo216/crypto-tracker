@@ -32,6 +32,7 @@
             <div>Actual: {{ ((coinsSum.map(t => parseFloat(t.val)).reduce((prev, next) => prev + next, 0) / $store.state.spendingTrxs.filter(t => dateIsInRange(t.updatedAt, monthNameActive)).map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0)) * 100).toFixed(2) }}%</div>
           </v-card-text>
         </v-card>
+        <v-divider dark class="my-3" />
         <line-chart :allRewards="allRewards" class="mt-2"/>
       </v-col>
     </v-row>
