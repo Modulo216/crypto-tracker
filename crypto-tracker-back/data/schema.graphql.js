@@ -210,6 +210,7 @@ export const typeDefs = gql`
     getPHistory: [PHistory]
   }
   type Mutation {
+    updateRows(id: ID): ID
     addLiquidation(liquidation: LiquidationInput): Liquidation
     addChecking(checking: CheckingInput): Checking
     addPriceHistory(priceHistory: PriceHistoryInput): PriceHistory

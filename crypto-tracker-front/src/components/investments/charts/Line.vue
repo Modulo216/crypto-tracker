@@ -25,7 +25,6 @@ import {
   CategoryScale,
   PointElement
 } from 'chart.js'
-import chroma from "chroma-js"
 import dateMixin from '@/mixins/datesMixin'
 const { isAfter } = require('date-fns')
 ChartJS.register(

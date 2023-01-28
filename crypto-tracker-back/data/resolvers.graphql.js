@@ -74,6 +74,17 @@ export const resolvers = {
     }
   },
   Mutation: {
+    updateRows: async (root, { id }) => {
+      const investments = await Investment.find()
+      let arr = []
+      for (let i = 0; i < investments.length; i++) {
+        if(investments[i].fillPrice !== undefined) {
+          investments[i].fillPrice = parseFloat(investments[i].fillPrice);
+          arr.push(investments[i])
+        }
+      }
+      Investment.updateMany(arr)
+    },
     addLiquidation: async (root, { liquidation }) => {
       if(liquidation.event === 'Sell') {
         delete liquidation.newCoin
@@ -160,6 +171,14 @@ export const resolvers = {
       return await Checking.findByIdAndDelete(id)
     },
     updateInterest: async (root, { interest }) => {
+      if(interest.nickName === '') {
+        let phistories = await PHistory.find({ "prices.coin": interest.name })
+        console.log("REMOVING PHISTORY " + phistories.length)
+        phistories.forEach(ph => {
+          ph.prices.splice(ph.prices.findIndex(p => p.coin === interest.name), 1)
+          ph.save()
+        })
+      }
       return await Interest.findByIdAndUpdate(interest.id, interest, { new: true })
     },
     addTrx: async (root, { trx }) => {

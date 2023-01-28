@@ -144,12 +144,10 @@ export default new Vuex.Store({
       if(state.homeCoinsSum.length > 0) {
         const itemId = state.homeCoinsSum.findIndex(c => c.coin === liq.coin)
         state.homeCoinsSum[itemId].amount = state.homeCoinsSum[itemId].amount - liq.coinAmount
-        state.homeCoinsSum[itemId].value = state.homeCoinsSum[itemId].amount * state.homeCoinsSum[itemId].price
 
         if(liq.event === 'Swap') {
           const swapCoinId = state.homeCoinsSum.findIndex(c => c.coin === liq.newCoin)
           state.homeCoinsSum[swapCoinId].amount = state.homeCoinsSum[swapCoinId].amount + parseFloat(liq.newCoinAmount)
-          state.homeCoinsSum[swapCoinId].value = state.homeCoinsSum[swapCoinId].amount * state.homeCoinsSum[swapCoinId].price
         }
       }
       

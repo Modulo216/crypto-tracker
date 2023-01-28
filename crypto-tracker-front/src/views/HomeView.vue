@@ -29,9 +29,10 @@
           dark
           :loading="loading"
           hide-default-footer
+          hide-default-header
           dense
           disable-pagination
-          :headers="[{ text: 'Coin', value: 'coin' },{ text: 'Price', value: 'price' },{ text: 'Value', value: 'value' },{ text: 'Gain', value: 'gain' }]"
+          :headers="[{ text: 'Coin', value: 'coin' },{ text: 'Price', value: 'price' },{ text: 'Value', value: 'value' },{ text: 'Gain', value: 'gain' },{ text: 'Life', value: 'life' }]"
           :items="$store.state.homeCoinsSum"
           item-key="coin"
           class="elevation-10 home-table">
@@ -46,7 +47,7 @@
             </v-tooltip>
           </template>
           <template v-slot:[`item.value`]="{ item }">
-            <span>{{ getAsCurrency(item.value) }}</span>
+            <span>{{ getAsCurrency(item.amount * item.price) }}</span>
           </template>
           <template v-slot:[`item.price`]="{ item }">
             <span>{{ getAsCurrency(item.price) }}</span>
@@ -59,6 +60,16 @@
                 </div>
               </template>
               <span>{{ item.oldPrice }}</span>
+            </v-tooltip>
+          </template>
+          <template v-slot:[`item.life`]="{ item }">
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <div style="cursor: pointer" class="rounded text-center" :style="getOrigValBackground(item)" v-bind="attrs" v-on="on">
+                  <span class="black--text">{{ (((item.amount * item.price) / item.origValue) * 100).toFixed(2) }}%</span>
+                </div>
+              </template>
+              <span>{{ getAsCurrency(item.origValue) }}</span>
             </v-tooltip>
           </template>
         </v-data-table>
@@ -79,6 +90,7 @@ import HistoryLine from '@/components/home/HistoryLine'
 import CoinHistoryLine from '@/components/home/CoinHistoryLine'
 import { getPHistory } from '../api/apollo'
 const { isBefore, isSameDay, endOfYesterday, formatISO } = require('date-fns')
+import chroma from "chroma-js";
 export default {
   name: 'home-view',
   data: () => ({
@@ -126,6 +138,10 @@ export default {
     }
   },
   methods: {
+    getOrigValBackground(item) {
+      let scale = chroma.scale(['#F44336', '#4CAF50']).domain([.10,1.10]).mode('hsl')
+      return `background-color: ${ scale((item.amount * item.price) / item.origValue).hex() }`
+    },
     async onlyGains() {
       this.loading = true
       let coinPrices = await getCoinPrice(this.$store.state.interests.filter(r => r.nickName !== '').map(r => r.name))
@@ -140,14 +156,19 @@ export default {
     },
     sumCoins() {
       this.$store.state.interests.filter(r => r.nickName !== '').forEach(r => {
-
         let coinCookie = $cookies.get(r.name) || 0
-        let amount = (this.rewards.filter(f => f.coin === r.name && f.liquidation === null).map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0) +
-            this.investments.filter(f => f.coin === r.name && f.liquidation === null).map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0) +
-            this.taxes.filter(f => f.coin === r.name && f.liquidation === null).map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0)) +
-            this.liquidation.filter(f => f.newCoin === r.name && f.liquidation === null).map(f => parseFloat(f.newCoinAmount)).reduce((prev, next) => prev + next, 0)
+        let rew = this.rewards.filter(f => f.coin === r.name && f.liquidation === null)
+        let inv = this.investments.filter(f => f.coin === r.name && f.liquidation === null)
+        let tax = this.taxes.filter(f => f.coin === r.name && f.liquidation === null)
+        let liq = this.liquidation.filter(f => f.newCoin === r.name && f.liquidation === null)
+
+        let amount = rew.map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0) + inv.map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0) +
+          tax.map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0) + liq.map(f => parseFloat(f.newCoinAmount)).reduce((prev, next) => prev + next, 0)
+        let origValue = rew.map(f => parseFloat(f.value)).reduce((prev, next) => prev + next, 0) + inv.map(f => parseFloat(f.spent)).reduce((prev, next) => prev + next, 0) +
+          tax.map(f => parseFloat(f.value)).reduce((prev, next) => prev + next, 0) + liq.map(f => parseFloat(f.usdAmount)).reduce((prev, next) => prev + next, 0)
+
         this.$store.commit('updateCoinsSum',
-          { item: { coin: r.name, price: Number(coinCookie), amount: amount, value: amount * coinCookie,
+          { item: { coin: r.name, price: Number(coinCookie), amount: amount, origValue: origValue,
             spent: this.investments.filter(f => f.coin === r.name).map(f => parseFloat(f.spent)).reduce((prev, next) => prev + next, 0) } 
           })
       })
@@ -167,7 +188,7 @@ export default {
             this.liquidation.filter(i => (isBefore(this.getDateAsUtc(i.updatedAt), this.getDateAsUtc(p.updatedAt)) || isSameDay(this.getDateAsUtc(i.updatedAt), this.getDateAsUtc(p.updatedAt))) && i.newCoin === price.coin).map(i => parseFloat(i.newCoinAmount)).reduce((prev, next) => prev + next, 0)) -
             this.liquidation.filter(i => (isBefore(this.getDateAsUtc(i.updatedAt), this.getDateAsUtc(p.updatedAt)) || isSameDay(this.getDateAsUtc(i.updatedAt), this.getDateAsUtc(p.updatedAt))) && i.coin === price.coin).map(i => parseFloat(i.coinAmount)).reduce((prev, next) => prev + next, 0)
           
-            if(coinSum) {
+          if(coinSum) {
             const itemId = this.priceHistory.findIndex(c => c.date === p.updatedAt.slice(0, 10))
             if(itemId === -1) {
               this.priceHistory.push({ date: p.updatedAt.slice(0, 10), coins: [{ coin: price.coin, coinSum, value: coinSum * price.price }] })
@@ -175,7 +196,6 @@ export default {
               this.priceHistory[itemId].coins.push({ coin: price.coin, coinSum, value: coinSum * price.price })
             }
           }
-        
         }
       }
       this.$store.commit('setChartHistory', this.priceHistory)
@@ -212,6 +232,7 @@ export default {
 </script>
 <style>
   .home-table > .v-data-table__wrapper > table > tbody > tr > td{
-    height: 24px !important;
+    height: 26px !important;
+    padding:0 8px 0 8px !important;
   }
 </style>

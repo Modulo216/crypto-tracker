@@ -14,7 +14,6 @@
 
 <script>
 import { Pie } from 'vue-chartjs/legacy'
-import chroma from "chroma-js";
 import {
   Chart as ChartJS,
   Title,
