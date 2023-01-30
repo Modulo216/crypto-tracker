@@ -95,8 +95,10 @@ export default new Vuex.Store({
     setChartHistory(state, items) {
       state.historyChartData = items
     },
-    addChartHistory(state, item) {
-      state.historyChartData.push(item)
+    addChartHistory(state, items) {
+      for (const item of items) {
+        state.historyChartData.push(item)
+      }
     },
     setRewards(state, items) {
       state.allRewards = items

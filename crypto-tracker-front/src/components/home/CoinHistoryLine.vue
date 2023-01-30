@@ -69,15 +69,11 @@ export default {
     plugins: {
       type: Array,
       default: () => []
-    }
+    },
+    priceHistory: Array
   },
   created() {
     this.populateChart()    
-  },
-  computed: {
-    priceHistory() {
-      return this.$store.state.historyChartData
-    }
   },
   watch: {
     priceHistory(newItems) {

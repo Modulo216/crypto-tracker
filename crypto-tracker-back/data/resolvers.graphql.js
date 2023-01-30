@@ -5,7 +5,7 @@ const formatISO = require('date-fns/formatISO')
 export const resolvers = {
   Query: {
     getInterests: async (root, query) => {
-      return await Interest.find({...query})
+      return await Interest.find({...query}).sort({ name: 1 })
     },
     findInterest: async (root, { interest }) => {
       return await Interest.findOne({ name: interest.name })

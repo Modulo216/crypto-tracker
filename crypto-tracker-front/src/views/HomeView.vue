@@ -81,9 +81,9 @@
       </v-col>
     </v-row>
     <v-divider dark class="my-3"></v-divider>
-    <history-line />
+    <history-line :priceHistory="$store.state.historyChartData" />
     <v-divider dark class="my-3"></v-divider>
-    <coin-history-line />
+    <coin-history-line :priceHistory="$store.state.historyChartData" />
   </v-container>
 </template>
 
@@ -186,7 +186,7 @@ export default {
     getAsCurrency(numb) {
       return numb.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
     },
-    parsePriceHistory(hist) {
+    parsePriceHistory(hist, refresh) {
       let histItems = []
       for (const p of hist) {
         let newData = { date: p.updatedAt.slice(0, 10), coins: [] }
@@ -203,13 +203,17 @@ export default {
         }
         histItems.push(newData)
       }
-      this.$store.commit('setChartHistory', histItems)
+      if(refresh !== undefined) {
+        this.$store.commit('addChartHistory', histItems)
+      } else {
+        this.$store.commit('setChartHistory', histItems)
+      }
     },
     async refreshValue() {
       this.loading = true
       if(this.$store.state.historyChartData.find(p => p.date === formatISO(endOfYesterday()).slice(0, 10)) === undefined) {
         let priceHistory = await refreshPriceHistory()
-        this.parsePriceHistory(priceHistory.data)
+        this.parsePriceHistory(priceHistory.data, true)
       }
 
       await this.sumCoins(true)

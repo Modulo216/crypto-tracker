@@ -69,7 +69,8 @@ export default {
     plugins: {
       type: Array,
       default: () => []
-    }
+    },
+    priceHistory: Array
   },
   computed: {
     investments() {
@@ -80,9 +81,6 @@ export default {
     },
     liquidations() {
       return this.$store.state.allLiquidation
-    },
-    priceHistory() {
-      return this.$store.state.historyChartData
     }
   },
   created() {
@@ -99,7 +97,7 @@ export default {
       this.chartData.datasets[1].data = []
       this.chartData.datasets[2].data = []
       this.chartData.labels = []
-
+      
       this.priceHistory.forEach(h => {
         this.chartData.labels.push(h.date)
         this.chartData.datasets[0].data.push(h.coins.map(i => i.value).reduce((prev, next) => prev + next, 0))
