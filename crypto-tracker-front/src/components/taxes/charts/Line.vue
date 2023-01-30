@@ -100,8 +100,8 @@ export default {
         
         let amount = 0
         this.allRewards.filter(t => this.dateIsInRange(t.updatedAt, m) && t.liquidation === null).forEach(r => {
-          let coinCookie = $cookies.get(r.coin)
-          amount = amount + (coinCookie * r.amount)
+          let coinCookie = this.$store.getters.getCoinPrice(r.coin)
+          amount += (coinCookie.price * r.amount)
         })
         this.chartData.datasets[1].data.push(parseInt(amount))
 

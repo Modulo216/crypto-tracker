@@ -93,26 +93,27 @@ export default {
       this.chartData.labels = []
       let monthYears = []
 
-      this.allRewards.forEach(t => {
+      for (const t of this.allRewards) {
         const date = new Date(t.updatedAt)
         let obj = {month: date.getUTCMonth(), year: date.getUTCFullYear()}
         monthYears.findIndex(x => x.month === obj.month && x.year === obj.year) === -1 ? monthYears.push(obj) : undefined
-      })
+      }
 
-      monthYears.forEach(m => {
+      for (const m of monthYears) {
         this.chartData.datasets[0].data.push(parseInt(this.allRewards.filter(t => this.dateIsInRange(t.updatedAt, m)).map(w => parseFloat(w.value)).reduce((prev, next) => prev + next, 0)))
         
-        let amount = 0
-        this.allRewards.filter(t => this.dateIsInRange(t.updatedAt, m) && t.liquidation === null).forEach(r => {
-          let coinCookie = $cookies.get(r.coin)
-          amount = amount + (coinCookie * r.amount)
-        })
+        let amount = 0.0
+        let items = this.allRewards.filter(t => this.dateIsInRange(t.updatedAt, m) && t.liquidation === null)
+        for (const item of items) {
+          let coinCookie = this.$store.getters.getCoinPrice(item.coin)
+          amount += coinCookie.price * parseFloat(item.amount)
+        }
         this.chartData.datasets[1].data.push(parseInt(amount))
 
         this.chartData.labels.push(`${this.$store.getters.getMonthNames[m.month]} ${m.year.toString().slice(-2)}`)
         this.chartData.datasets[0].backgroundColor.push(chroma.random())
         this.chartData.datasets[1].backgroundColor.push(chroma.random())
-      })
+      }
     }
   },
   data() {

@@ -161,13 +161,13 @@
                 Old Value<br />{{ toLiquidate.coin !== '' ? getAsCurrency(toBeLiquidated.filter(r => r.coin === toLiquidate.coin).slice(0, toLiquidate.amount).map(item => parseFloat(item.value)).reduce((prev, next) => prev + next, 0)) : '' }}
               </v-col>
 
-              <v-col cols="3" v-if="liqData.event === 'Swap'">
-                <v-select @change="changeNewCoin" label="New Coin" v-model="liqData.newCoin" :items="this.$store.state.interests.map(r => r.name)" />
+              <v-col cols="2" v-if="liqData.event === 'Swap'">
+                <v-select dense @change="changeNewCoin" label="New Coin" v-model="liqData.newCoin" :items="this.$store.state.interests.map(r => r.name)" />
               </v-col>
               <v-col cols="3" v-if="liqData.event === 'Swap'">
                 <v-text-field v-model="liqData.newCoinAmount" label="New Coin Amount" />
               </v-col>
-              <v-col cols="6" v-if="liqData.event === 'Swap'" />
+              <v-col cols="7" v-if="liqData.event === 'Swap'" />
 
               <v-col cols="2">
                 <v-select dense @change="toLiquidate.amount = 0" label="Coin" v-model="toLiquidate.coin" :items="$store.state.interests.filter(r => r.nickName !== '').map(r => r.name)" />
@@ -277,13 +277,13 @@ export default {
       this.showLiquidationDialog = false
     },
     setUsdAmount() {
-      let price = $cookies.get(this.toLiquidate.coin) || 0
+      let price = this.$store.getters.getCoinPrice(this.toLiquidate.coin).price
       this.liqData.usdAmount = (price * this.toBeLiquidated.filter(r => r.coin === this.toLiquidate.coin).slice(0, this.toLiquidate.amount).map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0)).toFixed(2)
-      let newCoinPrice = $cookies.get(this.liqData.newCoin) || 0
+      let newCoinPrice = this.$store.getters.getCoinPrice(this.liqData.newCoin).price
       this.liqData.newCoinAmount = (this.liqData.usdAmount / newCoinPrice).toFixed(8)
     },
     async changeNewCoin(newCoin) {
-      const newCoinPrice = await $cookies.get(newCoin)
+      const newCoinPrice = this.$store.getters.getCoinPrice(newCoin).price
       this.liqData.newCoinAmount = newCoinPrice === null ? 0 : (this.liqData.usdAmount / newCoinPrice).toFixed(8)
     },
     createTables() {
@@ -291,7 +291,7 @@ export default {
       this.sellData = []
       this.toBeLiquidated = []
       new Set(this.liquidations.filter(l => l.newCoin && l.newCoin !== null).map(l => l.newCoin)).forEach(c => {
-        let coinCookie = $cookies.get(c) || 0
+        let coinCookie = this.$store.getters.getCoinPrice(c).price
         let amount = this.liquidations.filter(t => t.event === 'Swap' && t.newCoin === c && t.liquidation === null).map(item => parseFloat(item.newCoinAmount)).reduce((prev, next) => prev + next, 0)
         let origValue = this.liquidations.filter(t => t.event === 'Swap' && t.newCoin === c && t.liquidation === null).map(item => parseFloat(item.coinValue)).reduce((prev, next) => prev + next, 0)
         this.swapData.push( { coin: c, amount: amount.toFixed(8), value: amount * coinCookie, origValue: origValue } )

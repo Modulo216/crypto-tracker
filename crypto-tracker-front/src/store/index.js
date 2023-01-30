@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import parseISO from 'date-fns/parseISO';
 import { getInterests, getRewards, getTaxes, getInvestments, getLiquidation } from '../api/apollo'
+import { getCoinPrice } from '../api/endpoints/coinbase'
 
 Vue.use(Vuex)
 
@@ -23,7 +24,6 @@ const _monthNames = ['Jan', 'Feb', "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Se
 
 export default new Vuex.Store({
   state: {
-    homeCoinsSum: [],
     interests: [],
     allRewards: [],
     allTaxes: [],
@@ -31,7 +31,8 @@ export default new Vuex.Store({
     allLiquidation: [],
     historyChartData: [],
     spendingTrxs: [],
-    spendingChecking: []
+    spendingChecking: [],
+    coinPrices: []
   },
   getters: {
     getMonthNames() {
@@ -47,25 +48,20 @@ export default new Vuex.Store({
     },
     getCategories() {
       return _categories
+    },
+    getCoinPrice: state => coinName => {
+      if(state.coinPrices.length === 0) {
+        return { oldPrice: 0, price: 0 }
+      } else if (state.coinPrices.length === 1) {
+        return { oldPrice: 0, price: state.coinPrices[0].prices.find(c => c.base === coinName).amount }
+      } else {
+        let newPrices = state.coinPrices.slice(-2)[1]
+        let oldPrices = state.coinPrices.slice(-2)[0]
+        return { oldPrice: oldPrices.prices.find(c => c.base === coinName).amount, price: newPrices.prices.find(c => c.base === coinName).amount }
+      }
     }
   },
   mutations: {
-    updateCoinsSum(state, { item }) {
-      const itemId = state.homeCoinsSum.findIndex(c => c.coin === item.coin)
-      if(itemId === -1) {
-        item.oldPrice = item.price
-        state.homeCoinsSum.push(item)
-      } else {
-        state.homeCoinsSum[itemId].oldPrice = state.homeCoinsSum[itemId].price
-        state.homeCoinsSum[itemId].value = item.value
-        state.homeCoinsSum[itemId].price = item.price
-        state.homeCoinsSum[itemId].spent = item.spent
-        state.homeCoinsSum[itemId].amount = item.amount
-      }
-    },
-    removeCoinsSum(state, coin) {
-      state.homeCoinsSum.splice(state.homeCoinsSum.findIndex(i => i.coin === coin), 1)
-    },
     setSpending(state, {trxs, checking}) {
       state.spendingTrxs = trxs
       state.spendingChecking = checking
@@ -99,6 +95,9 @@ export default new Vuex.Store({
     setChartHistory(state, items) {
       state.historyChartData = items
     },
+    addChartHistory(state, item) {
+      state.historyChartData.push(item)
+    },
     setRewards(state, items) {
       state.allRewards = items
     },
@@ -121,8 +120,7 @@ export default new Vuex.Store({
     updateLiqItems(state, liq) {
       liq.taxes.forEach(item => {
         item.liquidation = liq.id
-        let itemIdx = item.exchangeId ? state.allTaxes.findIndex(i => i.exchangeId === item.exchangeId) : state.allTaxes.findIndex(i => i.id === item.id)
-        Vue.set(state.allTaxes, itemIdx, item)
+        Vue.set(state.allTaxes, state.allTaxes.findIndex(i => i.exchangeId === item.exchangeId), item)
       })
 
       liq.rewards.forEach(item => {
@@ -140,16 +138,6 @@ export default new Vuex.Store({
         newItem.liquidation = liq.id
         Vue.set(state.allLiquidation, state.allLiquidation.findIndex(i => i.id === item.id), newItem)
       })
-
-      if(state.homeCoinsSum.length > 0) {
-        const itemId = state.homeCoinsSum.findIndex(c => c.coin === liq.coin)
-        state.homeCoinsSum[itemId].amount = state.homeCoinsSum[itemId].amount - liq.coinAmount
-
-        if(liq.event === 'Swap') {
-          const swapCoinId = state.homeCoinsSum.findIndex(c => c.coin === liq.newCoin)
-          state.homeCoinsSum[swapCoinId].amount = state.homeCoinsSum[swapCoinId].amount + parseFloat(liq.newCoinAmount)
-        }
-      }
       
       state.historyChartData = []
     },
@@ -166,15 +154,32 @@ export default new Vuex.Store({
       state.allLiquidation = items
     },
     addLiquidation(state, item) {
+      item.liquidation = null
       state.allLiquidation.push(item)
-    },
+    }
   },
   actions: {
     populateInterests: (context) => getInterests().then(r => context.commit('setInterests', r)),
     populateRewards: (context) => getRewards().then(r => context.commit('setRewards', r)),
     populateTaxes: (context) => getTaxes().then(r => context.commit('setTaxes', r)),
     populateInvestments: (context) => getInvestments().then(r => context.commit('setInvestments', r)),
-    populateLiquidation: (context) => getLiquidation().then(r => context.commit('setLiquidation', r))
+    populateLiquidation: (context) => getLiquidation().then(r => context.commit('setLiquidation', r)),
+    async getCoinPrice({ commit, state, getters }, coinName) {
+      let latest = state.coinPrices.slice(-1)
+      if(latest.length === 0 || (new Date() - latest[0].updatedAt) > (30*1000)) {
+        let retPrices = await getCoinPrice(state.interests.filter(r => r.nickName !== '').map(r => r.name))
+        let obj = { updatedAt: new Date(), prices: [] }
+        for (const item of retPrices.data) {
+          item.amount = parseFloat(item.amount)
+          obj.prices.push(item)
+        }
+        state.coinPrices.push(obj)
+        return {oldPrice: latest.length === 0 ? 0 : latest[0].prices.find(c => c.base === coinName).amount, 
+                price: retPrices.data.find(c => c.base === coinName).amount}
+      } else {
+        return getters.getCoinPrice(coinName)
+      }
+    }
   },
   modules: {
   }

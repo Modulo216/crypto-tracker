@@ -69,8 +69,7 @@ export default {
     plugins: {
       type: Array,
       default: () => []
-    },
-    priceHistory: Array
+    }
   },
   computed: {
     investments() {
@@ -82,6 +81,9 @@ export default {
     liquidations() {
       return this.$store.state.allLiquidation
     },
+    priceHistory() {
+      return this.$store.state.historyChartData
+    }
   },
   created() {
     this.populateChart()    

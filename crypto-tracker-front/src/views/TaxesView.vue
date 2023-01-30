@@ -162,21 +162,12 @@ export default {
       this.$store.commit('addTax', item)
     },
     async onRefreshTax(callback) {
-      let coinPrices = await getCoinPrice(this.$store.state.interests.filter(r => r.nickName !== '').map(r => r.name))
-      coinPrices.data.forEach(p => {
-        let coinSum = this.coinsSum.find(s => s.coin === p.base)
-        if(coinSum) {
-          coinSum.val = coinSum.amount * p.amount
-        }
-        $cookies.set(p.base, p.amount)
-      })
-
       let res = await refreshTaxes(this.$store.state.interests.filter(r => r.isTax).map(r => r.name))
       let unique = res.data.filter(p => !this.allTaxes.some(t => t.exchangeId === p.exchangeId))
       this.$store.commit('addTaxMany', unique)
       callback("done")
     },
-    setSums(dateMonth) {
+    async setSums(dateMonth) {
       this.activitySum = []
       this.yearsSum = []
       this.coinsSum = []
@@ -193,11 +184,11 @@ export default {
         })
       })
       new Set(this.taxes.map(t => t.coin)).forEach(a => {
-        let coinCookie = $cookies.get(a)
+        let coinCookie = this.$store.getters.getCoinPrice(a)
         this.coinsSum.push({ coin: a, idx: idx++, sum: 
           this.taxes.filter(t => t.coin === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0),
           amount: this.taxes.filter(t => t.coin === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0),
-          val: coinCookie ? this.taxes.filter(t => t.coin === a && t.liquidation === null && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0) * coinCookie : 0
+          val: this.taxes.filter(t => t.coin === a && t.liquidation === null && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0) * coinCookie.price
         })
       })
     },

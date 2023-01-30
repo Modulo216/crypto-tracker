@@ -69,29 +69,6 @@ app.get('/_health', async (req, res) => {
   }
 })
 
-app.get('/update-history', async (req, res, next) => {
-  try {
-    let interests = await resolvers.Query.getInterests(null, { nickName: { $ne: '' } })
-    let arr = []
-    for (const interest of interests) {
-      let result = await getCoinHistory.get(interest.nickName)
-      for (const p of result.data.prices) {
-        let then = formatISO(new Date(p[0])).slice(0, 10)
-        if(formatISO(new Date()).slice(0, 10) === then || await resolvers.Query.findPriceHistory(null, {date: then, coin: interest.name}) !== null) {
-          continue
-        }
-        arr.push({date: then, price: p[1].toString(), coin: interest.name})
-      }
-    }
-    resolvers.Mutation.addPriceHistoryMany(null, { arr })
-    arr.flat()
-    console.log("UPDATE-HISTORY", arr)
-    res.send(arr)
-  } catch (error) {
-    next(error)
-  }
-})
-
 app.get('/rewards', async (req, res, next) => {
   try {
     let retVal = []
@@ -125,6 +102,7 @@ app.get('/investments', async (req, res, next) => {
       let inv = { exchangeId: trx.id, updatedAt: trx.created_at, coin: trx.amount.currency, title: trx.details.title,
         subtitle: trx.details.subtitle, amount: trx.amount.amount, spent: trx.native_amount.amount, investType: 'buy', value: '0.00' }
       await resolvers.Mutation.addInvestmentImport(null, { investment: inv })
+      inv.liquidation = null
       retVal.push(inv)
     }
 
@@ -135,6 +113,7 @@ app.get('/investments', async (req, res, next) => {
         spent: aftTrx.map(t => t.native_amount).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0).toString(), investType: 'atf',
         fillPrice: aftTrx[0].advanced_trade_fill.fill_price, value: '0.00' }
       await resolvers.Mutation.addInvestmentImport(null, { investment: inv})
+      inv.liquidation = null
       retVal.push(inv)
     }
     res.send(retVal)

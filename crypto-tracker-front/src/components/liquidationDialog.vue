@@ -83,9 +83,9 @@ export default {
     show(visible) {
       if (visible) {
         this.liqData[this.modelType] = this.selected.map(s => s.id)
-        let price = $cookies.get(this.selected[0].coin) || 0
+        let price = this.$store.getters.getCoinPrice(this.selected[0].coin).price
         this.liqData.usdAmount = (price * this.selected.map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0)).toFixed(2)
-        let newCoinPrice = $cookies.get(this.liqData.newCoin) || 0
+        let newCoinPrice = this.$store.getters.getCoinPrice(this.liqData.newCoin).price
         this.liqData.newCoinAmount = (this.liqData.usdAmount / newCoinPrice).toFixed(8)
       }
     }
@@ -98,7 +98,7 @@ export default {
       })
     },
     async changeNewCoin(newCoin) {
-      const newCoinPrice = await $cookies.get(newCoin)
+      const newCoinPrice = this.$store.getters.getCoinPrice(newCoin).price
       this.liqData.newCoinAmount = newCoinPrice === null ? 0 : (this.liqData.usdAmount / newCoinPrice).toFixed(8)
     },
     async save() {

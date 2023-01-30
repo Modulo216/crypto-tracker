@@ -138,9 +138,6 @@ import { addInterest, deleteInterest, updateInterest, delReward, delPriceHistory
           updateInterest(this.editedItem)
           this.$store.commit('updatedInterest', this.editedItem)
         }
-        if(this.editedItem.nickName === '') {
-          this.$store.commit('removeCoinsSum', this.editedItem.name)
-        }
         this.$store.commit('setChartHistory', [])
         this.closeDialog()
       },

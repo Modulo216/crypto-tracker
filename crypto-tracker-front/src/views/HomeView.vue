@@ -7,9 +7,9 @@
       <v-col cols="3">
         <v-card class="my-2" dark color="#616161">
           <v-card-text class="subtitle-1 pa-1 d-flex" style="align-items: center;justify-content: space-evenly">
-            <div class="black--text text--darken-1">{{ getAsCurrency($store.state.homeCoinsSum.map(t => parseFloat(t.spent)).reduce((prev, next) => prev + next, 0)) }}</div>
+            <div class="black--text text--darken-1">{{ getAsCurrency(homeCoinsSum.map(t => parseFloat(t.spent)).reduce((prev, next) => prev + next, 0)) }}</div>
             <v-divider vertical dark />
-            <div class="gray--text">{{ getAsCurrency($store.state.homeCoinsSum.map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0)) }}</div>
+            <div class="gray--text">{{ getAsCurrency(homeCoinsSum.map(t => ((t.reward + t.tax + t.invest + t.liq) * t.price)).reduce((prev, next) => prev + next, 0)) }}</div>
             <v-divider vertical />
             <div class="green--text">
               {{ getAsCurrency(taxes.filter(t => t.coin === 'USDC').map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0) +
@@ -33,7 +33,7 @@
           dense
           disable-pagination
           :headers="[{ text: 'Coin', value: 'coin' },{ text: 'Price', value: 'price' },{ text: 'Value', value: 'value' },{ text: 'Gain', value: 'gain' },{ text: 'Life', value: 'life' }]"
-          :items="$store.state.homeCoinsSum"
+          :items="homeCoinsSum"
           item-key="coin"
           class="elevation-10 home-table">
           <template v-slot:[`item.coin`]="{ item }">
@@ -43,11 +43,16 @@
                   {{ item.coin }}
                 </div>
               </template>
-              <span>{{ item.amount.toFixed(8) }}</span>
+              <div v-if="item.reward > 0">Rewards: {{ item.reward.toFixed(8) }}</div>
+              <div v-if="item.tax > 0">Taxes: {{ item.tax.toFixed(8) }}</div>
+              <div v-if="item.invest > 0">Investments: {{ item.invest.toFixed(8) }}</div>
+              <div v-if="item.liq > 0">Liquidations: {{ item.liq.toFixed(8) }}</div>
+              <v-divider color="#000" class="my-2"></v-divider>
+              <div class="font-weight-black">Total: {{ (item.reward + item.tax + item.invest + item.liq).toFixed(8) }}</div>
             </v-tooltip>
           </template>
           <template v-slot:[`item.value`]="{ item }">
-            <span>{{ getAsCurrency(item.amount * item.price) }}</span>
+            <span>{{ getAsCurrency((item.reward + item.tax + item.invest + item.liq) * item.price) }}</span>
           </template>
           <template v-slot:[`item.price`]="{ item }">
             <span>{{ getAsCurrency(item.price) }}</span>
@@ -66,7 +71,7 @@
             <v-tooltip bottom>
               <template v-slot:activator="{ on, attrs }">
                 <div style="cursor: pointer" class="rounded text-center" :style="getOrigValBackground(item)" v-bind="attrs" v-on="on">
-                  <span class="black--text">{{ (((item.amount * item.price) / item.origValue) * 100).toFixed(2) }}%</span>
+                  <span class="black--text">{{ ((((item.reward + item.tax + item.invest + item.liq) * item.price) / item.origValue) * 100).toFixed(2) }}%</span>
                 </div>
               </template>
               <span>{{ getAsCurrency(item.origValue) }}</span>
@@ -76,14 +81,13 @@
       </v-col>
     </v-row>
     <v-divider dark class="my-3"></v-divider>
-    <history-line :priceHistory="priceHistory" />
+    <history-line />
     <v-divider dark class="my-3"></v-divider>
-    <coin-history-line :priceHistory="priceHistory" />
+    <coin-history-line />
   </v-container>
 </template>
 
 <script>
-import { getCoinPrice } from '../api/endpoints/coinbase'
 import { refreshPriceHistory } from '../api/endpoints/priceHistory'
 import LineChart from '../components/home/Line.vue'
 import HistoryLine from '@/components/home/HistoryLine'
@@ -95,7 +99,7 @@ export default {
   name: 'home-view',
   data: () => ({
     profitHistory: [],
-    priceHistory: [],
+    homeCoinsSum: [],
     loading: false
   }),
   components: {
@@ -105,10 +109,12 @@ export default {
   },
   async created() {
     if(this.$store.state.historyChartData.length > 0) {
-      this.priceHistory = this.$store.state.historyChartData
-    } else if(this.investments.length && this.taxes.length && this.rewards.length && this.liquidation.length) {
       this.sumCoins()
-      getPHistory().then(hist => this.parsePriceHistory(hist))
+    } else if(this.investments.length && this.taxes.length && this.rewards.length && this.liquidation.length) {
+      getPHistory().then(hist => {
+        this.sumCoins()
+        this.parsePriceHistory(hist)
+      })
     }
     this.profitHistory = JSON.parse($cookies.get("profitHistory")) || []
   },
@@ -130,9 +136,9 @@ export default {
     }
   },
   watch: {
-    allCoins(newVal) {
+    async allCoins(newVal) {
       if(this.investments.length && this.taxes.length && this.rewards.length && this.liquidation.length) {
-        this.sumCoins()
+        await this.sumCoins()
         getPHistory().then(hist => this.parsePriceHistory(hist))
       }
     }
@@ -140,47 +146,50 @@ export default {
   methods: {
     getOrigValBackground(item) {
       let scale = chroma.scale(['#F44336', '#4CAF50']).domain([.10,1.10]).mode('hsl')
-      return `background-color: ${ scale((item.amount * item.price) / item.origValue).hex() }`
+      return `background-color: ${ scale(((item.reward + item.tax + item.invest + item.liq) * item.price) / item.origValue).hex() }`
     },
     async onlyGains() {
-      this.loading = true
-      let coinPrices = await getCoinPrice(this.$store.state.interests.filter(r => r.nickName !== '').map(r => r.name))
-      coinPrices.data.forEach(p => {
-        $cookies.set(p.base, p.amount)
-      })
-      this.sumCoins()
-      this.loading = false
+      await this.sumCoins(true)
     },
     getGain(item) {
       return ((item.price - item.oldPrice) / item.price) * 100
     },
-    sumCoins() {
-      this.$store.state.interests.filter(r => r.nickName !== '').forEach(r => {
-        let coinCookie = $cookies.get(r.name) || 0
+    async sumCoins(forceUpdate) {
+      this.loading = true
+      let interests = this.$store.state.interests.filter(r => r.nickName !== '')
+      for (const r of interests) { 
+        let coinCookie = forceUpdate === undefined ? this.$store.getters.getCoinPrice(r.name) : await this.$store.dispatch('getCoinPrice', r.name)
         let rew = this.rewards.filter(f => f.coin === r.name && f.liquidation === null)
         let inv = this.investments.filter(f => f.coin === r.name && f.liquidation === null)
         let tax = this.taxes.filter(f => f.coin === r.name && f.liquidation === null)
         let liq = this.liquidation.filter(f => f.newCoin === r.name && f.liquidation === null)
-
-        let amount = rew.map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0) + inv.map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0) +
-          tax.map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0) + liq.map(f => parseFloat(f.newCoinAmount)).reduce((prev, next) => prev + next, 0)
+        
         let origValue = rew.map(f => parseFloat(f.value)).reduce((prev, next) => prev + next, 0) + inv.map(f => parseFloat(f.spent)).reduce((prev, next) => prev + next, 0) +
           tax.map(f => parseFloat(f.value)).reduce((prev, next) => prev + next, 0) + liq.map(f => parseFloat(f.usdAmount)).reduce((prev, next) => prev + next, 0)
 
-        this.$store.commit('updateCoinsSum',
-          { item: { coin: r.name, price: Number(coinCookie), amount: amount, origValue: origValue,
-            spent: this.investments.filter(f => f.coin === r.name).map(f => parseFloat(f.spent)).reduce((prev, next) => prev + next, 0) } 
-          })
-      })
+        let item = { coin: r.name, price: coinCookie.price, oldPrice: coinCookie.oldPrice, origValue: origValue, reward: rew.map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0),
+          tax: tax.map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0), invest: inv.map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0),
+          liq: liq.map(f => parseFloat(f.newCoinAmount)).reduce((prev, next) => prev + next, 0),
+          spent: this.investments.filter(f => f.coin === r.name).map(f => parseFloat(f.spent)).reduce((prev, next) => prev + next, 0)
+        }
+
+        const itemId = this.homeCoinsSum.findIndex(c => c.coin === item.coin)
+        if(itemId === -1) {
+          this.homeCoinsSum.push(item)
+        } else {
+          let itemToUpdate = Object.assign(this.homeCoinsSum[itemId], item)
+          this.$set(this.homeCoinsSum, itemId, itemToUpdate)
+        }
+      }
+      this.loading = false
     },
     getAsCurrency(numb) {
-      return numb.toLocaleString('en-US', {
-        style: 'currency',
-        currency: 'USD',
-      })
+      return numb.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
     },
     parsePriceHistory(hist) {
+      let histItems = []
       for (const p of hist) {
+        let newData = { date: p.updatedAt.slice(0, 10), coins: [] }
         for (const price of p.prices) {
           let coinSum = (this.rewards.filter(i => (isBefore(new Date(i.updatedAt), this.getDateAsUtc(p.updatedAt)) || isSameDay(new Date(i.updatedAt), this.getDateAsUtc(p.updatedAt))) && i.coin === price.coin).map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0) +
             this.taxes.filter(i => (isBefore(new Date(i.updatedAt), this.getDateAsUtc(p.updatedAt)) || isSameDay(new Date(i.updatedAt), this.getDateAsUtc(p.updatedAt))) && i.coin === price.coin).map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0) +
@@ -189,37 +198,28 @@ export default {
             this.liquidation.filter(i => (isBefore(this.getDateAsUtc(i.updatedAt), this.getDateAsUtc(p.updatedAt)) || isSameDay(this.getDateAsUtc(i.updatedAt), this.getDateAsUtc(p.updatedAt))) && i.coin === price.coin).map(i => parseFloat(i.coinAmount)).reduce((prev, next) => prev + next, 0)
           
           if(coinSum) {
-            const itemId = this.priceHistory.findIndex(c => c.date === p.updatedAt.slice(0, 10))
-            if(itemId === -1) {
-              this.priceHistory.push({ date: p.updatedAt.slice(0, 10), coins: [{ coin: price.coin, coinSum, value: coinSum * price.price }] })
-            } else {
-              this.priceHistory[itemId].coins.push({ coin: price.coin, coinSum, value: coinSum * price.price })
-            }
+            newData.coins.push({ coin: price.coin, coinSum, value: coinSum * price.price })
           }
         }
+        histItems.push(newData)
       }
-      this.$store.commit('setChartHistory', this.priceHistory)
+      this.$store.commit('setChartHistory', histItems)
     },
     async refreshValue() {
       this.loading = true
-
-      if(this.priceHistory.find(p => p.date === formatISO(endOfYesterday()).slice(0, 10)) === undefined) {
+      if(this.$store.state.historyChartData.find(p => p.date === formatISO(endOfYesterday()).slice(0, 10)) === undefined) {
         let priceHistory = await refreshPriceHistory()
         this.parsePriceHistory(priceHistory.data)
       }
 
-      let coinPrices = await getCoinPrice(this.$store.state.interests.filter(r => r.nickName !== '').map(r => r.name))
-      coinPrices.data.forEach(p => {
-        $cookies.set(p.base, p.amount)
-      })
-      this.sumCoins()
+      await this.sumCoins(true)
 
       if(this.profitHistory.length === 33) {
         this.profitHistory.shift()
       }
 
       let dateVal = `${new Date().getDate()} ${new Date().toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })}`
-      this.profitHistory.push({date: dateVal, sum: this.$store.state.homeCoinsSum.map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0) - this.$store.state.homeCoinsSum.map(t => parseFloat(t.spent)).reduce((prev, next) => prev + next, 0)})
+      this.profitHistory.push({date: dateVal, sum: this.homeCoinsSum.map(t => ((t.reward + t.tax + t.invest + t.liq) * t.price)).reduce((prev, next) => prev + next, 0) - this.homeCoinsSum.map(t => parseFloat(t.spent)).reduce((prev, next) => prev + next, 0)})
       $cookies.set("profitHistory", JSON.stringify(this.profitHistory))
       this.loading = false
     },

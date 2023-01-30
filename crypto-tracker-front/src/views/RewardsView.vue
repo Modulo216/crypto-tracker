@@ -97,29 +97,20 @@ export default {
       }
     },
     async onRefreshRewards(callback) {
-      let coinPrices = await getCoinPrice(this.$store.state.interests.filter(r => r.nickName !== '').map(r => r.name))
-      coinPrices.data.forEach(p => {
-        let coinSum = this.coinsSum.find(s => s.coin === p.base)
-        if(coinSum) {
-          coinSum.val = coinSum.amount * p.amount
-        }
-        $cookies.set(p.base, p.amount)
-      })
-      
       let res = await refreshRewards(this.$store.state.interests.filter(r => r.isReward).map(r => r.name))
       let unique = res.data.filter(p => !this.allRewards.some(t => t.exchangeId === p.exchangeId))
       this.$store.commit('addRewardMany', unique)
       callback("done")
     },
-    setSums(dateMonth) {
+    async setSums(dateMonth) {
       this.coinsSum = []
 
-      new Set(this.rewards.map(t => t.coin)).forEach(a => {
-        let coinCookie = $cookies.get(a)
+      new Set(this.rewards.map(t => t.coin)).forEach(async a => {
+        let coinCookie = this.$store.getters.getCoinPrice(a)
         this.coinsSum.push({ coin: a, sum: 
           this.rewards.filter(t => t.coin === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0),
           amount: this.rewards.filter(t => t.coin === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0),
-          val: coinCookie ? this.rewards.filter(t => t.coin === a && t.liquidation === null && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0) * coinCookie : 0
+          val: this.rewards.filter(t => t.coin === a && t.liquidation === null && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0) * coinCookie.price
         })
       })
     },
