@@ -5,13 +5,13 @@ export const typeDefs = gql`
     id: ID
     taxable: Boolean
     event: String
-    usdAmount: String
+    usdAmount: Float
     updatedAt: String
     newCoin: String
-    newCoinAmount: String
+    newCoinAmount: Float
     coin: String
-    coinAmount: String
-    coinValue: String
+    coinAmount: Float
+    coinValue: Float
     coinUpdatedAt: String
     taxes: [Tax]
     rewards: [Reward]
@@ -23,10 +23,10 @@ export const typeDefs = gql`
     id: ID
     taxable: Boolean
     event: String
-    usdAmount: String
+    usdAmount: Float
     updatedAt: String
     newCoin: String
-    newCoinAmount: String
+    newCoinAmount: Float
     taxes: [ID]
     rewards: [ID]
     investments: [ID]
@@ -64,13 +64,13 @@ export const typeDefs = gql`
   type Checking {
     id: ID
     date: String
-    amount: String
+    amount: Float
     type: String
   }
   input CheckingInput {
     id: ID
     date: String
-    amount: String
+    amount: Float
     type: String
   }
   type Reward {
@@ -79,8 +79,8 @@ export const typeDefs = gql`
     exchangeId: String
     coin: String
     updatedAt: String
-    amount: String
-    value: String
+    amount: Float
+    value: Float
     title: String
     subtitle: String
     liquidation: Liquidation
@@ -91,8 +91,8 @@ export const typeDefs = gql`
     exchangeId: String
     coin: String
     updatedAt: String
-    amount: String
-    value: String
+    amount: Float
+    value: Float
     title: String
     subtitle: String
   }
@@ -102,8 +102,8 @@ export const typeDefs = gql`
     exchangeId: String
     coin: String
     updatedAt: String
-    amount: String
-    value: String
+    amount: Float
+    value: Float
     title: String
     subtitle: String
     activity: String
@@ -115,8 +115,8 @@ export const typeDefs = gql`
     exchangeId: String
     coin: String
     updatedAt: String
-    amount: String
-    value: String
+    amount: Float
+    value: Float
     title: String
     subtitle: String
     activity: String
@@ -126,12 +126,12 @@ export const typeDefs = gql`
     exchangeId: String
     coin: String
     updatedAt: String
-    amount: String
-    spent: String
+    amount: Float
+    spent: Float
     title: String
     subtitle: String
     investType: String
-    fillPrice: String
+    fillPrice: Float
     value: String
     liquidation: Liquidation
   }
@@ -140,12 +140,12 @@ export const typeDefs = gql`
     exchangeId: String
     coin: String
     updatedAt: String
-    amount: String
-    spent: String
+    amount: Float
+    spent: Float
     title: String
     subtitle: String
     investType: String
-    fillPrice: String
+    fillPrice: Float
     value: String
   }
   type Trx {
@@ -154,7 +154,7 @@ export const typeDefs = gql`
     exchangeId: String
     trxType: String
     updatedAt: String
-    amount: String
+    amount: Float
     merchant: String
     title: String
     subtitle: String
@@ -166,7 +166,7 @@ export const typeDefs = gql`
     exchangeId: String
     trxType: String
     updatedAt: String
-    amount: String
+    amount: Float
     merchant: String
     title: String
     subtitle: String
@@ -210,7 +210,6 @@ export const typeDefs = gql`
     getPHistory: [PHistory]
   }
   type Mutation {
-    updateRows(id: ID): ID
     addLiquidation(liquidation: LiquidationInput): Liquidation
     addChecking(checking: CheckingInput): Checking
     addPriceHistory(priceHistory: PriceHistoryInput): PriceHistory

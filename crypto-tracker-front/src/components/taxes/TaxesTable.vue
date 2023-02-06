@@ -29,7 +29,7 @@
                 <v-icon dark>
                   mdi-water
                 </v-icon>
-                <span v-if="selected.length > 0">{{ selected.map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0).toFixed(8)}}</span>
+                <span v-if="selected.length > 0">{{ selected.map(item => item.amount).reduce((prev, next) => prev + next, 0).toFixed(8)}}</span>
               </v-btn>
             </v-toolbar>
           </template>
@@ -41,7 +41,7 @@
             <span>{{ formatDate(item.updatedAt) }}</span>
           </template>
           <template v-slot:[`item.value`]="props">
-            <div>{{ getAsCurrency(parseFloat(props.item.value)) }}</div>
+            <div>{{ getAsCurrency(props.item.value) }}</div>
           </template>
           <template v-slot:[`item.activity`]="props">
             <v-edit-dialog

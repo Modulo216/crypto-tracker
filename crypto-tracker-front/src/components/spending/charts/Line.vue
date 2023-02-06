@@ -121,11 +121,11 @@ export default {
       let savedArr = []
       monthYears.forEach(m => {
         let startDate = new Date(m.year, m.month, 1)
-        let totalSaved = (this.allLiquidations.filter(t => t.event === 'Sell' && isWithinInterval(new Date(t.updatedAt), { start: startDate, end: endOfMonth(startDate) })).map(item => parseFloat(item.usdAmount)).reduce((prev, next) => prev + next, 0) +
-          this.allTaxes.filter(t => t.coin === 'USDC' && isWithinInterval(new Date(t.updatedAt), { start: startDate, end: endOfMonth(startDate) })).map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0) +
-          this.allChecking.filter(i => i.type === 'checkingIn' && isWithinInterval(new Date(i.date), { start: startDate, end: endOfMonth(startDate) })).map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0)) -
-          (this.allTrxs.filter(t => isWithinInterval(new Date(t.updatedAt), { start: startDate, end: endOfMonth(startDate) })).map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0) +
-          this.allChecking.filter(i => (i.type === 'checkingOut' || i.type === 'investments') && isWithinInterval(new Date(i.date), { start: startDate, end: endOfMonth(startDate) })).map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0))  
+        let totalSaved = (this.allLiquidations.filter(t => t.event === 'Sell' && isWithinInterval(new Date(t.updatedAt), { start: startDate, end: endOfMonth(startDate) })).map(item => item.usdAmount).reduce((prev, next) => prev + next, 0) +
+          this.allTaxes.filter(t => t.coin === 'USDC' && isWithinInterval(new Date(t.updatedAt), { start: startDate, end: endOfMonth(startDate) })).map(item => item.amount).reduce((prev, next) => prev + next, 0) +
+          this.allChecking.filter(i => i.type === 'checkingIn' && isWithinInterval(new Date(i.date), { start: startDate, end: endOfMonth(startDate) })).map(item => item.amount).reduce((prev, next) => prev + next, 0)) -
+          (this.allTrxs.filter(t => isWithinInterval(new Date(t.updatedAt), { start: startDate, end: endOfMonth(startDate) })).map(item => item.amount).reduce((prev, next) => prev + next, 0) +
+          this.allChecking.filter(i => (i.type === 'checkingOut' || i.type === 'investments') && isWithinInterval(new Date(i.date), { start: startDate, end: endOfMonth(startDate) })).map(item => item.amount).reduce((prev, next) => prev + next, 0))  
         savedArr.push(totalSaved)
 
         this.chartData.datasets[0].data.push(savedArr.reduce((prev, next) => prev + next, 0).toFixed(2))

@@ -47,13 +47,13 @@
               large
               persistent
             >
-              <div>{{ getAsCurrency(parseFloat(props.item.amount)) }}</div>
+              <div>{{ getAsCurrency(props.item.amount) }}</div>
               <template v-slot:input>
                 <div class="mt-4 text-h6">
                   Update Amount
                 </div>
                 <v-text-field
-                  v-model="props.item.amount"
+                  v-model.number="props.item.amount"
                   label="Edit"
                   single-line
                   counter

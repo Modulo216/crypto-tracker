@@ -102,11 +102,11 @@ export default {
         this.chartData.labels.push(h.date)
         this.chartData.datasets[0].data.push(h.coins.map(i => i.value).reduce((prev, next) => prev + next, 0))
         this.chartData.datasets[1].data.push(
-          this.investments.filter(t => isBefore(new Date(t.updatedAt), this.getDateAsUtc(h.date)) || isSameDay(new Date(t.updatedAt), this.getDateAsUtc(h.date))).map(t => parseFloat(t.spent)).reduce((prev, next) => prev + next, 0)
+          this.investments.filter(t => isBefore(new Date(t.updatedAt), this.getDateAsUtc(h.date)) || isSameDay(new Date(t.updatedAt), this.getDateAsUtc(h.date))).map(t => t.spent).reduce((prev, next) => prev + next, 0)
         )
         this.chartData.datasets[2].data.push(
-          this.taxes.filter(t => t.coin === 'USDC' && (isBefore(new Date(t.updatedAt), this.getDateAsUtc(h.date)) || isSameDay(new Date(t.updatedAt), this.getDateAsUtc(h.date)))).map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0) +
-          this.liquidations.filter(t => t.event === 'Sell' && (isBefore(new Date(t.updatedAt), new Date(h.date)) || isSameDay(new Date(t.updatedAt), new Date(h.date)))).map(t => parseFloat(t.usdAmount)).reduce((prev, next) => prev + next, 0)
+          this.taxes.filter(t => t.coin === 'USDC' && (isBefore(new Date(t.updatedAt), this.getDateAsUtc(h.date)) || isSameDay(new Date(t.updatedAt), this.getDateAsUtc(h.date)))).map(t => t.value).reduce((prev, next) => prev + next, 0) +
+          this.liquidations.filter(t => t.event === 'Sell' && (isBefore(new Date(t.updatedAt), new Date(h.date)) || isSameDay(new Date(t.updatedAt), new Date(h.date)))).map(t => t.usdAmount).reduce((prev, next) => prev + next, 0)
         )
       })
     },

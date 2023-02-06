@@ -14,7 +14,8 @@ exports.trxSchema = new mongoose.Schema({
     type: String
   },
   amount: {
-    type: String
+    type: mongoose.Schema.Types.Number,
+    get: v => parseFloat(v)
   },
   merchant: {
     type: String

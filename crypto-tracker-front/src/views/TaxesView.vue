@@ -35,8 +35,8 @@
                   <v-col lg="6" sm="12" class="pa-1">
                     <v-card class="mb-2" dark>
                       <v-card-text class="subtitle-1 pa-0 d-flex">
-                        <div class="px-1" style="flex: 0 0 50%;">Tax: <span class="red--text">{{ getAsCurrency(taxes.map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0)) }}</span></div>
-                        <div class="px-1">Val: <span class="green--text">{{ getAsCurrency(coinsSum.map(t => parseFloat(t.val)).reduce((prev, next) => prev + next, 0)) }}</span></div>
+                        <div class="px-1" style="flex: 0 0 50%;">Tax: <span class="red--text">{{ getAsCurrency(taxes.map(t => t.value).reduce((prev, next) => prev + next, 0)) }}</span></div>
+                        <div class="px-1">Val: <span class="green--text">{{ getAsCurrency(coinsSum.map(t => t.val).reduce((prev, next) => prev + next, 0)) }}</span></div>
                       </v-card-text>
                     </v-card>
                     <v-data-table
@@ -98,7 +98,6 @@ import TaxesTable from '../components/taxes/TaxesTable.vue'
 import Bar from '../components/taxes/charts/Bar'
 import Line from '../components/taxes/charts/Line'
 import { refreshTaxes } from '../api/endpoints/tax'
-import { getCoinPrice } from '../api/endpoints/coinbase'
 import dateMixin from '@/mixins/datesMixin'
 export default {
   components: {
@@ -175,20 +174,20 @@ export default {
 
       new Set(this.taxes.map(t => t.activity)).forEach(a => {
         this.activitySum.push({ activity: a, idx: idx++, sum: 
-          this.taxes.filter(t => t.activity === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0)
+          this.taxes.filter(t => t.activity === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => t.value).reduce((prev, next) => prev + next, 0)
         })
       })
       new Set(this.allTaxes.map(l => l.updatedAt.substring(0,4))).forEach(a => {
         this.yearsSum.push({ year: a, sum: 
-          this.allTaxes.filter(t => t.updatedAt.substring(0,4) === a).map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0)
+          this.allTaxes.filter(t => t.updatedAt.substring(0,4) === a).map(t => t.value).reduce((prev, next) => prev + next, 0)
         })
       })
       new Set(this.taxes.map(t => t.coin)).forEach(a => {
         let coinCookie = this.$store.getters.getCoinPrice(a)
         this.coinsSum.push({ coin: a, idx: idx++, sum: 
-          this.taxes.filter(t => t.coin === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0),
-          amount: this.taxes.filter(t => t.coin === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0),
-          val: this.taxes.filter(t => t.coin === a && t.liquidation === null && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0) * coinCookie.price
+          this.taxes.filter(t => t.coin === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => t.value).reduce((prev, next) => prev + next, 0),
+          amount: this.taxes.filter(t => t.coin === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => t.amount).reduce((prev, next) => prev + next, 0),
+          val: this.taxes.filter(t => t.coin === a && t.liquidation === null && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => t.amount).reduce((prev, next) => prev + next, 0) * coinCookie.price
         })
       })
     },

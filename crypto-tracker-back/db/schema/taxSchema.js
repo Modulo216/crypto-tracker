@@ -14,10 +14,12 @@ exports.taxSchema = new mongoose.Schema({
     type: String
   },
   amount: {
-    type: String
+    type: mongoose.Schema.Types.Number,
+    get: v => parseFloat(v)
   },
   value: {
-    type: String
+    type: mongoose.Schema.Types.Number,
+    get: v => parseFloat(v)
   },
   title: {
     type: String

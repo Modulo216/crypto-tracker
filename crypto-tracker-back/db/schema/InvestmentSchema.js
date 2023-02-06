@@ -11,10 +11,12 @@ exports.investmentSchema = new mongoose.Schema({
     type: String
   },
   amount: {
-    type: String
+    type: mongoose.Schema.Types.Number,
+    get: v => parseFloat(v)
   },
   spent: {
-    type: String
+    type: mongoose.Schema.Types.Number,
+    get: v => parseFloat(v)
   },
   title: {
     type: String
@@ -26,7 +28,8 @@ exports.investmentSchema = new mongoose.Schema({
     type: String
   },
   fillPrice: {
-    type: String
+    type: mongoose.Schema.Types.Number,
+    get: v => parseFloat(v)
   },
   value: {
     type: String

@@ -47,7 +47,7 @@
                       </v-menu>
                     </v-col>
                     <v-col cols="6">
-                      <v-text-field v-model="editedItem.amount" label="Amount" />
+                      <v-text-field v-model.number="editedItem.amount" label="Amount" />
                     </v-col>
                   </v-row>
                 </v-container>
@@ -65,7 +65,7 @@
         <span>{{ format(parseISO(item.date), 'MM/dd/yy') }}</span>
       </template>
       <template v-slot:[`item.amount`]="{ item }">
-        <span>{{ getAsCurrency(parseFloat(item.amount)) }}</span>
+        <span>{{ getAsCurrency(item.amount) }}</span>
       </template>
       <template v-slot:[`item.actions`]="{ item }">
         <!-- <v-icon small class="mr-2" @click="editItem(item)">mdi-pencil</v-icon> -->
@@ -92,12 +92,12 @@ export default {
     ],
     editedItem: {
       date: format(parseISO(new Date().toISOString()), 'yyyy-MM-dd'),
-      amount: '',
+      amount: 0,
       type: instance.type
     },
     defaultItem: {
       date: format(parseISO(new Date().toISOString()), 'yyyy-MM-dd'),
-      amount: '',
+      amount: 0,
       type: instance.type
     },
   }),
@@ -106,7 +106,7 @@ export default {
       return this.editedItem.date ? format(parseISO(this.editedItem.date), 'MM/dd/yy') : ''
     },
     getTotal() {
-      return this.items.filter(i => i.type === this.type).map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0) 
+      return this.items.filter(i => i.type === this.type).map(i => i.amount).reduce((prev, next) => prev + next, 0) 
     }
   },
   watch: {

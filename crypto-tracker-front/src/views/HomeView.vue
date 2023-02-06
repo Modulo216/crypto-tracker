@@ -7,13 +7,13 @@
       <v-col cols="3">
         <v-card class="my-2" dark color="#616161">
           <v-card-text class="subtitle-1 pa-1 d-flex" style="align-items: center;justify-content: space-evenly">
-            <div class="black--text text--darken-1">{{ getAsCurrency(homeCoinsSum.map(t => parseFloat(t.spent)).reduce((prev, next) => prev + next, 0)) }}</div>
+            <div class="black--text text--darken-1">{{ getAsCurrency(homeCoinsSum.map(t => t.spent).reduce((prev, next) => prev + next, 0)) }}</div>
             <v-divider vertical dark />
             <div class="gray--text">{{ getAsCurrency(homeCoinsSum.map(t => ((t.reward + t.tax + t.invest + t.liq) * t.price)).reduce((prev, next) => prev + next, 0)) }}</div>
             <v-divider vertical />
             <div class="green--text">
-              {{ getAsCurrency(taxes.filter(t => t.coin === 'USDC').map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0) +
-                  liquidation.filter(t => t.event === 'Sell').map(t => parseFloat(t.usdAmount)).reduce((prev, next) => prev + next, 0)) }}
+              {{ getAsCurrency(taxes.filter(t => t.coin === 'USDC').map(t => t.value).reduce((prev, next) => prev + next, 0) +
+                  liquidation.filter(t => t.event === 'Sell').map(t => t.usdAmount).reduce((prev, next) => prev + next, 0)) }}
             </div>
             <v-divider vertical />
             <div>
@@ -164,13 +164,13 @@ export default {
         let tax = this.taxes.filter(f => f.coin === r.name && f.liquidation === null)
         let liq = this.liquidation.filter(f => f.newCoin === r.name && f.liquidation === null)
         
-        let origValue = rew.map(f => parseFloat(f.value)).reduce((prev, next) => prev + next, 0) + inv.map(f => parseFloat(f.spent)).reduce((prev, next) => prev + next, 0) +
-          tax.map(f => parseFloat(f.value)).reduce((prev, next) => prev + next, 0) + liq.map(f => parseFloat(f.usdAmount)).reduce((prev, next) => prev + next, 0)
+        let origValue = rew.map(f => f.value).reduce((prev, next) => prev + next, 0) + inv.map(f => f.spent).reduce((prev, next) => prev + next, 0) +
+          tax.map(f => f.value).reduce((prev, next) => prev + next, 0) + liq.map(f => f.usdAmount).reduce((prev, next) => prev + next, 0)
 
-        let item = { coin: r.name, price: coinCookie.price, oldPrice: coinCookie.oldPrice, origValue: origValue, reward: rew.map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0),
-          tax: tax.map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0), invest: inv.map(f => parseFloat(f.amount)).reduce((prev, next) => prev + next, 0),
-          liq: liq.map(f => parseFloat(f.newCoinAmount)).reduce((prev, next) => prev + next, 0),
-          spent: this.investments.filter(f => f.coin === r.name).map(f => parseFloat(f.spent)).reduce((prev, next) => prev + next, 0)
+        let item = { coin: r.name, price: coinCookie.price, oldPrice: coinCookie.oldPrice, origValue: origValue, reward: rew.map(f => f.amount).reduce((prev, next) => prev + next, 0),
+          tax: tax.map(f => f.amount).reduce((prev, next) => prev + next, 0), invest: inv.map(f => f.amount).reduce((prev, next) => prev + next, 0),
+          liq: liq.map(f => f.newCoinAmount).reduce((prev, next) => prev + next, 0),
+          spent: this.investments.filter(f => f.coin === r.name).map(f => f.spent).reduce((prev, next) => prev + next, 0)
         }
 
         const itemId = this.homeCoinsSum.findIndex(c => c.coin === item.coin)
@@ -191,15 +191,13 @@ export default {
       for (const p of hist) {
         let newData = { date: p.updatedAt.slice(0, 10), coins: [] }
         for (const price of p.prices) {
-          let coinSum = (this.rewards.filter(i => (isBefore(new Date(i.updatedAt), this.getDateAsUtc(p.updatedAt)) || isSameDay(new Date(i.updatedAt), this.getDateAsUtc(p.updatedAt))) && i.coin === price.coin).map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0) +
-            this.taxes.filter(i => (isBefore(new Date(i.updatedAt), this.getDateAsUtc(p.updatedAt)) || isSameDay(new Date(i.updatedAt), this.getDateAsUtc(p.updatedAt))) && i.coin === price.coin).map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0) +
-            this.investments.filter(i => (isBefore(new Date(i.updatedAt), this.getDateAsUtc(p.updatedAt)) || isSameDay(new Date(i.updatedAt), this.getDateAsUtc(p.updatedAt))) && i.coin === price.coin).map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0) +
-            this.liquidation.filter(i => (isBefore(this.getDateAsUtc(i.updatedAt), this.getDateAsUtc(p.updatedAt)) || isSameDay(this.getDateAsUtc(i.updatedAt), this.getDateAsUtc(p.updatedAt))) && i.newCoin === price.coin).map(i => parseFloat(i.newCoinAmount)).reduce((prev, next) => prev + next, 0)) -
-            this.liquidation.filter(i => (isBefore(this.getDateAsUtc(i.updatedAt), this.getDateAsUtc(p.updatedAt)) || isSameDay(this.getDateAsUtc(i.updatedAt), this.getDateAsUtc(p.updatedAt))) && i.coin === price.coin).map(i => parseFloat(i.coinAmount)).reduce((prev, next) => prev + next, 0)
-          
-          if(coinSum) {
-            newData.coins.push({ coin: price.coin, coinSum, value: coinSum * price.price })
-          }
+          let coinSum = (this.rewards.filter(i => (isBefore(new Date(i.updatedAt), this.getDateAsUtc(p.updatedAt)) || isSameDay(new Date(i.updatedAt), this.getDateAsUtc(p.updatedAt))) && i.coin === price.coin).map(i => i.amount).reduce((prev, next) => prev + next, 0) +
+            this.taxes.filter(i => (isBefore(new Date(i.updatedAt), this.getDateAsUtc(p.updatedAt)) || isSameDay(new Date(i.updatedAt), this.getDateAsUtc(p.updatedAt))) && i.coin === price.coin).map(i => i.amount).reduce((prev, next) => prev + next, 0) +
+            this.investments.filter(i => (isBefore(new Date(i.updatedAt), this.getDateAsUtc(p.updatedAt)) || isSameDay(new Date(i.updatedAt), this.getDateAsUtc(p.updatedAt))) && i.coin === price.coin).map(i => i.amount).reduce((prev, next) => prev + next, 0) +
+            this.liquidation.filter(i => (isBefore(this.getDateAsUtc(i.updatedAt), this.getDateAsUtc(p.updatedAt)) || isSameDay(this.getDateAsUtc(i.updatedAt), this.getDateAsUtc(p.updatedAt))) && i.newCoin === price.coin).map(i => i.newCoinAmount).reduce((prev, next) => prev + next, 0)) -
+            this.liquidation.filter(i => (isBefore(this.getDateAsUtc(i.updatedAt), this.getDateAsUtc(p.updatedAt)) || isSameDay(this.getDateAsUtc(i.updatedAt), this.getDateAsUtc(p.updatedAt))) && i.coin === price.coin).map(i => i.coinAmount).reduce((prev, next) => prev + next, 0)
+
+          newData.coins.push({ coin: price.coin, coinSum, value: coinSum * price.price })
         }
         histItems.push(newData)
       }
@@ -223,7 +221,7 @@ export default {
       }
 
       let dateVal = `${new Date().getDate()} ${new Date().toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })}`
-      this.profitHistory.push({date: dateVal, sum: this.homeCoinsSum.map(t => ((t.reward + t.tax + t.invest + t.liq) * t.price)).reduce((prev, next) => prev + next, 0) - this.homeCoinsSum.map(t => parseFloat(t.spent)).reduce((prev, next) => prev + next, 0)})
+      this.profitHistory.push({date: dateVal, sum: this.homeCoinsSum.map(t => ((t.reward + t.tax + t.invest + t.liq) * t.price)).reduce((prev, next) => prev + next, 0) - this.homeCoinsSum.map(t => t.spent).reduce((prev, next) => prev + next, 0)})
       $cookies.set("profitHistory", JSON.stringify(this.profitHistory))
       this.loading = false
     },

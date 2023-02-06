@@ -154,18 +154,18 @@ export default {
   },
   computed: {
     getCardSpent() {
-      return this.trxs.map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0)
+      return this.trxs.map(item => item.amount).reduce((prev, next) => prev + next, 0)
     },
     getTotalSpent() {
       return this.getCardSpent + 
-        this.checkings.filter(i => i.type === 'checkingOut' || i.type === 'investments').map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0)
+        this.checkings.filter(i => i.type === 'checkingOut' || i.type === 'investments').map(item => item.amount).reduce((prev, next) => prev + next, 0)
     },
     getTotalSaved() {
-      return (this.checkings.filter(i => i.type === 'checkingIn').map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0))
-        - (this.getCardSpent +  this.checkings.filter(i => i.type === 'checkingOut').map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0))
+      return (this.checkings.filter(i => i.type === 'checkingIn').map(item => item.amount).reduce((prev, next) => prev + next, 0))
+        - (this.getCardSpent +  this.checkings.filter(i => i.type === 'checkingOut').map(item => item.amount).reduce((prev, next) => prev + next, 0))
     },
     getUsdcSaved() {
-      return this.checkings.filter(i => i.type === 'checkingIn').map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0) - this.getTotalSpent
+      return this.checkings.filter(i => i.type === 'checkingIn').map(item => item.amount).reduce((prev, next) => prev + next, 0) - this.getTotalSpent
     }
   },
   watch: {
@@ -230,8 +230,7 @@ export default {
         dateMonth: d.getMonth(),
         categories: [...this.$store.getters.getCategories.map(c => { return { category: c, total: 
           this.$store.state.spendingTrxs.filter(t => isWithinInterval(new Date(t.updatedAt), { start: d, end: endOfMonth(d) }) && t.category === c)
-            .map(({amount}) => parseFloat(amount))
-            .reduce((prev, next) => prev + next, 0)
+            .map(({amount}) => amount).reduce((prev, next) => prev + next, 0)
           }})]
       })})
 
@@ -240,7 +239,7 @@ export default {
         category: c, dateMonth: d.getMonth(), avg: spendingArr.filter(date => date.dateMonth <= d.getMonth())
           .map(({categories}) => categories).flat()
           .filter(f => f.category === c)
-          .map(({total}) => parseFloat(total))
+          .map(({total}) => total)
           .reduce((avg, value, _, { length }) => avg + value / length, 0)
       })})})
 
@@ -252,15 +251,15 @@ export default {
           })
         } else {
           this.categorySpending.push({ category: c, idx: idx++, 
-            spending: spendingArr.map(s => s.categories).flat().filter(cat => cat.category === c).map(({total}) => parseFloat(total)).reduce((prev, next) => prev + next, 0),
-            avg: averageArr.filter(d => d.category === c).map(({avg}) => parseFloat(avg)).reduce((avg, value, _, { length }) => avg + value / length, 0)
+            spending: spendingArr.map(s => s.categories).flat().filter(cat => cat.category === c).map(({total}) => total).reduce((prev, next) => prev + next, 0),
+            avg: averageArr.filter(d => d.category === c).map(({avg}) => avg).reduce((avg, value, _, { length }) => avg + value / length, 0)
           })
         }
       })
 
       new Set(this.trxs.map(({merchant}) => merchant)).forEach(m => {
         this.merchantSpending.push({ merchant: m, idx: idx++,
-          amount: this.trxs.filter(t => t.merchant === m).map(({amount}) => parseFloat(amount)).reduce((prev, next) => prev + next, 0)
+          amount: this.trxs.filter(t => t.merchant === m).map(({amount}) => amount).reduce((prev, next) => prev + next, 0)
         })
       })
       this.merchantSpending.sort((a,b) => b.amount - a.amount);

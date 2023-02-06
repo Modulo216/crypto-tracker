@@ -100,13 +100,13 @@ export default {
       }
 
       for (const m of monthYears) {
-        this.chartData.datasets[0].data.push(parseInt(this.allRewards.filter(t => this.dateIsInRange(t.updatedAt, m)).map(w => parseFloat(w.value)).reduce((prev, next) => prev + next, 0)))
+        this.chartData.datasets[0].data.push(parseInt(this.allRewards.filter(t => this.dateIsInRange(t.updatedAt, m)).map(w => w.value).reduce((prev, next) => prev + next, 0)))
         
         let amount = 0.0
         let items = this.allRewards.filter(t => this.dateIsInRange(t.updatedAt, m) && t.liquidation === null)
         for (const item of items) {
           let coinCookie = this.$store.getters.getCoinPrice(item.coin)
-          amount += coinCookie.price * parseFloat(item.amount)
+          amount += coinCookie.price * item.amount
         }
         this.chartData.datasets[1].data.push(parseInt(amount))
 

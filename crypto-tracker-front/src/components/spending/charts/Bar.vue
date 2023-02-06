@@ -89,11 +89,11 @@ export default {
 
       eachMonthOfInterval({ start: startOfYear(new Date(parseInt(this.selectedYear), 0, 1)), end: lastDayOfMonth(new Date()) }).forEach(m => {
         let trxDate = (t) => new Date(t.updatedAt)
-        this.chartData.datasets[0].data.push(parseInt(newAllTrxs.filter(t => trxDate(t).getMonth() === m.getMonth() && trxDate(t).getDate() <= 7).map(w => parseFloat(w.amount)).reduce((prev, next) => prev + next, 0)))
-        this.chartData.datasets[1].data.push(parseInt(newAllTrxs.filter(t => trxDate(t).getMonth() === m.getMonth() && trxDate(t).getDate() >= 8 && trxDate(t).getDate() <= 14).map(w => parseFloat(w.amount)).reduce((prev, next) => prev + next, 0)))
-        this.chartData.datasets[2].data.push(parseInt(newAllTrxs.filter(t => trxDate(t).getMonth() === m.getMonth() && trxDate(t).getDate() >= 15 && trxDate(t).getDate() <= 21).map(w => parseFloat(w.amount)).reduce((prev, next) => prev + next, 0)))
-        this.chartData.datasets[3].data.push(parseInt(newAllTrxs.filter(t => trxDate(t).getMonth() === m.getMonth() && trxDate(t).getDate() >= 22 && trxDate(t).getDate() <= 28).map(w => parseFloat(w.amount)).reduce((prev, next) => prev + next, 0)))
-        this.chartData.datasets[4].data.push(parseInt(newAllTrxs.filter(t => trxDate(t).getMonth() === m.getMonth() && trxDate(t).getDate() >= 29).map(w => parseFloat(w.amount)).reduce((prev, next) => prev + next, 0)))
+        this.chartData.datasets[0].data.push(parseInt(newAllTrxs.filter(t => trxDate(t).getMonth() === m.getMonth() && trxDate(t).getDate() <= 7).map(w => w.amount).reduce((prev, next) => prev + next, 0)))
+        this.chartData.datasets[1].data.push(parseInt(newAllTrxs.filter(t => trxDate(t).getMonth() === m.getMonth() && trxDate(t).getDate() >= 8 && trxDate(t).getDate() <= 14).map(w => w.amount).reduce((prev, next) => prev + next, 0)))
+        this.chartData.datasets[2].data.push(parseInt(newAllTrxs.filter(t => trxDate(t).getMonth() === m.getMonth() && trxDate(t).getDate() >= 15 && trxDate(t).getDate() <= 21).map(w => w.amount).reduce((prev, next) => prev + next, 0)))
+        this.chartData.datasets[3].data.push(parseInt(newAllTrxs.filter(t => trxDate(t).getMonth() === m.getMonth() && trxDate(t).getDate() >= 22 && trxDate(t).getDate() <= 28).map(w => w.amount).reduce((prev, next) => prev + next, 0)))
+        this.chartData.datasets[4].data.push(parseInt(newAllTrxs.filter(t => trxDate(t).getMonth() === m.getMonth() && trxDate(t).getDate() >= 29).map(w => w.amount).reduce((prev, next) => prev + next, 0)))
         
         if(!this.chartData.labels.includes(this.$store.getters.getMonthNames[m.getMonth()])) {
           this.chartData.labels.push(this.$store.getters.getMonthNames[m.getMonth()])

@@ -22,14 +22,14 @@
         </v-data-table>
         <v-card class="my-2" dark>
           <v-card-text class="subtitle-1 pa-3 d-flex">
-            <div style="flex: 0 0 50%;">Rewards: <span class="red--text">{{ getAsCurrency(rewards.map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0)) }}</span></div>
-            <div>Value: <span class="green--text">{{ getAsCurrency(coinsSum.map(t => parseFloat(t.val)).reduce((prev, next) => prev + next, 0)) }}</span></div>
+            <div style="flex: 0 0 50%;">Rewards: <span class="red--text">{{ getAsCurrency(rewards.map(t => t.value).reduce((prev, next) => prev + next, 0)) }}</span></div>
+            <div>Value: <span class="green--text">{{ getAsCurrency(coinsSum.map(t => t.val).reduce((prev, next) => prev + next, 0)) }}</span></div>
           </v-card-text>
         </v-card>
         <v-card class="my-2" dark>
           <v-card-text class="subtitle-1 pa-3 d-flex">
-            <div style="flex: 0 0 50%;">Rate: {{ ((rewards.map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0) / $store.state.spendingTrxs.filter(t => dateIsInRange(t.updatedAt, monthNameActive)).map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0)) * 100).toFixed(2) }}%</div>
-            <div>Actual: {{ ((coinsSum.map(t => parseFloat(t.val)).reduce((prev, next) => prev + next, 0) / $store.state.spendingTrxs.filter(t => dateIsInRange(t.updatedAt, monthNameActive)).map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0)) * 100).toFixed(2) }}%</div>
+            <div style="flex: 0 0 50%;">Rate: {{ ((rewards.map(t => t.value).reduce((prev, next) => prev + next, 0) / $store.state.spendingTrxs.filter(t => dateIsInRange(t.updatedAt, monthNameActive)).map(item => item.amount).reduce((prev, next) => prev + next, 0)) * 100).toFixed(2) }}%</div>
+            <div>Actual: {{ ((coinsSum.map(t => t.val).reduce((prev, next) => prev + next, 0) / $store.state.spendingTrxs.filter(t => dateIsInRange(t.updatedAt, monthNameActive)).map(item => item.amount).reduce((prev, next) => prev + next, 0)) * 100).toFixed(2) }}%</div>
           </v-card-text>
         </v-card>
         <v-divider dark class="my-3" />
@@ -42,7 +42,6 @@
 <script>
 import MonthPicker from '../components/shared/MonthPicker'
 import RewardsTable from '../components/rewards/RewardsTable'
-import { getCoinPrice } from '../api/endpoints/coinbase'
 import { refreshRewards } from '../api/endpoints/rewards'
 import Line from '../components/rewards/charts/Line'
 import dateMixin from '@/mixins/datesMixin'
@@ -108,9 +107,9 @@ export default {
       new Set(this.rewards.map(t => t.coin)).forEach(async a => {
         let coinCookie = this.$store.getters.getCoinPrice(a)
         this.coinsSum.push({ coin: a, sum: 
-          this.rewards.filter(t => t.coin === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0),
-          amount: this.rewards.filter(t => t.coin === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0),
-          val: this.rewards.filter(t => t.coin === a && t.liquidation === null && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0) * coinCookie.price
+          this.rewards.filter(t => t.coin === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => t.value).reduce((prev, next) => prev + next, 0),
+          amount: this.rewards.filter(t => t.coin === a && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => t.amount).reduce((prev, next) => prev + next, 0),
+          val: this.rewards.filter(t => t.coin === a && t.liquidation === null && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => t.amount).reduce((prev, next) => prev + next, 0) * coinCookie.price
         })
       })
     },

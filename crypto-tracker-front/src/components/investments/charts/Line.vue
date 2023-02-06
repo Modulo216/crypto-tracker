@@ -97,13 +97,13 @@ export default {
       monthYears.forEach((m, idx) => {
         this.chartData.labels.push(`${this.$store.getters.getMonthNames[m.month]} ${m.year.toString().slice(-2)}`)
         this.chartData.datasets[0].data.push(
-          this.investments.filter(t => isAfter(new Date(m.year, m.month, 30), new Date(t.updatedAt))).map(t => parseFloat(t.spent)).reduce((prev, next) => prev + next, 0).toFixed(2)
+          this.investments.filter(t => isAfter(new Date(m.year, m.month, 30), new Date(t.updatedAt))).map(t => t.spent).reduce((prev, next) => prev + next, 0).toFixed(2)
         )
         
         this.chartData.datasets[1].data.push(
-          (this.investments.filter(t => isAfter(new Date(m.year, m.month, 30), new Date(t.updatedAt))).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0) *
+          (this.investments.filter(t => isAfter(new Date(m.year, m.month, 30), new Date(t.updatedAt))).map(t => t.amount).reduce((prev, next) => prev + next, 0) *
             ((idx + 1 === monthYears.length) ? this.$store.getters.getCoinPrice(this.investments[0].coin).price || 0 : 
-            this.investments.filter(t => new Date(t.updatedAt).getUTCMonth() === m.month && new Date(t.updatedAt).getUTCFullYear() === m.year).map(t => parseFloat(t.fillPrice)).reduce((avg, value, _, { length }) => avg + value / length, 0))
+            this.investments.filter(t => new Date(t.updatedAt).getUTCMonth() === m.month && new Date(t.updatedAt).getUTCFullYear() === m.year).map(t => t.fillPrice).reduce((avg, value, _, { length }) => avg + value / length, 0))
           ).toFixed(2)
         )
       })

@@ -34,8 +34,8 @@
         </v-data-table>
         <v-card class="my-2" dark>
           <v-card-text class="subtitle-1 pa-3 d-flex">
-            <div style="flex: 0 0 50%;">Spent: <span class="red--text">{{ getAsCurrency(coinsSum.map(t => parseFloat(t.spent)).reduce((prev, next) => prev + next, 0)) }}</span></div>
-            <div>Value: <span class="green--text">{{ getAsCurrency(coinsSum.map(t => parseFloat(t.value)).reduce((prev, next) => prev + next, 0)) }}</span></div>
+            <div style="flex: 0 0 50%;">Spent: <span class="red--text">{{ getAsCurrency(coinsSum.map(t => t.spent).reduce((prev, next) => prev + next, 0)) }}</span></div>
+            <div>Value: <span class="green--text">{{ getAsCurrency(coinsSum.map(t => t.value).reduce((prev, next) => prev + next, 0)) }}</span></div>
           </v-card-text>
         </v-card>
         <v-divider dark class="my-3" />
@@ -123,9 +123,9 @@ import dateMixin from '@/mixins/datesMixin'
         new Set(this.investments.map(t => t.coin)).forEach(a => {
           let coinCookie = this.$store.getters.getCoinPrice(a)
           this.coinsSum.push({ coin: a, amount: 
-            this.investments.filter(t => t.coin === a && t.liquidation === null && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0),
-            spent: this.investments.filter(t => t.coin === a && t.liquidation === null && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.spent)).reduce((prev, next) => prev + next, 0),
-            value: this.investments.filter(t => t.coin === a && t.liquidation === null && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0) * coinCookie.price
+            this.investments.filter(t => t.coin === a && t.liquidation === null && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => t.amount).reduce((prev, next) => prev + next, 0),
+            spent: this.investments.filter(t => t.coin === a && t.liquidation === null && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => t.spent).reduce((prev, next) => prev + next, 0),
+            value: this.investments.filter(t => t.coin === a && t.liquidation === null && (dateMonth ? this.dateIsInRange(t.updatedAt, dateMonth) : true)).map(t => t.amount).reduce((prev, next) => prev + next, 0) * coinCookie.price
           })
         })
       },

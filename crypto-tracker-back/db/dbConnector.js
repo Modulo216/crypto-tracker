@@ -29,17 +29,17 @@ liquidationSchema.virtual('coin').get(function() {
 })
 
 liquidationSchema.virtual('coinValue').get(function() {
-  return this.rewards.map(i => parseFloat(i.value)).reduce((prev, next) => prev + next, 0) + 
-    this.taxes.map(i => parseFloat(i.value)).reduce((prev, next) => prev + next, 0) +
-    this.investments.map(i => parseFloat(i.spent)).reduce((prev, next) => prev + next, 0) +
-    this.liquidations.map(i => parseFloat(i.usdAmount)).reduce((prev, next) => prev + next, 0)
+  return this.rewards.map(i => i.value).reduce((prev, next) => prev + next, 0) + 
+    this.taxes.map(i => i.value).reduce((prev, next) => prev + next, 0) +
+    this.investments.map(i => i.spent).reduce((prev, next) => prev + next, 0) +
+    this.liquidations.map(i => i.usdAmount).reduce((prev, next) => prev + next, 0)
 })
 
 liquidationSchema.virtual('coinAmount').get(function() {
-  return this.rewards.map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0) + 
-    this.taxes.map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0) +
-    this.investments.map(i => parseFloat(i.amount)).reduce((prev, next) => prev + next, 0) +
-    this.liquidations.map(i => parseFloat(i.newCoinAmount)).reduce((prev, next) => prev + next, 0)
+  return this.rewards.map(i => i.amount).reduce((prev, next) => prev + next, 0) + 
+    this.taxes.map(i => i.amount).reduce((prev, next) => prev + next, 0) +
+    this.investments.map(i => i.amount).reduce((prev, next) => prev + next, 0) +
+    this.liquidations.map(i => i.newCoinAmount).reduce((prev, next) => prev + next, 0)
 })
 
 liquidationSchema.virtual('coinUpdatedAt').get(function() {

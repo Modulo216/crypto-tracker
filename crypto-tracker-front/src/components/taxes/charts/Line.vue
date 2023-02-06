@@ -96,7 +96,7 @@ export default {
       })
 
       monthYears.forEach(m => {
-        this.chartData.datasets[0].data.push(parseInt(this.allRewards.filter(t => this.dateIsInRange(t.updatedAt, m)).map(w => parseFloat(w.value)).reduce((prev, next) => prev + next, 0)))
+        this.chartData.datasets[0].data.push(parseInt(this.allRewards.filter(t => this.dateIsInRange(t.updatedAt, m)).map(w => w.value).reduce((prev, next) => prev + next, 0)))
         
         let amount = 0
         this.allRewards.filter(t => this.dateIsInRange(t.updatedAt, m) && t.liquidation === null).forEach(r => {

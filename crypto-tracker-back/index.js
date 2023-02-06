@@ -30,6 +30,10 @@ app.get('/coin-prices', async (req, res, next) => {
   }
 })
 
+app.get('/update-rows', async (req, res, next) => {
+  await resolvers.Mutation.updateRows(null, {id: 1})
+})
+
 app.get('/update-history2', async (req, res, next) => {
   try {
     let interests = await resolvers.Query.getInterests(null, { nickName: { $ne: '' } })
@@ -77,7 +81,7 @@ app.get('/rewards', async (req, res, next) => {
       let txns = t.transactions.filter(txn => isAfter(new Date(txn.created_at), new Date(2021, 7, 1)) && txn.description !== null && (txn.description === 'Spending reward from Coinbase Card' || txn.description.includes('Debit Card Rewards')))
       for (const txn of txns) {
         let reward = { exchange: "Coinbase", coin: t.coin, updatedAt: txn.created_at, exchangeId: txn.id,
-          amount: txn.amount.amount, value: txn.native_amount.amount, title: txn.details.title, subtitle: txn.details.subtitle }
+          amount: parseFloat(txn.amount.amount), value: parseFloat(txn.native_amount.amount), title: txn.details.title, subtitle: txn.details.subtitle }
         await resolvers.Mutation.addRewardImport(null, { reward: reward  })
         reward.liquidation = null
         retVal.push(reward)
@@ -99,8 +103,8 @@ app.get('/investments', async (req, res, next) => {
     let atfSet = new Set(atfTrxs.map(atf => atf.advanced_trade_fill.order_id))
     
     for (const trx of buyTrxs) {
-      let inv = { exchangeId: trx.id, updatedAt: trx.created_at, coin: trx.amount.currency, title: trx.details.title,
-        subtitle: trx.details.subtitle, amount: trx.amount.amount, spent: trx.native_amount.amount, investType: 'buy', value: '0.00' }
+      let inv = { exchangeId: trx.id, updatedAt: trx.created_at, coin: trx.amount.currency,
+        amount: parseFlat(trx.amount.amount), spent: parseFlat(trx.native_amount.amount), investType: 'buy', value: '0.00' }
       await resolvers.Mutation.addInvestmentImport(null, { investment: inv })
       inv.liquidation = null
       retVal.push(inv)
@@ -108,10 +112,10 @@ app.get('/investments', async (req, res, next) => {
 
     for (const atfId of atfSet) {
       let aftTrx = atfTrxs.filter(f => f.advanced_trade_fill.order_id === atfId)
-      let inv = { exchangeId: atfId, updatedAt: aftTrx[0].created_at, coin: aftTrx[0].amount.currency, title: aftTrx[0].details.title, subtitle: aftTrx[0].details.subtitle,
-        amount: aftTrx.map(t => t.amount).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0).toString(),
-        spent: aftTrx.map(t => t.native_amount).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0).toString(), investType: 'atf',
-        fillPrice: aftTrx[0].advanced_trade_fill.fill_price, value: '0.00' }
+      let inv = { exchangeId: atfId, updatedAt: aftTrx[0].created_at, coin: aftTrx[0].amount.currency,
+        amount: aftTrx.map(t => t.amount).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0),
+        spent: aftTrx.map(t => t.native_amount).map(t => parseFloat(t.amount)).reduce((prev, next) => prev + next, 0), investType: 'atf',
+        fillPrice: parseFloat(aftTrx[0].advanced_trade_fill.fill_price), value: '0.00' }
       await resolvers.Mutation.addInvestmentImport(null, { investment: inv})
       inv.liquidation = null
       retVal.push(inv)
@@ -128,7 +132,7 @@ app.get('/trxs', async (req, res, next) => {
     let trxs = await getTrxs(req.query.cwi, false)
     let txns = trxs.filter(txn => isAfter(new Date(txn.created_at), new Date(new Date().getUTCFullYear(), 0, 1)) && txn.type === 'cardspend')
     for (const txn of txns) {
-      let trx = { amount: txn.native_amount.amount.replace(/^-/, ''), exchange: "coinbase", updatedAt: txn.created_at,
+      let trx = { amount: parseFloat(txn.native_amount.amount.replace(/^-/, '')), exchange: "coinbase", updatedAt: txn.created_at,
       trxType: txn.type, exchangeId: txn.id, title: txn.details.title,subtitle: txn.details.subtitle }
       await resolvers.Mutation.addTrx(null, { trx: trx })
       retVal.push(trx)
@@ -152,7 +156,7 @@ app.get('/taxes', async (req, res, next) => {
           continue
         }
         let tax = { exchange: "Coinbase", coin: t.coin === 'ETH2' ? 'ETH' : t.coin, updatedAt: txn.created_at, exchangeId: txn.id,
-          amount: txn.amount.amount, value: txn.native_amount.amount, title: txn.details.title, subtitle: txn.details.subtitle }
+          amount: parseFloat(txn.amount.amount), value: parseFloat(txn.native_amount.amount), title: txn.details.title, subtitle: txn.details.subtitle }
         if(txn.type === 'staking_reward') {
           tax.activity = 'Staking'
         } else if (txn.type === 'interest') {

@@ -25,7 +25,7 @@
           </template>
           <template v-slot:[`item.newCoinAmount`]="{ item }">
             <span :class="getStyle(item)" v-if="item.event === 'Swap'">{{ item.newCoinAmount }}</span>
-            <span :class="getStyle(item)" v-if="item.event === 'Sell'">{{ getAsCurrency(parseFloat(item.usdAmount)) }}</span>
+            <span :class="getStyle(item)" v-if="item.event === 'Sell'">{{ getAsCurrency(item.usdAmount) }}</span>
           </template>
           <template v-slot:[`item.type`]="{ item }">
             <span :class="getStyle(item)">{{ item.rewards.length ? 'R' : '' }} {{ item.taxes.length ? 'T' : '' }} {{ item.investments.length ? 'I' : '' }} {{ item.liquidations.length ? 'L' : '' }}</span>
@@ -34,7 +34,7 @@
             <span :class="getStyle(item)">{{ differenceInDays($store.getters.getUtcDate(item.updatedAt), new Date(item.coinUpdatedAt)) }}</span>
           </template>
           <template v-slot:[`item.usdAmount`]="{ item }">
-            <span :class="getStyle(item)">{{ getAsCurrency(parseFloat(item.usdAmount)) }}</span>
+            <span :class="getStyle(item)">{{ getAsCurrency(item.usdAmount) }}</span>
           </template>
           <template v-slot:[`item.profit`]="{ item }">
             <v-chip v-if="getStyle(item) === 'liquidated'" color="gray" class="liquidated" style="width:70px;justify-content:center" light>{{ getAsCurrency(getGainLoss(item)) }}</v-chip>
@@ -74,7 +74,7 @@
             <v-data-table dark hide-default-footer dense disable-pagination :items="activeRow.taxes" item-key="id" class="elevation-10"
                 :headers="[{ text: 'Acquired', value: 'updatedAt' },{ text: 'Amount', value: 'amount' },{ text: 'Value', value: 'value' }]">
               <template v-slot:[`item.value`]="{ item }">
-                <span>{{ getAsCurrency(parseFloat(item.value)) }}</span>
+                <span>{{ getAsCurrency(item.value) }}</span>
               </template>
               <template v-slot:[`item.updatedAt`]="{ item }">
                 <span>{{ formatDate(item.updatedAt) }}</span>
@@ -86,7 +86,7 @@
             <v-data-table dark hide-default-footer dense disable-pagination :items="activeRow.rewards" item-key="id" class="elevation-10"
                 :headers="[{ text: 'Acquired', value: 'updatedAt' },{ text: 'Amount', value: 'amount' },{ text: 'Value', value: 'value' }]">
               <template v-slot:[`item.value`]="{ item }">
-                <span>{{ getAsCurrency(parseFloat(item.value)) }}</span>
+                <span>{{ getAsCurrency(item.value) }}</span>
               </template>
               <template v-slot:[`item.updatedAt`]="{ item }">
                 <span>{{ formatDate(item.updatedAt) }}</span>
@@ -98,7 +98,7 @@
             <v-data-table dark hide-default-footer dense disable-pagination :items="activeRow.investments" item-key="id" class="elevation-10"
                 :headers="[{ text: 'Acquired', value: 'updatedAt' },{ text: 'Amount', value: 'amount' },{ text: 'Spent', value: 'spent' }]">
               <template v-slot:[`item.spent`]="{ item }">
-                <span>{{ getAsCurrency(parseFloat(item.spent)) }}</span>
+                <span>{{ getAsCurrency(item.spent) }}</span>
               </template>
               <template v-slot:[`item.updatedAt`]="{ item }">
                 <span>{{ formatDate(item.updatedAt) }}</span>
@@ -110,7 +110,7 @@
             <v-data-table dark hide-default-footer dense disable-pagination :items="activeRow.liquidations" item-key="id" class="elevation-10"
                 :headers="[{ text: 'Liquidated', value: 'updatedAt' },{ text: 'Amount', value: 'newCoinAmount' },{ text: 'Value', value: 'usdAmount' }]">
               <template v-slot:[`item.usdAmount`]="{ item }">
-                <span>{{ getAsCurrency(parseFloat(item.usdAmount)) }}</span>
+                <span>{{ getAsCurrency(item.usdAmount) }}</span>
               </template>
               <template v-slot:[`item.updatedAt`]="{ item }">
                 <span>{{ formatDate(item.updatedAt) }}</span>
@@ -119,7 +119,7 @@
           </span>
           <h3 class="mt-2" v-if="activeRow.event === 'Swap'">{{ activeRow.coin }} {{ activeRow.coinAmount }}</h3>
           <h3 class="mt-2" v-if="activeRow.event === 'Swap'">{{ activeRow.newCoin }} {{ activeRow.newCoinAmount }}</h3>
-          <h3 class="mt-2" v-if="activeRow.event === 'Sell'">{{ getAsCurrency(parseFloat(activeRow.usdAmount)) }}</h3>
+          <h3 class="mt-2" v-if="activeRow.event === 'Sell'">{{ getAsCurrency(activeRow.usdAmount) }}</h3>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -152,20 +152,20 @@
                 </v-dialog>
               </v-col>
               <v-col cols="3">
-                <v-text-field v-model="liqData.usdAmount" label="$ Proceeds" />
+                <v-text-field v-model.number="liqData.usdAmount" label="$ Proceeds" />
               </v-col>
               <v-col cols="2">
-                {{ toLiquidate.coin !== '' ? toBeLiquidated.filter(r => r.coin === toLiquidate.coin).slice(0, toLiquidate.amount).map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0).toFixed(8) : '' }}
+                {{ toLiquidate.coin !== '' ? toBeLiquidated.filter(r => r.coin === toLiquidate.coin).slice(0, toLiquidate.amount).map(item => item.amount).reduce((prev, next) => prev + next, 0).toFixed(8) : '' }}
               </v-col>
               <v-col cols="2">
-                Old Value<br />{{ toLiquidate.coin !== '' ? getAsCurrency(toBeLiquidated.filter(r => r.coin === toLiquidate.coin).slice(0, toLiquidate.amount).map(item => parseFloat(item.value)).reduce((prev, next) => prev + next, 0)) : '' }}
+                Old Value<br />{{ toLiquidate.coin !== '' ? getAsCurrency(toBeLiquidated.filter(r => r.coin === toLiquidate.coin).slice(0, toLiquidate.amount).map(item => item.value).reduce((prev, next) => prev + next, 0)) : '' }}
               </v-col>
 
               <v-col cols="2" v-if="liqData.event === 'Swap'">
                 <v-select dense @change="changeNewCoin" label="New Coin" v-model="liqData.newCoin" :items="this.$store.state.interests.map(r => r.name)" />
               </v-col>
               <v-col cols="3" v-if="liqData.event === 'Swap'">
-                <v-text-field v-model="liqData.newCoinAmount" label="New Coin Amount" />
+                <v-text-field v-model.number="liqData.newCoinAmount" label="New Coin Amount" />
               </v-col>
               <v-col cols="7" v-if="liqData.event === 'Swap'" />
 
@@ -211,7 +211,7 @@ export default {
       taxable: true,
       usdAmount: '0',
       newCoin: 'BTC',
-      newCoinAmount: '',
+      newCoinAmount: 0,
     },
     toLiquidate: {
       coin: '',
@@ -278,7 +278,7 @@ export default {
     },
     setUsdAmount() {
       let price = this.$store.getters.getCoinPrice(this.toLiquidate.coin).price
-      this.liqData.usdAmount = (price * this.toBeLiquidated.filter(r => r.coin === this.toLiquidate.coin).slice(0, this.toLiquidate.amount).map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0)).toFixed(2)
+      this.liqData.usdAmount = (price * this.toBeLiquidated.filter(r => r.coin === this.toLiquidate.coin).slice(0, this.toLiquidate.amount).map(item => item.amount).reduce((prev, next) => prev + next, 0)).toFixed(2)
       let newCoinPrice = this.$store.getters.getCoinPrice(this.liqData.newCoin).price
       this.liqData.newCoinAmount = (this.liqData.usdAmount / newCoinPrice).toFixed(8)
     },
@@ -292,20 +292,20 @@ export default {
       this.toBeLiquidated = []
       new Set(this.liquidations.filter(l => l.newCoin && l.newCoin !== null).map(l => l.newCoin)).forEach(c => {
         let coinCookie = this.$store.getters.getCoinPrice(c).price
-        let amount = this.liquidations.filter(t => t.event === 'Swap' && t.newCoin === c && t.liquidation === null).map(item => parseFloat(item.newCoinAmount)).reduce((prev, next) => prev + next, 0)
-        let origValue = this.liquidations.filter(t => t.event === 'Swap' && t.newCoin === c && t.liquidation === null).map(item => parseFloat(item.coinValue)).reduce((prev, next) => prev + next, 0)
+        let amount = this.liquidations.filter(t => t.event === 'Swap' && t.newCoin === c && t.liquidation === null).map(item => item.newCoinAmount).reduce((prev, next) => prev + next, 0)
+        let origValue = this.liquidations.filter(t => t.event === 'Swap' && t.newCoin === c && t.liquidation === null).map(item => item.coinValue).reduce((prev, next) => prev + next, 0)
         this.swapData.push( { coin: c, amount: amount.toFixed(8), value: amount * coinCookie, origValue: origValue } )
       })
-      let amount = this.liquidations.filter(t => t.event === 'Sell').map(item => parseFloat(item.usdAmount)).reduce((prev, next) => prev + next, 0)
+      let amount = this.liquidations.filter(t => t.event === 'Sell').map(item => item.usdAmount).reduce((prev, next) => prev + next, 0)
       this.swapData.push( { coin: '$$$', amount: amount.toFixed(2), value: amount, origValue: amount } )
 
       new Set(this.liquidations.map(l => l.updatedAt.substring(0,4))).forEach(c => {
-        let shortTerm = this.liquidations.filter(t => t.updatedAt.substring(0,4) === c && Math.abs(differenceInYears(new Date(t.updatedAt), new Date(t.coinUpdatedAt))) === 0).map(item => parseFloat(item.usdAmount)).reduce((prev, next) => prev + next, 0) -
-          this.liquidations.filter(t => t.updatedAt.substring(0,4) === c && Math.abs(differenceInYears(new Date(t.updatedAt), new Date(t.coinUpdatedAt))) === 0).map(item => parseFloat(item.coinValue)).reduce((prev, next) => prev + next, 0) 
-        let longTerm = this.liquidations.filter(t => t.updatedAt.substring(0,4) === c && Math.abs(differenceInYears(new Date(t.updatedAt), new Date(t.coinUpdatedAt))) >= 1).map(item => parseFloat(item.usdAmount)).reduce((prev, next) => prev + next, 0) -
-          this.liquidations.filter(t => t.updatedAt.substring(0,4) === c && Math.abs(differenceInYears(new Date(t.updatedAt), new Date(t.coinUpdatedAt))) >= 1).map(item => parseFloat(item.coinValue)).reduce((prev, next) => prev + next, 0)
+        let shortTerm = this.liquidations.filter(t => t.updatedAt.substring(0,4) === c && Math.abs(differenceInYears(new Date(t.updatedAt), new Date(t.coinUpdatedAt))) === 0).map(item => item.usdAmount).reduce((prev, next) => prev + next, 0) -
+          this.liquidations.filter(t => t.updatedAt.substring(0,4) === c && Math.abs(differenceInYears(new Date(t.updatedAt), new Date(t.coinUpdatedAt))) === 0).map(item => item.coinValue).reduce((prev, next) => prev + next, 0) 
+        let longTerm = this.liquidations.filter(t => t.updatedAt.substring(0,4) === c && Math.abs(differenceInYears(new Date(t.updatedAt), new Date(t.coinUpdatedAt))) >= 1).map(item => item.usdAmount).reduce((prev, next) => prev + next, 0) -
+          this.liquidations.filter(t => t.updatedAt.substring(0,4) === c && Math.abs(differenceInYears(new Date(t.updatedAt), new Date(t.coinUpdatedAt))) >= 1).map(item => item.coinValue).reduce((prev, next) => prev + next, 0)
         
-        let dollars = this.liquidations.filter(t => t.updatedAt.substring(0,4) === c && t.event === 'Sell').map(item => parseFloat(item.usdAmount)).reduce((prev, next) => prev + next, 0)
+        let dollars = this.liquidations.filter(t => t.updatedAt.substring(0,4) === c && t.event === 'Sell').map(item => item.usdAmount).reduce((prev, next) => prev + next, 0)
 
         this.sellData.push({ year: c, shortTerm: this.getAsCurrency(shortTerm), longTerm: this.getAsCurrency(longTerm), dollars: this.getAsCurrency(dollars) })
       })
@@ -331,7 +331,7 @@ export default {
       })
     },
     getGainLoss(item) {
-      return parseFloat(item.usdAmount) - item.coinValue
+      return item.usdAmount - item.coinValue
     }, differenceInDays
   }
 }

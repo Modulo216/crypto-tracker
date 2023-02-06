@@ -29,7 +29,7 @@
                 <v-icon dark>
                   mdi-water
                 </v-icon>
-                <span v-if="selected.length > 0">{{ selected.map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0).toFixed(8)}}</span>
+                <span v-if="selected.length > 0">{{ selected.map(item => item.amount).reduce((prev, next) => prev + next, 0).toFixed(8)}}</span>
               </v-btn>
             </v-toolbar>
           </template>
@@ -44,13 +44,13 @@
             <span>{{ formatDate(item.updatedAt) }}</span>
           </template>
           <template v-slot:[`item.spent`]="{ item }">
-            <div>{{ getAsCurrency(parseFloat(item.spent)) }}</div>
+            <div>{{ getAsCurrency(item.spent) }}</div>
           </template>
           <template v-slot:[`item.fillPrice`]="{ item }">
-            <div>{{ item.fillPrice ? getAsCurrency(parseFloat(item.fillPrice)) : '...' }}</div>
+            <div>{{ item.fillPrice ? getAsCurrency(item.fillPrice) : '...' }}</div>
           </template>
           <template v-slot:[`item.value`]="{ item }">
-            <div>{{ getAsCurrency(parseFloat(item.value)) }}</div>
+            <div>{{ getAsCurrency(item.value) }}</div>
           </template>
         </v-data-table>
       </v-col>
@@ -73,10 +73,10 @@
                 <v-text-field v-model="editItem.amount" label="Amount" />
               </v-col>
               <v-col cols="4">
-                <v-text-field v-model="editItem.fillPrice" label="Fill Price" />
+                <v-text-field v-model.number="editItem.fillPrice" label="Fill Price" />
               </v-col>
               <v-col cols="4">
-                <v-text-field v-model="editItem.spent" label="Spent" />
+                <v-text-field v-model.number="editItem.spent" label="Spent" />
               </v-col>
             </v-row>
           </v-container>
@@ -121,16 +121,16 @@ export default {
       updatedAt: '',
       coin: '',
       amount: '',
-      fillPrice: '',
-      spent: '',
+      fillPrice: 0.01,
+      spent: 0,
       investType: 'buy'
     },
     editItem: {
       updatedAt: '',
       coin: '',
       amount: '',
-      fillPrice: '',
-      spent: '',
+      fillPrice: 0.01,
+      spent: 0,
       investType: 'buy'
     },
   }),

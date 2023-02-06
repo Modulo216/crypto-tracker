@@ -23,17 +23,17 @@
               </v-dialog>
             </v-col>
             <v-col cols="3">
-              <v-text-field v-model="liqData.usdAmount" label="$ Proceeds" />
+              <v-text-field v-model.number="liqData.usdAmount" label="$ Proceeds" />
             </v-col>
             <v-col cols="2">
-              {{ selected.length > 0 ? selected[0].coin : '' }}<br />{{ selected.map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0) }}
+              {{ selected.length > 0 ? selected[0].coin : '' }}<br />{{ selected.map(item => item.amount).reduce((prev, next) => prev + next, 0) }}
             </v-col>
             <v-col cols="2" >
               <span v-if="modelType === 'investments'">
-                Old Value<br />{{ getAsCurrency(selected.map(item => parseFloat(item.spent)).reduce((prev, next) => prev + next, 0)) }}
+                Old Value<br />{{ getAsCurrency(selected.map(item => item.spent).reduce((prev, next) => prev + next, 0)) }}
               </span>
               <span v-else>
-                Old Value<br />{{ getAsCurrency(selected.map(item => parseFloat(item.value)).reduce((prev, next) => prev + next, 0)) }}
+                Old Value<br />{{ getAsCurrency(selected.map(item => item.value).reduce((prev, next) => prev + next, 0)) }}
               </span>
             </v-col>
 
@@ -41,7 +41,7 @@
               <v-select @change="changeNewCoin" label="New Coin" v-model="liqData.newCoin" :items="this.$store.state.interests.map(r => r.name)" />
             </v-col>
             <v-col cols="3" v-if="liqData.event === 'Swap'">
-              <v-text-field v-model="liqData.newCoinAmount" label="New Coin Amount" />
+              <v-text-field v-model.number="liqData.newCoinAmount" label="New Coin Amount" />
             </v-col>
           </v-row>
         </v-container>
@@ -68,9 +68,9 @@ export default {
       updatedAt: new Date().toISOString().substr(0, 10),
       event: 'Swap',
       taxable: true,
-      usdAmount: '',
+      usdAmount: 0,
       newCoin: 'BTC',
-      newCoinAmount: ''
+      newCoinAmount: 0
     }
   }),
   computed: {
@@ -84,7 +84,7 @@ export default {
       if (visible) {
         this.liqData[this.modelType] = this.selected.map(s => s.id)
         let price = this.$store.getters.getCoinPrice(this.selected[0].coin).price
-        this.liqData.usdAmount = (price * this.selected.map(item => parseFloat(item.amount)).reduce((prev, next) => prev + next, 0)).toFixed(2)
+        this.liqData.usdAmount = (price * this.selected.map(item => item.amount).reduce((prev, next) => prev + next, 0)).toFixed(2)
         let newCoinPrice = this.$store.getters.getCoinPrice(this.liqData.newCoin).price
         this.liqData.newCoinAmount = (this.liqData.usdAmount / newCoinPrice).toFixed(8)
       }

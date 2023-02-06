@@ -87,7 +87,7 @@ export default {
 
       monthYears.forEach(m => {
         this.chartData.labels.push(`${this.$store.getters.getMonthNames[m.month]} ${m.year.toString().slice(-2)}`)
-        this.chartData.datasets[0].data.push(parseInt(this.allTaxes.filter(t => this.dateIsInRange(t.updatedAt, m)).map(w => parseFloat(w.value)).reduce((prev, next) => prev + next, 0)))
+        this.chartData.datasets[0].data.push(parseInt(this.allTaxes.filter(t => this.dateIsInRange(t.updatedAt, m)).map(w => w.value).reduce((prev, next) => prev + next, 0)))
         this.chartData.datasets[0].backgroundColor.push(chroma.random())
       })
     }
