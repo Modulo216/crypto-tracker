@@ -1,5 +1,0 @@
-query {
-  getPriceHistory {
-    date, coin, price
-  }
-}

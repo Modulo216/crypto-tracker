@@ -11,14 +11,14 @@
               <v-select label="Event" v-model="liqData.event" :items="['Sell', 'Swap']" />
             </v-col>
             <v-col cols="3">
-              <v-dialog ref="dialog" v-model="dateModal" :return-value.sync="liqData.updatedAt" persistent width="290px">
+              <v-dialog ref="dialog" v-model="dateModal" :return-value.sync="liqData.updatedAtView" persistent width="290px">
                 <template v-slot:activator="{ on, attrs }">
-                  <v-text-field v-model="liqData.updatedAt" label="Liquidation Date" prepend-icon="mdi-calendar" readonly v-bind="attrs" v-on="on" />
+                  <v-text-field v-model="liqData.updatedAtView" label="Liquidation Date" prepend-icon="mdi-calendar" readonly v-bind="attrs" v-on="on" />
                 </template>
-                <v-date-picker v-model="liqData.updatedAt" scrollable>
+                <v-date-picker v-model="liqData.updatedAtView" scrollable>
                   <v-spacer></v-spacer>
                   <v-btn text color="primary" @click="dateModal = false">Cancel</v-btn>
-                  <v-btn text color="primary" @click="$refs.dialog.save(liqData.updatedAt)">OK</v-btn>
+                  <v-btn text color="primary" @click="$refs.dialog.save(liqData.updatedAtView)">OK</v-btn>
                 </v-date-picker>
               </v-dialog>
             </v-col>
@@ -65,7 +65,7 @@ export default {
   data: () => ({
     dateModal: false,
     liqData: {
-      updatedAt: new Date().toISOString().substr(0, 10),
+      updatedAtView: new Date().toISOString().substr(0, 10),
       event: 'Swap',
       taxable: true,
       usdAmount: 0,
@@ -84,13 +84,15 @@ export default {
       if (visible) {
         this.liqData[this.modelType] = this.selected.map(s => s.id)
         let price = this.$store.getters.getCoinPrice(this.selected[0].coin).price
-        this.liqData.usdAmount = (price * this.selected.map(item => item.amount).reduce((prev, next) => prev + next, 0)).toFixed(2)
+        this.liqData.usdAmount = this.roundCurrency(price * this.selected.map(item => item.amount).reduce((prev, next) => prev + next, 0))
         let newCoinPrice = this.$store.getters.getCoinPrice(this.liqData.newCoin).price
-        this.liqData.newCoinAmount = (this.liqData.usdAmount / newCoinPrice).toFixed(8)
+        this.liqData.newCoinAmount = this.roundCoin(this.liqData.usdAmount / newCoinPrice)
       }
     }
   },
   methods: {
+    roundCurrency: numb => Math.round(numb * 1e2) / 1e2,
+    roundCoin: numb => Math.round(numb * 1e8) / 1e8,
     getAsCurrency(numb) {
       return numb.toLocaleString('en-US', {
         style: 'currency',
@@ -99,14 +101,10 @@ export default {
     },
     async changeNewCoin(newCoin) {
       const newCoinPrice = this.$store.getters.getCoinPrice(newCoin).price
-      this.liqData.newCoinAmount = newCoinPrice === null ? 0 : (this.liqData.usdAmount / newCoinPrice).toFixed(8)
+      this.liqData.newCoinAmount = newCoinPrice === null ? 0 : this.roundCoin(this.liqData.usdAmount / newCoinPrice)
     },
     async save() {
       let liqu = await addLiquidation(this.liqData)
-      if(liqu.event === 'Sell') {
-        delete liqu.newCoin
-        delete liqu.newCoinAmount
-      }
       
       this.$store.commit('addLiquidation', liqu)
       this.$store.commit('updateLiqItems', liqu)

@@ -1,4 +1,4 @@
-import { Interest, Trx, Checking, Tax, Reward, Investment, PriceHistory, Liquidation, PHistory } from "../db/dbConnector.js"
+import { Interest, Trx, Checking, Tax, Reward, Investment, Liquidation, PHistory } from "../db/dbConnector.js"
 const { isBefore } = require('date-fns')
 const formatISO = require('date-fns/formatISO')
 
@@ -9,9 +9,6 @@ export const resolvers = {
     },
     findInterest: async (root, { interest }) => {
       return await Interest.findOne({ name: interest.name })
-    },
-    findPriceHistory: async (root, query) => {
-      return await PriceHistory.findOne({...query}).lean()
     },
     findPHistory: async (root, query) => {
       return await PHistory.findOne({...query}).lean()
@@ -54,12 +51,6 @@ export const resolvers = {
       
       return rewards
     },
-    getPriceHistory: async (root) => {
-      let priceHistory = await PriceHistory.find().lean()
-      priceHistory.sort((d1, d2) => new Date(d1.date).getTime() - new Date(d2.date).getTime())
-      
-      return priceHistory
-    },
     getLiquidation: async (root) => {
       // Array of Rewards, Taxes, Investment, Liquidation
       let liqus = await Liquidation.find().populate('rewards').populate('taxes').populate('investments').populate('liquidations').populate('liquidation')
@@ -75,10 +66,6 @@ export const resolvers = {
   },
   Mutation: {
     addLiquidation: async (root, { liquidation }) => {
-      if(liquidation.event === 'Sell') {
-        delete liquidation.newCoin
-        delete liquidation.newCoinAmount
-      }
       const { ...rest } = liquidation
       const newLiquidation = new Liquidation({ ...rest })
       const liqu = await newLiquidation.save()
@@ -120,21 +107,6 @@ export const resolvers = {
       
       return await newChecking.save()
     },
-    addPriceHistory: async (root, { priceHistory }) => {
-      const { ...rest } = priceHistory
-      const newPriceHistory = new PriceHistory({ ...rest })
-      
-      return await newPriceHistory.save()
-    },
-    deletePriceHistoryMany: async (root, { interest }) => {
-      let items = await PriceHistory.deleteMany({ coin: interest.name })
-      return items.deletedCount
-    },
-    addPriceHistoryMany: (root, {arr}) => {  
-      if(arr.length > 0) {
-        PriceHistory.insertMany(arr)
-      }
-    },
     addPHistoryMany: (root, arr) => {  
       if(arr.length > 0) {
         PHistory.insertMany(arr)
@@ -162,7 +134,7 @@ export const resolvers = {
     updateInterest: async (root, { interest }) => {
       if(interest.nickName === '') {
         let phistories = await PHistory.find({ "prices.coin": interest.name })
-        console.log("REMOVING PHISTORY " + phistories.length)
+        console.log("REMOVING PHISTORYY " + phistories.length)
         phistories.forEach(ph => {
           ph.prices.splice(ph.prices.findIndex(p => p.coin === interest.name), 1)
           ph.save()

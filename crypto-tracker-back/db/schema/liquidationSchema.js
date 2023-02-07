@@ -14,7 +14,7 @@ exports.liquidationSchema = new mongoose.Schema({
     get: v => parseFloat(v)
   },
   updatedAt: {
-    type: String
+    type: Date
   },
   newCoin: {
     type: String

@@ -41,7 +41,7 @@
                           ></v-text-field>
                         </template>
                         <v-date-picker
-                          v-model="editedItem.date"
+                          v-model="editedItem.dateView"
                           @input="dateModal = false"
                         ></v-date-picker>
                       </v-menu>
@@ -62,7 +62,7 @@
         </v-toolbar>
       </template>
       <template v-slot:[`item.date`]="{ item }">
-        <span>{{ format(parseISO(item.date), 'MM/dd/yy') }}</span>
+        <span>{{ format($store.getters.getUtcDate(item.date), 'MM/dd/yy') }}</span>
       </template>
       <template v-slot:[`item.amount`]="{ item }">
         <span>{{ getAsCurrency(item.amount) }}</span>
@@ -91,19 +91,21 @@ export default {
       { text: 'Actions', value: 'actions', sortable: false },
     ],
     editedItem: {
-      date: format(parseISO(new Date().toISOString()), 'yyyy-MM-dd'),
+      dateView: format(parseISO(new Date().toISOString()), 'yyyy-MM-dd'),
+      date: new Date(),
       amount: 0,
       type: instance.type
     },
     defaultItem: {
-      date: format(parseISO(new Date().toISOString()), 'yyyy-MM-dd'),
+      dateView: format(parseISO(new Date().toISOString()), 'yyyy-MM-dd'),
+      date: new Date(),
       amount: 0,
       type: instance.type
     },
   }),
   computed: {
     formatDate() {
-      return this.editedItem.date ? format(parseISO(this.editedItem.date), 'MM/dd/yy') : ''
+      return this.editedItem.dateView ? format(parseISO(this.editedItem.dateView), 'MM/dd/yy') : ''
     },
     getTotal() {
       return this.items.filter(i => i.type === this.type).map(i => i.amount).reduce((prev, next) => prev + next, 0) 
@@ -135,6 +137,7 @@ export default {
       })
     },
     save () {
+      this.editedItem.date = new Date(this.editedItem.dateView)
       this.$emit('saveItem', this.editedItem)
       this.close()
     }, format, parseISO

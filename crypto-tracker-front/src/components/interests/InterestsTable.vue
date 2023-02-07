@@ -8,9 +8,6 @@
               <v-toolbar-title>Interests</v-toolbar-title>
               <v-divider class="mx-4" inset vertical />
               <v-spacer></v-spacer>
-              <v-btn color="primary" dark class="mb-2 mr-5" @click="delReward()">
-                Delete Records
-              </v-btn>
               <v-dialog v-model="dialog" max-width="800px" persistent>
                 <template v-slot:activator="{ on, attrs }">
                   <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on">
@@ -43,7 +40,6 @@
                     </v-container>
                   </v-card-text>
                   <v-card-actions>
-                    <v-btn color="blue darken-1" text @click="delPriceHistory">Remove History</v-btn>
                     <v-spacer></v-spacer>
                     <v-btn color="blue darken-1" text @click="closeDialog">Cancel</v-btn>
                     <v-btn color="blue darken-1" text @click="save">Save</v-btn>
@@ -74,7 +70,7 @@
 </template>
 
 <script>
-import { addInterest, deleteInterest, updateInterest, delReward, delPriceHistory } from '../../api/apollo'
+import { addInterest, deleteInterest, updateInterest, delReward } from '../../api/apollo'
   export default {
     name: 'interests-table',
     data: () => ({
@@ -111,9 +107,6 @@ import { addInterest, deleteInterest, updateInterest, delReward, delPriceHistory
       editItem (item) {
         this.editedItem = Object.assign({}, item)
         this.dialog = true
-      },
-      async delPriceHistory() {
-        await delPriceHistory(this.editedItem)
       },
       deleteItem (item) {
         this.editedItem = Object.assign({}, item)

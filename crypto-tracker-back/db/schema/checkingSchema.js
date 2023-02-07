@@ -2,7 +2,7 @@ exports.checkingSchema = void 0
 const mongoose = require('mongoose')
 exports.checkingSchema = new mongoose.Schema({
   date: {
-    type: String
+    type: Date
   },
   amount: {
     type: mongoose.Schema.Types.Number,

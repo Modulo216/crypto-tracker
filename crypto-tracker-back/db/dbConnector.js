@@ -5,7 +5,6 @@ const { checkingSchema } = require('./schema/checkingSchema.js')
 const { taxSchema } = require('./schema/taxSchema')
 const { rewardSchema } = require('./schema/rewardSchema')
 const { investmentSchema } = require('./schema/InvestmentSchema')
-const { priceHistorySchema } = require('./schema/priceHistorySchema')
 const { pHistorySchema } = require('./schema/pHistorySchema')
 const { liquidationSchema } = require('./schema/liquidationSchema')
 require('dotenv').config()
@@ -44,7 +43,7 @@ liquidationSchema.virtual('coinAmount').get(function() {
 
 liquidationSchema.virtual('coinUpdatedAt').get(function() {
   return new Date(Math.max(...this.rewards.map(i => new Date(i.updatedAt)),...this.taxes.map(i => new Date(i.updatedAt)),
-    ...this.investments.map(i => new Date(i.updatedAt)), ...this.liquidations.map(i => new Date(i.updatedAt)))).toISOString()
+    ...this.investments.map(i => new Date(i.updatedAt)), ...this.liquidations.map(i => new Date(i.updatedAt))))
 })
 
 const Interest = mongoose.model('Interest', interestSchema)
@@ -53,8 +52,7 @@ const Checking = mongoose.model('Checking', checkingSchema)
 const Tax = mongoose.model('Tax', taxSchema)
 const Reward = mongoose.model('Reward', rewardSchema)
 const Investment = mongoose.model('Investment', investmentSchema)
-const PriceHistory = mongoose.model('PriceHistory', priceHistorySchema)
 const PHistory = mongoose.model('PHistory', pHistorySchema)
 const Liquidation = mongoose.model('Liquidation', liquidationSchema)
 
-export { Interest, Trx, Checking, Tax, Reward, Investment, PriceHistory, Liquidation, PHistory }
+export { Interest, Trx, Checking, Tax, Reward, Investment, Liquidation, PHistory }

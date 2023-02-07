@@ -11,7 +11,7 @@ exports.rewardSchema = new mongoose.Schema({
     type: String
   },
   updatedAt: {
-    type: String
+    type: Date
   },
   amount: {
     type: mongoose.Schema.Types.Number,

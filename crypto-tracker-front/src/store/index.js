@@ -53,11 +53,12 @@ export default new Vuex.Store({
       if(state.coinPrices.length === 0) {
         return { oldPrice: 0, price: 0 }
       } else if (state.coinPrices.length === 1) {
-        return { oldPrice: 0, price: state.coinPrices[0].prices.find(c => c.base === coinName).amount }
+        let coin = state.coinPrices[0].prices.find(c => c.base === coinName)
+        return { oldPrice: 0, price: coin ? coin.amount : 0 }
       } else {
-        let newPrices = state.coinPrices.slice(-2)[1]
-        let oldPrices = state.coinPrices.slice(-2)[0]
-        return { oldPrice: oldPrices.prices.find(c => c.base === coinName).amount, price: newPrices.prices.find(c => c.base === coinName).amount }
+        let newPrices = state.coinPrices.slice(-2)[1].prices.find(c => c.base === coinName)
+        let oldPrices = state.coinPrices.slice(-2)[0].prices.find(c => c.base === coinName)
+        return { oldPrice: oldPrices ? oldPrices.amount : 0, price: newPrices ? newPrices.amount : 0 }
       }
     }
   },

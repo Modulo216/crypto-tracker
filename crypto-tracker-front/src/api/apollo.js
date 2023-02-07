@@ -16,29 +16,18 @@ const updateCheckingGql = require('./gql/updateChecking.gql')
 const getCheckingGql = require('./gql/getChecking.gql')
 const getTaxesGql = require('./gql/getTaxes.gql')
 const getRewardsGql = require('./gql/getRewards.gql')
-const getPriceHistoryGql = require('./gql/getPriceHistory.gql')
 const getPHistoryGql = require('./gql/getPHistory.gql')
 const getInvestmentsGql = require('./gql/getInvestments.gql')
 const addInvestmentGql = require('./gql/addInvestment.gql')
 const delRewardGql = require('./gql/delReward.gql')
 const addLiquidationGql = require('./gql/addLiquidation.gql')
 const getLiquidationGql = require('./gql/getLiquidation.gql')
-const deletePriceHistoryGql = require('./gql/deletePriceHistory.gql')
-const { isAfter } = require('date-fns')
 
 const httpLink = createHttpLink({ uri: `http://${process.env.NODE_ENV === 'development' ? 'localhost' : '192.168.86.2'}:5001/graphql` })
 
 async function getLiquidation() {
   const res = await apolloClient.query({ query: getLiquidationGql })
   return res.data.getLiquidation
-}
-
-async function delPriceHistory(interest) {
-  const result = await apolloClient.mutate({
-    mutation: deletePriceHistoryGql,
-    variables: { interest }
-  })
-  return result.data.deletePriceHistoryMany
 }
 
 async function delReward(id) {
@@ -101,11 +90,21 @@ async function addInvestment(investment) {
 }
 
 async function addLiquidation(liquidation) {
+  if(liquidation.event === 'Sell') {
+    delete liquidation.newCoin
+    delete liquidation.newCoinAmount
+  }
+  liquidation.updatedAt = new Date(liquidation.updatedAtView)
   const result = await apolloClient.mutate({
     mutation: addLiquidationGql,
     variables: { liquidation }
   })
-  return result.data.addLiquidation
+  let retVal = result.data.addLiquidation
+  if(liquidation.event === 'Sell') {
+    delete retVal.newCoin
+    delete retVal.newCoinAmount
+  }
+  return retVal
 }
 
 async function addChecking(checking) {
@@ -138,11 +137,6 @@ async function getRewards() {
 async function getTaxes() {
   const res = await apolloClient.query({ query: getTaxesGql })
   return res.data.getTaxes
-}
-
-async function getPriceHistory() {
-  const res = await apolloClient.query({ query: getPriceHistoryGql })
-  return res.data.getPriceHistory
 }
 
 async function getPHistory() {
@@ -195,5 +189,5 @@ async function deleteChecking(id) {
   return result.data.deleteChecking
 }
 
-export { getInterests, addInterest, getTrxs, updateTrx, deleteInterest, getRewards, getInvestments, addInvestment, delPriceHistory, getPHistory,
-  getLiquidation, addLiquidation, delReward, getPriceHistory, updateInterest, getChecking, addChecking, updateChecking, deleteChecking, getTaxes, updateTax, addTax }
+export { getInterests, addInterest, getTrxs, updateTrx, deleteInterest, getRewards, getInvestments, addInvestment, getPHistory,
+  getLiquidation, addLiquidation, delReward, updateInterest, getChecking, addChecking, updateChecking, deleteChecking, getTaxes, updateTax, addTax }
