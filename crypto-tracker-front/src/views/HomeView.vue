@@ -26,6 +26,8 @@
           </v-card-text>
         </v-card>
         <v-data-table
+          @click:row="homeCoinsClick"
+          single-select 
           dark
           :loading="loading"
           hide-default-footer
@@ -35,7 +37,7 @@
           :headers="[{ text: 'Coin', value: 'coin' },{ text: 'Price', value: 'price' },{ text: 'Value', value: 'value' },{ text: 'Gain', value: 'gain' },{ text: 'Life', value: 'life' }]"
           :items="homeCoinsSum"
           item-key="coin"
-          class="elevation-10 home-table">
+          class="elevation-10 home-table row-pointer">
           <template v-slot:[`item.coin`]="{ item }">
             <v-tooltip bottom>
               <template v-slot:activator="{ on, attrs }">
@@ -84,13 +86,24 @@
     <history-line :priceHistory="$store.state.historyChartData" />
     <v-divider dark class="my-3"></v-divider>
     <coin-history-line :priceHistory="$store.state.historyChartData" />
+    <v-dialog v-model="smallCoinDialog" max-width="1500px">
+      <v-card color="#E1F5FE">
+        <v-card-title class="text-h5 lighten-2">
+          {{ smallCoinName }}
+        </v-card-title>
+        <v-card-text>
+          <small-doing-dialog :coinName="smallCoinName" />
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
 <script>
 import { refreshPriceHistory } from '../api/endpoints/priceHistory'
-import LineChart from '../components/home/Line.vue'
+import LineChart from '../components/home/Line'
 import HistoryLine from '@/components/home/HistoryLine'
+import SmallDoingDialog from '@/components/home/SmallCoinLine'
 import CoinHistoryLine from '@/components/home/CoinHistoryLine'
 import { getPHistory } from '../api/apollo'
 const { isBefore, isSameDay, endOfYesterday, formatISO } = require('date-fns')
@@ -100,12 +113,15 @@ export default {
   data: () => ({
     profitHistory: [],
     homeCoinsSum: [],
-    loading: false
+    loading: false,
+    smallCoinDialog: false,
+    smallCoinName: ''
   }),
   components: {
     LineChart,
     HistoryLine,
-    CoinHistoryLine
+    CoinHistoryLine,
+    SmallDoingDialog
   },
   async created() {
     if(this.$store.state.historyChartData.length > 0) {
@@ -228,6 +244,10 @@ export default {
     getDateAsUtc(d) {
       let n = new Date(d)
       return new Date(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate())
+    },
+    homeCoinsClick(row) {
+      this.smallCoinDialog = true
+      this.smallCoinName = row.coin
     }
   }
 }

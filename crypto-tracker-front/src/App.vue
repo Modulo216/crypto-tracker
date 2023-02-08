@@ -1,7 +1,7 @@
 <template>
   <v-app style="background-color:#424242">
     <v-app-bar style="background-color: #141E30" app dark clipped-left>
-      <h1>Crypto Tracker</h1>
+      <h1>Crypto Tracker - {{ pageTitle }}</h1>
     </v-app-bar>
     <v-navigation-drawer app clipped expand-on-hover :mini-variant.sync="mini" dark>
       <v-list dense nav>
@@ -33,7 +33,8 @@ export default {
       { title: 'Investments', icon: 'mdi-treasure-chest', route: '/investments' },
       { title: 'Gains & Losses', icon: 'mdi-water', route: '/capital' },
       { title: 'Interests', icon: 'mdi-thumb-up', route: '/interests' }
-    ]
+    ],
+    pageTitle: ''
   }),
   created () {
     this.$store.dispatch('populateInterests')
@@ -41,6 +42,17 @@ export default {
     this.$store.dispatch('populateTaxes')
     this.$store.dispatch('populateInvestments')
     this.$store.dispatch('populateLiquidation')
+    this.buildPageTitle(this.$route)
+  },
+  watch: {
+    '$route' (to, from) {
+      this.buildPageTitle(to)
+    }
+  },
+  methods: {
+    buildPageTitle(route) {
+      this.pageTitle = this.items.find(i => i.route === route.path).title
+    }
   }
 };
 </script>

@@ -14,7 +14,6 @@
 
 <script>
 import { Line as LineChartGenerator } from 'vue-chartjs/legacy'
-import dateMixin from '@/mixins/datesMixin'
 import {
   Chart as ChartJS,
   Title,
@@ -36,11 +35,10 @@ ChartJS.register(
 )
 
 export default {
-  name: 'LineChart',
+  name: 'small-coin-line',
   components: {
     LineChartGenerator
   },
-  mixins: [dateMixin],
   props: {
     chartId: {
       type: String,
@@ -69,23 +67,28 @@ export default {
       type: Array,
       default: () => []
     },
-    items: Array
+    coinName: String
+  },
+  watch: {
+    coinName: {
+      handler(n, o) {
+        this.populateChart()
+      },
+      deep: true
+    }
   },
   created() {
     this.populateChart()    
-  },
-  watch: {
-    items(newItems) {
-      this.populateChart()
-    }
   },
   methods: {
     populateChart() {
       this.chartData.datasets[0].data = []
       this.chartData.labels = []
-      this.items.forEach(i => {
-        this.chartData.datasets[0].data.push(Math.round(i.sum))
-        this.chartData.labels.push(i.date)
+      
+      this.$store.state.historyChartData.filter(d => d.coins.some(c => c.coin === this.coinName)).forEach(h => {
+        this.chartData.labels.push(h.date)
+        let coin = h.coins.find(c => c.coin === this.coinName)
+        this.chartData.datasets[0].data.push(coin.value)
       })
     }
   },
@@ -95,13 +98,15 @@ export default {
         labels: [],
         datasets: [
           {
+            datalabels: {
+              display: false
+            },
             data: [],
             borderColor: "green",
             backgroundColor: 'black',
-            tension: 0.1,
-            pointRadius: 2,
+            pointRadius: 1,
             pointHoverRadius: 10,
-            borderWidth: 5
+            borderWidth: 3
           }
         ]
       },
@@ -110,7 +115,7 @@ export default {
         responsive: true,
         maintainAspectRatio: false,
         scales: {
-          x: { ticks: { color: 'white' } },
+          x: { ticks: { color: 'black' } },
           y: { ticks: { color: 'green' } },
         }
       }
