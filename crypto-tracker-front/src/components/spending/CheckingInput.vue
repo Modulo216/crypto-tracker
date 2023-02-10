@@ -76,7 +76,7 @@
 </template>
 
 <script>
-import { format, parseISO } from 'date-fns'
+import { format, parseISO, formatISO } from 'date-fns'
 export default {
   props: {
     items: Array,
@@ -91,13 +91,13 @@ export default {
       { text: 'Actions', value: 'actions', sortable: false },
     ],
     editedItem: {
-      dateView: format(parseISO(new Date().toISOString()), 'yyyy-MM-dd'),
+      dateView: formatISO(new Date()).slice(0, 10),
       date: new Date(),
       amount: 0,
       type: instance.type
     },
     defaultItem: {
-      dateView: format(parseISO(new Date().toISOString()), 'yyyy-MM-dd'),
+      dateView: formatISO(new Date()).slice(0, 10),
       date: new Date(),
       amount: 0,
       type: instance.type

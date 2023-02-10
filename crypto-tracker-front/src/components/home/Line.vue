@@ -111,7 +111,7 @@ export default {
         maintainAspectRatio: false,
         scales: {
           x: { ticks: { color: 'white' } },
-          y: { ticks: { color: 'green' } },
+          y: { ticks: { color: '#CE93D8' } },
         }
       }
     }

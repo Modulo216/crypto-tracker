@@ -1,15 +1,31 @@
 <template>
-  <LineChartGenerator
-    :chart-options="chartOptions"
-    :chart-data="chartData"
-    :chart-id="chartId"
-    :dataset-id-key="datasetIdKey"
-    :plugins="plugins"
-    :css-classes="cssClasses"
-    :styles="styles"
-    :width="width"
-    :height="height"
-  />
+  <v-card>
+    <v-card-title class="text-h5 lighten-2" style="justify-content: space-between">
+      <div>{{ coinName }} <span :style="`color: ${ percDiff > 0 ? 'green' : 'red'}`">{{ (percDiff).toFixed(3) }}%</span></div>
+      <span class="tooltip-style">
+        <v-btn-toggle v-model="toggle_exclusive" rounded dark>
+          <v-btn text @click="populateChart(2)">1D</v-btn>
+          <v-btn text @click="populateChart(7)">1W</v-btn>
+          <v-btn text @click="populateChart(32)">1M</v-btn>
+          <v-btn text @click="populateChart(366)">1Y</v-btn>
+          <v-btn text @click="populateChart(3000)">ALL</v-btn>
+        </v-btn-toggle>
+      </span>
+    </v-card-title>
+    <v-card-text>
+      <LineChartGenerator
+        :chart-options="chartOptions"
+        :chart-data="chartData"
+        :chart-id="chartId"
+        :dataset-id-key="datasetIdKey"
+        :plugins="plugins"
+        :css-classes="cssClasses"
+        :styles="styles"
+        :width="width"
+        :height="height"
+      />
+    </v-card-text>
+  </v-card>
 </template>
 
 <script>
@@ -72,20 +88,28 @@ export default {
   watch: {
     coinName: {
       handler(n, o) {
-        this.populateChart()
+        this.toggle_exclusive = 4
+        this.populateChart(3000)
       },
       deep: true
     }
   },
   created() {
-    this.populateChart()    
+    this.populateChart(3000)    
+  },
+  computed: {
+    percDiff() {
+      let first = this.chartData.datasets[0].data[0]
+      let last = this.chartData.datasets[0].data[this.chartData.datasets[0].data.length - 1]
+      return Number((first > last ? '-' : '') + (100 * Math.abs( (first - last) / ( (first + last) / 2 ) )))
+    }
   },
   methods: {
-    populateChart() {
+    populateChart(numOfDays) {
       this.chartData.datasets[0].data = []
       this.chartData.labels = []
       
-      this.$store.state.historyChartData.filter(d => d.coins.some(c => c.coin === this.coinName)).forEach(h => {
+      this.$store.state.historyChartData.filter(d => d.coins.some(c => c.coin === this.coinName)).slice(-Math.abs(numOfDays)).forEach(h => {
         this.chartData.labels.push(h.date)
         let coin = h.coins.find(c => c.coin === this.coinName)
         this.chartData.datasets[0].data.push(coin.value)
@@ -94,6 +118,7 @@ export default {
   },
   data() {
     return {
+      toggle_exclusive: 4,
       chartData: {
         labels: [],
         datasets: [
@@ -123,3 +148,10 @@ export default {
   }
 }
 </script>
+<style scoped>
+.tooltip-style{
+  background: rgba(97, 97, 97, 0.9);
+  border-radius: 4px;
+  padding: 5px 16px;
+}
+</style>

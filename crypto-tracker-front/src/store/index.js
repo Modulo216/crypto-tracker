@@ -3,7 +3,7 @@ import Vuex from 'vuex'
 import parseISO from 'date-fns/parseISO';
 import { getInterests, getRewards, getTaxes, getInvestments, getLiquidation } from '../api/apollo'
 import { getCoinPrice } from '../api/endpoints/coinbase'
-
+const { formatISO } = require('date-fns')
 Vue.use(Vuex)
 
 const adjustForUTCOffset = date => {
@@ -99,6 +99,29 @@ export default new Vuex.Store({
     addChartHistory(state, items) {
       for (const item of items) {
         state.historyChartData.push(item)
+      }
+    },
+    setChartHistoryTransient(state, items) {
+      if(state.coinPrices.length > 0) {
+        let newItem = { date: formatISO(new Date()).slice(0, 10), transient: true, coins: [] }
+        for (const item of items) {
+          let coinSum = item.reward + item.tax + item.invest + item.liq
+          let coin = { coin: item.coin, coinSum, value: coinSum * item.price }
+          newItem.coins.push(coin)
+        }
+        
+        let itemId = state.historyChartData.findIndex(h => h.transient === true)
+        if(itemId === -1) {
+          state.historyChartData.push(newItem)
+        } else {
+          Vue.set(state.historyChartData, itemId, newItem)
+        }
+      }
+    },
+    rmChartHistoryTransient(state) {
+      let itemId = state.historyChartData.findIndex(h => h.transient === true)
+      if(itemId !== -1) {
+        state.historyChartData.splice(itemId, 1)
       }
     },
     setRewards(state, items) {

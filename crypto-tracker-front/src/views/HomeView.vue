@@ -86,15 +86,8 @@
     <history-line :priceHistory="$store.state.historyChartData" />
     <v-divider dark class="my-3"></v-divider>
     <coin-history-line :priceHistory="$store.state.historyChartData" />
-    <v-dialog v-model="smallCoinDialog" max-width="1500px">
-      <v-card color="#E1F5FE">
-        <v-card-title class="text-h5 lighten-2">
-          {{ smallCoinName }}
-        </v-card-title>
-        <v-card-text>
-          <small-doing-dialog :coinName="smallCoinName" />
-        </v-card-text>
-      </v-card>
+    <v-dialog color="#E1F5FE" v-model="smallCoinDialog" max-width="1500px">
+      <small-doing-dialog :coinName="smallCoinName" />
     </v-dialog>
   </v-container>
 </template>
@@ -197,6 +190,7 @@ export default {
           this.$set(this.homeCoinsSum, itemId, itemToUpdate)
         }
       }
+      this.$store.commit('setChartHistoryTransient', this.homeCoinsSum)
       this.loading = false
     },
     getAsCurrency(numb) {
@@ -225,8 +219,10 @@ export default {
     },
     async refreshValue() {
       this.loading = true
-      if(this.$store.state.historyChartData.find(p => p.date === formatISO(endOfYesterday()).slice(0, 10)) === undefined) {
+      if(this.$store.state.historyChartData.find(p => p.date === formatISO(endOfYesterday()).slice(0, 10)) === undefined ||
+          this.$store.state.historyChartData.find(p => p.date === formatISO(endOfYesterday()).slice(0, 10) && p.transient === true) !== undefined) {
         let priceHistory = await refreshPriceHistory()
+        this.$store.commit('rmChartHistoryTransient')
         this.parsePriceHistory(priceHistory.data, true)
       }
 

@@ -140,7 +140,7 @@ export default {
         },
         scales: {
           x: { ticks: { color: 'white' } },
-          y: { ticks: { color: 'green' }, beginAtZero: true },
+          y: { ticks: { color: '#CE93D8' }, beginAtZero: true },
         }
       }
     }

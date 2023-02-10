@@ -56,6 +56,7 @@
 </template>
 <script>
 import { addLiquidation } from '../api/apollo'
+const { formatISO } = require('date-fns')
 export default {
   props: {
     modelType: String,
@@ -65,7 +66,7 @@ export default {
   data: () => ({
     dateModal: false,
     liqData: {
-      updatedAtView: new Date().toISOString().substr(0, 10),
+      updatedAtView: formatISO(new Date()).slice(0, 10),
       event: 'Swap',
       taxable: true,
       usdAmount: 0,

@@ -198,7 +198,7 @@
 </template>
 
 <script>
-import { differenceInDays, differenceInYears } from 'date-fns'
+import { differenceInDays, differenceInYears, formatISO } from 'date-fns'
 import { addLiquidation } from '../api/apollo'
 export default {
   data: () => ({
@@ -206,7 +206,7 @@ export default {
     showDetailsDialog: false,
     dateModal: false,
     liqData: {
-      updatedAtView: new Date().toISOString().substr(0, 10),
+      updatedAtView: formatISO(new Date()).slice(0, 10),
       event: 'Swap',
       taxable: true,
       usdAmount: 0,
