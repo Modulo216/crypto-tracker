@@ -81,12 +81,8 @@ export default {
   },
   methods: {
     populateChart() {
-      this.chartData.datasets[0].data = []
-      this.chartData.labels = []
-      this.items.forEach(i => {
-        this.chartData.datasets[0].data.push(Math.round(i.sum))
-        this.chartData.labels.push(i.date)
-      })
+      this.chartData.datasets[0].data = this.items.map(i => Math.round(i.sum))
+      this.chartData.labels = this.items.map(i => i.date)
     }
   },
   data() {
@@ -96,9 +92,8 @@ export default {
         datasets: [
           {
             data: [],
-            borderColor: "green",
+            borderColor: "#1976D2",
             backgroundColor: 'black',
-            tension: 0.1,
             pointRadius: 2,
             pointHoverRadius: 10,
             borderWidth: 5
@@ -106,11 +101,12 @@ export default {
         ]
       },
       chartOptions: {
+        normalized: true,
         plugins: { legend: { display: false } },
         responsive: true,
         maintainAspectRatio: false,
         scales: {
-          x: { ticks: { color: 'white' } },
+          x: { ticks: { color: 'white', maxTicksLimit: 17, maxRotation: 15  } },
           y: { ticks: { color: '#CE93D8' } },
         }
       }

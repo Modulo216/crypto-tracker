@@ -1,8 +1,15 @@
 <template>
-  <div @click="showTooltip = !showTooltip" style="height:500px;position: relative;">
-    <v-tooltip v-model="showTooltip" bottom>
-      <template v-slot:activator="{ attrs }">
-        <div v-bind="attrs" style="height:0">&nbsp;</div>
+  <span style="position: relative">
+    <v-menu absolute offset-y v-model="showTooltip">
+      <template v-slot:activator="{ on, attrs }">
+        <div v-bind="attrs" v-on="on" style="position:absolute;top:33px;left:80px">
+          <div class="text-h4" :style="`color: ${ percDiff > 0 ? 'green' : 'red'}`">{{ (percDiff).toFixed(3) }}%</div>
+          <div style="display:flex;justify-content: space-between">
+            <v-icon v-if="percDiff > 0" large>mdi-arrow-top-right</v-icon>
+            <v-icon v-else large>mdi-arrow-bottom-left</v-icon>
+            <div class="text-h5 pt-1" :style="`color: ${ percDiff > 0 ? 'green' : 'red'}`">{{ dollarDiff }}</div>
+          </div>
+        </div>
       </template>
       <v-btn-toggle v-model="toggle_exclusive" rounded dark>
         <v-btn text @click="populateChart(2)">1D</v-btn>
@@ -11,8 +18,7 @@
         <v-btn text @click="populateChart(366)">1Y</v-btn>
         <v-btn text @click="populateChart(3000)">ALL</v-btn>
       </v-btn-toggle>
-    </v-tooltip>
-    <h1 :style="`position:absolute;top:33px;left:80px;color: ${ percDiff > 0 ? 'green' : 'red'}`">{{ (percDiff).toFixed(3) }}%</h1>
+    </v-menu>
     <LineChartGenerator
       :chart-options="chartOptions"
       :chart-data="chartData"
@@ -24,7 +30,7 @@
       :width="width"
       :height="height"
     />
-  </div>
+  </span>
 </template>
 
 <script>
@@ -101,7 +107,12 @@ export default {
       let first = this.chartData.datasets[0].data[0]
       let last = this.chartData.datasets[0].data[this.chartData.datasets[0].data.length - 1]
       return Number((first > last ? '-' : '') + (100 * Math.abs( (first - last) / ( (first + last) / 2 ) )))
-    }
+    },
+    dollarDiff() {
+      let first = this.toggle_exclusive === 4 ? 0 : this.chartData.datasets[0].data[0]
+      let last = this.chartData.datasets[0].data[this.chartData.datasets[0].data.length - 1]
+      return (last - first).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+    },
   },
   created() {
     this.populateChart(366)    
@@ -118,14 +129,13 @@ export default {
   },
   methods: {
     populateChart(numOfDays) {
-      this.chartData.datasets[0].data = []
+      this.chartData.datasets[0].data = this.priceHistory.slice(-Math.abs(numOfDays)).map(h => h.coins.map(v => v.value).reduce((prev, next) => prev + next, 0))
       this.chartData.datasets[1].data = []
       this.chartData.datasets[2].data = []
       this.chartData.labels = []
       
-      this.priceHistory.slice(-Math.abs(numOfDays)).forEach(h => {
-        this.chartData.labels.push(h.date)
-        this.chartData.datasets[0].data.push(h.coins.map(i => i.value).reduce((prev, next) => prev + next, 0))
+      this.priceHistory.slice(-Math.abs(numOfDays)).forEach((h, idx) => {
+        this.chartData.labels.push(h.date.slice(2, 10))
         this.chartData.datasets[1].data.push(
           this.investments.filter(t => isBefore(new Date(t.updatedAt), this.getDateAsUtc(h.date)) || isSameDay(new Date(t.updatedAt), this.getDateAsUtc(h.date))).map(t => t.spent).reduce((prev, next) => prev + next, 0)
         )
@@ -182,20 +192,17 @@ export default {
         ]
       },
       chartOptions: {
+        spanGaps: true,
+        normalized: true,
         plugins: { legend: { display: false } },
         responsive: true,
         maintainAspectRatio: false,
         scales: {
-          x: { ticks: { color: 'white' } },
-          y: { ticks: { color: '#CE93D8' } },
+          x: { ticks: { color: 'white', autoSkip: true, maxTicksLimit: 50, maxRotation: 35 } },
+          y: { type: 'linear', ticks: { color: '#CE93D8' } },
         }
       }
     }
   }
 }
 </script>
-<style scoped>
-.v-tooltip__content {
-  pointer-events: initial;
-}
-</style>

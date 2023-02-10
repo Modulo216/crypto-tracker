@@ -1,7 +1,7 @@
 <template>
   <v-card>
-    <v-card-title class="text-h5 lighten-2" style="justify-content: space-between">
-      <div>{{ coinName }} <span :style="`color: ${ percDiff > 0 ? 'green' : 'red'}`">{{ (percDiff).toFixed(3) }}%</span></div>
+    <v-card-title class="lighten-2" style="justify-content: space-between">
+      <div class="text-h5">{{ coinName }} <span :style="`color: ${ percDiff > 0 ? 'green' : 'red'}`">{{ (percDiff).toFixed(3) }}%</span></div>
       <span class="tooltip-style">
         <v-btn-toggle v-model="toggle_exclusive" rounded dark>
           <v-btn text @click="populateChart(2)">1D</v-btn>
@@ -106,14 +106,9 @@ export default {
   },
   methods: {
     populateChart(numOfDays) {
-      this.chartData.datasets[0].data = []
-      this.chartData.labels = []
-      
-      this.$store.state.historyChartData.filter(d => d.coins.some(c => c.coin === this.coinName)).slice(-Math.abs(numOfDays)).forEach(h => {
-        this.chartData.labels.push(h.date)
-        let coin = h.coins.find(c => c.coin === this.coinName)
-        this.chartData.datasets[0].data.push(coin.value)
-      })
+      let items = this.$store.state.historyChartData.filter(d => d.coins.some(c => c.coin === this.coinName)).slice(-Math.abs(numOfDays))
+      this.chartData.labels = items.map(h => h.date.slice(2, 10))
+      this.chartData.datasets[0].data = items.map(h => h.coins.filter(c => c.coin === this.coinName).map(v => v.value).reduce((prev, next) => prev + next, 0))
     }
   },
   data() {
@@ -136,6 +131,7 @@ export default {
         ]
       },
       chartOptions: {
+        normalized: true,
         plugins: { legend: { display: false } },
         responsive: true,
         maintainAspectRatio: false,
@@ -152,6 +148,6 @@ export default {
 .tooltip-style{
   background: rgba(97, 97, 97, 0.9);
   border-radius: 4px;
-  padding: 5px 16px;
+  padding: 5px
 }
 </style>

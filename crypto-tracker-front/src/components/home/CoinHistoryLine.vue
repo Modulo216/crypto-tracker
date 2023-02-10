@@ -86,14 +86,14 @@ export default {
       this.chartData.labels = []
       
       this.priceHistory.forEach((h, idx) => {
-        this.chartData.labels.push(h.date)
+        this.chartData.labels.push(h.date.slice(2, 10))
         h.coins.forEach(c => {
           const itemId = this.chartData.datasets.findIndex(cd => cd.label === c.coin)
           if(itemId === -1) {
             let arrFill = new Array(idx).fill(undefined)
             arrFill.push(c.value)
             let color = chroma.random()
-            this.chartData.datasets.push({ label: c.coin, data: arrFill, datalabels: { display: false }, borderColor: color, pointRadius: 1, backgroundColor: color, borderWidth: 4 })
+            this.chartData.datasets.push({ label: c.coin, data: arrFill, datalabels: { display: false }, borderColor: color, pointRadius: 0, backgroundColor: color, borderWidth: 3 })
           } else {
             this.chartData.datasets[itemId].data.push(c.value)
           }
@@ -108,6 +108,9 @@ export default {
         datasets: []
       },
       chartOptions: {
+        animation: false,
+        spanGaps: true,
+        normalized: true,
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
@@ -139,7 +142,7 @@ export default {
           }
         },
         scales: {
-          x: { ticks: { color: 'white' } },
+          x: { ticks: { color: 'white', maxTicksLimit: 75 } },
           y: { ticks: { color: '#CE93D8' }, beginAtZero: true },
         }
       }

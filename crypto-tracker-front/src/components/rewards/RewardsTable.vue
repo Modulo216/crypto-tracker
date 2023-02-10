@@ -64,7 +64,7 @@ export default {
       { text: 'Updated At', sortable: true, value: 'updatedAt' },
       { text: 'Coin', sortable: true, value: 'coin' },
       { text: 'Amount', sortable: false, value: 'amount' },
-      { text: 'Value', sortable: true, value: 'value' }
+      { text: 'Sum', sortable: true, value: 'value' }
     ],
   }),
   methods: {
