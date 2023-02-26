@@ -38,6 +38,9 @@
           <template v-slot:[`item.value`]="props">
             <div>{{ getAsCurrency(props.item.value) }}</div>
           </template>
+          <template v-slot:[`item.val`]="{ item }">
+            <span :class="$store.getters.getCoinPrice(item.coin).price * item.amount > item.value ? 'green--text' : 'red--text'">{{ getAsCurrency($store.getters.getCoinPrice(item.coin).price * item.amount) }}</span>
+          </template>
         </v-data-table>
       </v-col>
     </v-row>
@@ -64,7 +67,8 @@ export default {
       { text: 'Updated At', sortable: true, value: 'updatedAt' },
       { text: 'Coin', sortable: true, value: 'coin' },
       { text: 'Amount', sortable: false, value: 'amount' },
-      { text: 'Sum', sortable: true, value: 'value' }
+      { text: 'Sum', sortable: true, value: 'value' },
+      { text: 'Value', sortable: true, value: 'val' }
     ],
   }),
   methods: {
