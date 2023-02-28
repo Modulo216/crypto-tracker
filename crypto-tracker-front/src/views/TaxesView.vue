@@ -4,11 +4,11 @@
       <v-col cols="1">
         <month-picker :trxs="allTaxes" @monthClick="onMonthClick" />
       </v-col>
-      <v-col cols="7">
+      <v-col cols="6">
         <taxes-table :taxes="taxes" :activities="allTaxes.map(t => t.activity)" :coins="$store.state.interests.map(r => r.name)" :exchanges="allTaxes.map(t => t.exchange)"
           :monthNameActive="monthNameActive" @taxUpdated="onTaxUpdated" @taxAdded="onTaxAdded" @refreshTax="onRefreshTax" />
       </v-col>
-      <v-col cols="4">
+      <v-col cols="5">
         <v-row no-gutters class="pt-1">
           <v-expansion-panels accordion dark multiple v-model="panel">
             <v-expansion-panel v-model="panel">

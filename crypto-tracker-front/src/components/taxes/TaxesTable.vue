@@ -43,7 +43,10 @@
           <template v-slot:[`item.value`]="props">
             <div>{{ getAsCurrency(props.item.value) }}</div>
           </template>
-          <template v-slot:[`item.activity`]="props">
+          <template v-slot:[`item.val`]="{ item }">
+            <span :class="$store.getters.getCoinPrice(item.coin).price * item.amount >= item.value ? 'green--text' : 'red--text'">{{ getAsCurrency($store.getters.getCoinPrice(item.coin).price * item.amount) }}</span>
+          </template>
+          <!-- <template v-slot:[`item.activity`]="props">
             <v-edit-dialog
               :return-value.sync="props.item.activity"
               @save="save(props.item)"
@@ -62,7 +65,7 @@
                 />
               </template>
             </v-edit-dialog>
-          </template>
+          </template> -->
         </v-data-table>
       </v-col>
     </v-row>
@@ -150,11 +153,11 @@ export default {
     sortDesc: true,
     headers: [
       { text: 'Updated At', sortable: true, value: 'updatedAt' },
-      { text: 'Exchange', sortable: false, value: 'exchange' },
-      { text: 'Activity', sortable: false, value: 'activity' },
+      // { text: 'Activity', sortable: false, value: 'activity' },
       { text: 'Coin', sortable: true, value: 'coin' },
       { text: 'Amount', sortable: false, value: 'amount' },
-      { text: 'Tax', sortable: true, value: 'value' }
+      { text: 'Tax', sortable: true, value: 'value' },
+      { text: 'Value', sortable: true, value: 'val' }
     ],
     loadingTaxes: false,
     // dateModal: false,

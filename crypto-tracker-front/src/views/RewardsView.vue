@@ -8,30 +8,38 @@
         <rewards-table :rewards="rewards" :monthNameActive="monthNameActive" @refreshRewards="onRefreshRewards" />
       </v-col>
       <v-col cols="5">
-        <v-data-table @click:row="rowClick" single-select dark hide-default-footer dense disable-pagination :items="coinsSum" item-key="coin" class="elevation-10 row-pointer"
-          :headers="[{ text: 'Coin', value: 'coin' },{ text: 'Amount', value: 'amount' },{ text: 'Sum', value: 'sum' },{ text: 'Value', value: 'val' }]">
-          <template v-slot:[`item.amount`]="{ item }">
-            <span>{{ Number((item.amount).toFixed(8)) }}</span>
-          </template>
-          <template v-slot:[`item.sum`]="{ item }">
-            <span>{{ getAsCurrency(item.sum) }}</span>
-          </template>
-          <template v-slot:[`item.val`]="{ item }">
-            <span>{{ getAsCurrency(item.val) }}</span>
-          </template>
-        </v-data-table>
-        <v-card class="my-2" dark>
-          <v-card-text class="subtitle-1 pa-3 d-flex">
-            <div style="flex: 0 0 50%;">Rewards: <span class="red--text">{{ getAsCurrency(rewards.map(t => t.value).reduce((prev, next) => prev + next, 0)) }}</span></div>
-            <div>Value: <span class="green--text">{{ getAsCurrency(coinsSum.map(t => t.val).reduce((prev, next) => prev + next, 0)) }}</span></div>
-          </v-card-text>
-        </v-card>
-        <v-card class="my-2" dark>
-          <v-card-text class="subtitle-1 pa-3 d-flex">
-            <div style="flex: 0 0 50%;">Rate: {{ ((rewards.map(t => t.value).reduce((prev, next) => prev + next, 0) / $store.state.spendingTrxs.filter(t => dateIsInRange(t.updatedAt, monthNameActive)).map(item => item.amount).reduce((prev, next) => prev + next, 0)) * 100).toFixed(2) }}%</div>
-            <div>Actual: {{ ((coinsSum.map(t => t.val).reduce((prev, next) => prev + next, 0) / $store.state.spendingTrxs.filter(t => dateIsInRange(t.updatedAt, monthNameActive)).map(item => item.amount).reduce((prev, next) => prev + next, 0)) * 100).toFixed(2) }}%</div>
-          </v-card-text>
-        </v-card>
+        <v-container fluid class="px-1">
+          <v-row no-gutters>
+            <v-col cols="5">
+            <v-card dark>
+              <v-card-text class="subtitle-1 pa-3 d-flex">
+                <div style="flex: 0 0 50%;">Sum: <span class="red--text">{{ getAsCurrency(rewards.map(t => t.value).reduce((prev, next) => prev + next, 0)) }}</span></div>
+                <div>Value: <span class="green--text">{{ getAsCurrency(coinsSum.map(t => t.val).reduce((prev, next) => prev + next, 0)) }}</span></div>
+              </v-card-text>
+            </v-card>
+            <v-card class="mt-2" dark>
+              <v-card-text class="subtitle-1 pa-3 d-flex">
+                <div style="flex: 0 0 50%;">Rate: <span class="red--text">{{ ((rewards.map(t => t.value).reduce((prev, next) => prev + next, 0) / $store.state.spendingTrxs.filter(t => dateIsInRange(t.updatedAt, monthNameActive)).map(item => item.amount).reduce((prev, next) => prev + next, 0)) * 100).toFixed(2) }}%</span></div>
+                <div>Actual: <span class="green--text">{{ ((coinsSum.map(t => t.val).reduce((prev, next) => prev + next, 0) / $store.state.spendingTrxs.filter(t => dateIsInRange(t.updatedAt, monthNameActive)).map(item => item.amount).reduce((prev, next) => prev + next, 0)) * 100).toFixed(2) }}%</span></div>
+              </v-card-text>
+            </v-card>
+            </v-col>
+            <v-col cols="7">
+            <v-data-table @click:row="rowClick" single-select dark hide-default-footer dense disable-pagination :items="coinsSum" item-key="coin" class="elevation-10 row-pointer ml-2"
+              :headers="[{ text: 'Coin', value: 'coin' },{ text: 'Amount', value: 'amount' },{ text: 'Sum', value: 'sum' },{ text: 'Value', value: 'val' }]">
+              <template v-slot:[`item.amount`]="{ item }">
+                <span>{{ Number((item.amount).toFixed(8)) }}</span>
+              </template>
+              <template v-slot:[`item.sum`]="{ item }">
+                <span>{{ getAsCurrency(item.sum) }}</span>
+              </template>
+              <template v-slot:[`item.val`]="{ item }">
+                <span>{{ getAsCurrency(item.val) }}</span>
+              </template>
+            </v-data-table>
+            </v-col>
+          </v-row>
+        </v-container>
         <v-divider dark class="my-3" />
         <line-chart :allRewards="allRewards" class="mt-2"/>
       </v-col>
