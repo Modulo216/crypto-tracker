@@ -199,7 +199,9 @@ export default {
       }
     },
     onTrxUpdated(item) {
-      this.$store.commit('updateTrxs', item)
+      if(item) {
+        this.$store.commit('updateTrxs', item)
+      }
       this.onMonthClick(this.monthNameActive)
     },
     getAsCurrency(numb) {

@@ -7,6 +7,7 @@ const addInterestGql = require('./gql/addInterest.gql')
 const addTaxGql = require('./gql/addTax.gql')
 const getTrxsGql = require('./gql/getTrxs.gql')
 const updateTrxGql = require('./gql/updateTrx.gql')
+const addTrxGql = require('./gql/addTrx.gql')
 const updateTaxGql = require('./gql/updateTax.gql')
 const deleteInterestGql = require('./gql/deleteInterest.gql')
 const deleteCheckingGql = require('./gql/deleteChecking.gql')
@@ -157,6 +158,14 @@ async function updateTrx(trx) {
   return result.data.updateTrx
 }
 
+async function addTrx(trx) {
+  const result = await apolloClient.mutate({
+    mutation: addTrxGql,
+    variables: { trx }
+  })
+  return result.data.addTrx
+}
+
 async function updateTax(tax) {
   const result = await apolloClient.mutate({
     mutation: updateTaxGql,
@@ -189,5 +198,5 @@ async function deleteChecking(id) {
   return result.data.deleteChecking
 }
 
-export { getInterests, addInterest, getTrxs, updateTrx, deleteInterest, getRewards, getInvestments, addInvestment, getPHistory,
+export { getInterests, addInterest, getTrxs, updateTrx, addTrx, deleteInterest, getRewards, getInvestments, addInvestment, getPHistory,
   getLiquidation, addLiquidation, delReward, updateInterest, getChecking, addChecking, updateChecking, deleteChecking, getTaxes, updateTax, addTax }

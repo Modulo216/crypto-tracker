@@ -1,0 +1,5 @@
+mutation addTrx($trx: TrxInput!) {
+  addTrx(trx: $trx) {
+    id
+  }
+}

@@ -25,6 +25,11 @@
                   mdi-refresh
                 </v-icon>
               </v-btn>
+              <v-btn color="primary" dark class="ml-2" @click="dialog = true" :disabled="loadingTrxs">
+                <v-icon dark>
+                  mdi-plus-thick
+                </v-icon>
+              </v-btn>
               <download-excel :data="trxs">
                 <v-btn color="primary" dark class="ml-2">
                   <v-icon dark>
@@ -95,11 +100,66 @@
         </v-data-table>
       </v-col>
     </v-row>
+
+    <v-dialog v-model="dialog" max-width="800px">
+      <v-card>
+        <v-card-title>
+          <span class="text-h5">New Spending Event</span>
+        </v-card-title>
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <v-col cols="3">
+                <v-menu
+                  v-model="dateModal"
+                  :close-on-content-click="false"
+                  :nudge-right="40"
+                  transition="scale-transition"
+                  offset-y
+                  min-width="auto"
+                >
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-text-field
+                      :value="formatDateEdit"
+                      label="Date"
+                      prepend-icon="mdi-calendar"
+                      readonly
+                      v-bind="attrs"
+                      v-on="on"
+                    ></v-text-field>
+                  </template>
+                  <v-date-picker
+                    v-model="editItem.updatedAtView"
+                    @input="dateModal = false"
+                  ></v-date-picker>
+                </v-menu>
+              </v-col>
+              <v-col cols="3">
+                <v-combobox v-model="editItem.merchant" :items="merchantNames" label="Merchant" />
+              </v-col>
+              <v-col cols="3">
+                <v-text-field v-model.number="editItem.amount" label="Amount" />
+              </v-col>
+              <v-col cols="3">
+                <v-combobox v-model="editItem.category" :items="categories" label="Categories" />
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="blue darken-1" text @click="dialog = false;Object.assign($data.editItem, $options.data().editItem)">Cancel</v-btn>
+          <v-btn color="blue darken-1" text @click="manualAdd()">Save</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
   </v-container>
 </template>
 
 <script>
-import { updateTrx } from '../../api/apollo'
+import { updateTrx, addTrx } from '../../api/apollo'
+import { format, parseISO, formatISO } from 'date-fns'
   export default {
     props: {
       trxs: Array,
@@ -118,9 +178,35 @@ import { updateTrx } from '../../api/apollo'
         { text: 'Amount', sortable: true, value: 'amount' },
         { text: 'Category', sortable: false, value: 'category', width: '180' }
       ],
-      loadingTrxs: false
+      loadingTrxs: false,
+      dialog: false,
+      dateModal: false,
+      editItem: {
+        updatedAtView: formatISO(new Date()).slice(0, 10),
+        updatedAt: new Date(),
+        merchant: '',
+        amount: 0,
+        category: ''
+      },
     }),
+    computed: {
+      formatDateEdit() {
+        return this.editItem.updatedAtView ? format(parseISO(this.editItem.updatedAtView), 'MM/dd/yy') : ''
+      },
+    },
     methods: {
+      async manualAdd() {
+        this.editItem.updatedAt = new Date(this.editItem.updatedAtView).toISOString()
+        this.editItem.exchangeId = Math.random().toString(36).slice(2, 10)
+        this.editItem.trxType = 'manual'
+        delete this.editItem.updatedAtView
+        let itemId = await addTrx(this.editItem)
+        this.editItem.id = itemId
+        console.log("T", this.editItem)
+        this.$store.commit('addTrxs', [this.editItem])
+        this.dialog = false
+        this.$emit('trxUpdated')
+      },
       save(e) {
         updateTrx(e)
         this.$emit('trxUpdated', e)
