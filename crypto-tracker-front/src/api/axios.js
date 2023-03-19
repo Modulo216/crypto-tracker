@@ -6,7 +6,7 @@ const axiosClient = axios.create({
     'Accept': 'application/json',
     'Content-Type': 'application/json'
   },
-  timeout: 1000 * 90
+  timeout: 10000 * 90
 })
 
 export { axiosClient }

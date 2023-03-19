@@ -13,7 +13,8 @@ let getCoinHistory = {};
 getCoinHistory.get = async (nickName) => {
   try {
     console.log("GECKO", nickName)
-    await new Promise(resolve => setTimeout(resolve, 3600))
+    // await new Promise(resolve => setTimeout(resolve, 3600))
+    await new Promise(resolve => setTimeout(resolve, 10000))
     return await axiosClient.get(`api/v3/coins/${nickName}/market_chart?vs_currency=USD&days=4&interval=daily`)
   } catch (error) {
     throw new Error(error)
