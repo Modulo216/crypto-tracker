@@ -152,7 +152,7 @@ app.get('/taxes', async (req, res, next) => {
       let txns = t.transactions.filter(txn => isAfter(new Date(txn.created_at), new Date(2021, 7, 1)) && txn.type !== 'trade'
       && txn.description !== 'Spending reward from Coinbase Card' && txn.description !== 'R7 - US Debit Card Rewards (external funded)' && txn.to === undefined)
       for (const txn of txns) {
-        if(t.coin === 'USDC' && txn.type !== 'interest') {
+        if((t.coin === 'USDC' && txn.type !== 'interest') || txn.details.subtitle === 'From Unknown') {
           continue
         }
         let tax = { exchange: "Coinbase", coin: t.coin === 'ETH2' ? 'ETH' : t.coin, updatedAt: new Date(txn.created_at), exchangeId: txn.id,

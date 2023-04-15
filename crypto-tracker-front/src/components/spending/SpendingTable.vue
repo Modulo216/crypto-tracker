@@ -74,8 +74,10 @@
               large
               persistent
             >
-              <span v-if="props.item.merchant && props.item.merchant.length < 16">{{ props.item.merchant }}</span>
-              <span v-else>{{ `${props.item.merchant ? props.item.merchant.substring(0,16) : ''}  ...` }}</span>
+              <span :style="props.item.trxType === 'manual' ? 'color: #90CAF9' : ''">
+                <span v-if="props.item.merchant && props.item.merchant.length < 16">{{ props.item.merchant }}</span>
+                <span v-else>{{ `${props.item.merchant ? props.item.merchant.substring(0,16) : ''}  ...` }}</span>
+              </span>
               <template v-slot:input>
                 <div class="mt-4 text-h6">
                   Update Merchant
@@ -138,10 +140,10 @@
                 <v-combobox v-model="editItem.merchant" :items="merchantNames" label="Merchant" />
               </v-col>
               <v-col cols="3">
-                <v-text-field v-model.number="editItem.amount" label="Amount" />
+                <v-combobox v-model="editItem.category" :items="categories" label="Categories" />
               </v-col>
               <v-col cols="3">
-                <v-combobox v-model="editItem.category" :items="categories" label="Categories" />
+                <v-text-field v-model.number="editItem.amount" label="Amount" @keyup.enter="manualAdd()"/>
               </v-col>
             </v-row>
           </v-container>
@@ -196,16 +198,16 @@ import { format, parseISO, formatISO } from 'date-fns'
     },
     methods: {
       async manualAdd() {
-        this.editItem.updatedAt = new Date(this.editItem.updatedAtView).toISOString()
+        this.editItem.updatedAt = new Date(this.editItem.updatedAtView + ` ${new Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}`).toISOString()
         this.editItem.exchangeId = Math.random().toString(36).slice(2, 10)
         this.editItem.trxType = 'manual'
         delete this.editItem.updatedAtView
         let itemId = await addTrx(this.editItem)
         this.editItem.id = itemId
-        console.log("T", this.editItem)
         this.$store.commit('addTrxs', [this.editItem])
         this.dialog = false
         this.$emit('trxUpdated')
+        Object.assign(this.$data.editItem, this.$options.data().editItem)
       },
       save(e) {
         updateTrx(e)

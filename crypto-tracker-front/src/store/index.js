@@ -74,7 +74,10 @@ export default new Vuex.Store({
       state.spendingChecking.splice(state.spendingChecking.findIndex(i => i.id === itemId), 1)
     },
     addTrxs(state, items) {
-      state.spendingTrxs.push(...items)
+      for(const item of items) {
+        let cloned = JSON.parse(JSON.stringify(item))
+        state.spendingTrxs.push(cloned)
+      }
     },
     updateTrxs(state, item) {
       let indexOf = state.spendingTrxs.findIndex(i => i.exchangeId === item.exchangeId)

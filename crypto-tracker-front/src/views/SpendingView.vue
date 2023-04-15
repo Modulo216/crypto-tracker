@@ -28,12 +28,12 @@
                     <v-card class="ma-1" dark>
                       <v-card-text class="subtitle-1 pa-3 d-flex">
                         <div style="flex: 0 0 50%;">
-                          <div class="pb-1">Card: <span class="red--text">{{ getAsCurrency(getCardSpent) }}</span></div>
-                          <div>Total: <span class="red--text">{{ getAsCurrency(getTotalSpent) }}</span></div>
+                          <!-- <div class="pb-1">Card: <span class="red--text">{{ getAsCurrency(getCardSpent) }}</span></div> -->
+                          <div>Spent: <span class="red--text">{{ getAsCurrency(getTotalSpent) }}</span></div>
                         </div>
                         <div>
-                          <div class="pb-1">Total: <span class="green--text">{{ getAsCurrency(getTotalSaved) }}</span></div>
-                          <div>USDC: <span class="green--text">{{ getAsCurrency(getUsdcSaved) }}</span></div>
+                          <div class="pb-1">Saved: <span class="green--text">{{ getAsCurrency(getTotalSaved) }}</span></div>
+                          <!-- <div>USDC: <span class="green--text">{{ getAsCurrency(getUsdcSaved) }}</span></div> -->
                         </div>
                       </v-card-text>
                     </v-card>
