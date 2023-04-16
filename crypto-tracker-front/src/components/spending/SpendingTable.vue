@@ -111,7 +111,7 @@
         <v-card-text>
           <v-container>
             <v-row>
-              <v-col cols="3">
+              <v-col cols="2">
                 <v-menu
                   v-model="dateModal"
                   :close-on-content-click="false"
@@ -124,7 +124,6 @@
                     <v-text-field
                       :value="formatDateEdit"
                       label="Date"
-                      prepend-icon="mdi-calendar"
                       readonly
                       v-bind="attrs"
                       v-on="on"
@@ -142,8 +141,11 @@
               <v-col cols="3">
                 <v-combobox v-model="editItem.category" :items="categories" label="Categories" />
               </v-col>
-              <v-col cols="3">
-                <v-text-field v-model.number="editItem.amount" label="Amount" @keyup.enter="manualAdd()"/>
+              <v-col cols="2">
+                <v-text-field v-model.number="editItem.cashRewardRate" label="Reward Rate" />
+              </v-col>
+              <v-col cols="2">
+                <v-text-field v-model.number="editItem.amount" label="Amount" @keyup.enter="manualAdd()" />
               </v-col>
             </v-row>
           </v-container>
@@ -188,7 +190,8 @@ import { format, parseISO, formatISO } from 'date-fns'
         updatedAt: new Date(),
         merchant: '',
         amount: 0,
-        category: ''
+        category: '',
+        cashRewardRate: 1.5
       },
     }),
     computed: {

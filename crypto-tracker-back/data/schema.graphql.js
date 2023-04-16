@@ -151,6 +151,7 @@ export const typeDefs = gql`
     title: String
     subtitle: String
     category: String
+    cashRewardRate: Float
   }
   input TrxInput {
     id: ID
@@ -163,6 +164,7 @@ export const typeDefs = gql`
     title: String
     subtitle: String
     category: String
+    cashRewardRate: Float
   }
   type Interest {
     id: ID

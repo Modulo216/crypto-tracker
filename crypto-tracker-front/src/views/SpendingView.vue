@@ -25,17 +25,27 @@
                     <checking-input @removeItem="onRemoveItem" @saveItem="onSaveItem" :items="checkings" type="investments" />
                   </v-col>
                   <v-col lg="6" sm="12">
-                    <v-card class="ma-1" dark>
-                      <v-card-text class="subtitle-1 pa-3 d-flex">
-                        <div style="flex: 0 0 50%;">
+                    <v-card class="mt-1" dark color="#616161">
+                      <v-card-text class="subtitle-1 pa-1 d-flex" style="align-items: center;justify-content: space-evenly">
+                        <div class="black--text">
                           <!-- <div class="pb-1">Card: <span class="red--text">{{ getAsCurrency(getCardSpent) }}</span></div> -->
-                          <div>Spent: <span class="red--text">{{ getAsCurrency(getTotalSpent) }}</span></div>
+                          <!-- <div>Spent: <span class="red--text">{{ getAsCurrency(getTotalSpent) }}</span></div> -->
+                          {{ getAsCurrency(getCardSpent) }}
                         </div>
-                        <div>
-                          <div class="pb-1">Saved: <span class="green--text">{{ getAsCurrency(getTotalSaved) }}</span></div>
+                        <v-divider vertical dark />
+                        <div class="gray--text">
+                          <!-- <div class="pb-1">Saved: <span class="green--text">{{ getAsCurrency(getTotalSaved) }}</span></div> -->
                           <!-- <div>USDC: <span class="green--text">{{ getAsCurrency(getUsdcSaved) }}</span></div> -->
+                          {{ getAsCurrency(getUsdcSaved) }}
+                        </div>
+                        <v-divider vertical dark />
+                        <div class="green--text">
+                          {{ getAsCurrency(getCashReward) }}
                         </div>
                       </v-card-text>
+                      <!-- <div>
+                        <div class="pb-1">Cash Rewards: {{ getAsCurrency(getCashReward) }}</div>
+                      </div> -->
                     </v-card>
                   </v-col>
                 </v-row>
@@ -166,6 +176,9 @@ export default {
     },
     getUsdcSaved() {
       return this.checkings.filter(i => i.type === 'checkingIn').map(item => item.amount).reduce((prev, next) => prev + next, 0) - this.getTotalSpent
+    },
+    getCashReward() {
+      return this.trxs.map(item => item.amount * (item.cashRewardRate * .01)).reduce((prev, next) => prev + next, 0)
     }
   },
   watch: {

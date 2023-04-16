@@ -28,5 +28,9 @@ exports.trxSchema = new mongoose.Schema({
   },
   category: {
     type: String
+  },
+  cashRewardRate: {
+    type: mongoose.Schema.Types.Number,
+    get: v => parseFloat(v || 0)
   }
 })

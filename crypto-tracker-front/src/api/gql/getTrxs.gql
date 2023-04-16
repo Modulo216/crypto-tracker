@@ -1,5 +1,5 @@
 query {
   getTrxs {
-    id, exchangeId, trxType, updatedAt, amount, merchant, category
+    id, exchangeId, trxType, updatedAt, amount, merchant, category, cashRewardRate
   }
 }
