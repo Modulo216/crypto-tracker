@@ -68,7 +68,7 @@ async function getAllAccounts() {
     const getAccountsAsync = promisify(client.getAccounts).bind(client);
     let accounts = await getAccountsAsync({ limit: 300 })
     return accounts.filter(a => a.created_at !== null && a.created_at !== a.updated_at)
-      .sort((a, b) => a.currency.localeCompare(b.currency))
+      .sort((a, b) => a.currency.code.localeCompare(b.currency.code))
   } catch (error) {
     throw new Error(error)
   }
@@ -80,8 +80,8 @@ async function getMultiWalletTrxes(interests, loadAll) {
     let retVal = []
 
     for (const wallet of filteredAccts) {
-      console.log("COINBASE", wallet.currency, interests.includes(wallet.currency))
-      if(!interests.includes(wallet.currency)) {
+      console.log("COINBASE", wallet.currency.code, interests.includes(wallet.currency.code))
+      if(!interests.includes(wallet.currency.code)) {
         continue
       }
 
@@ -95,11 +95,11 @@ async function getMultiWalletTrxes(interests, loadAll) {
             trxs.push(...txns)
           }
         } while (page !== undefined && page.next_uri !== null)
-        retVal.push({ coin: wallet.currency, transactions: trxs })
+        retVal.push({ coin: wallet.currency.code, transactions: trxs })
       } else {
         let { txns } = await getTxns({ next_uri: null, limit: 15 })
         if(txns !== null && txns.length > 0) {
-          retVal.push({ coin: wallet.currency, transactions: txns })
+          retVal.push({ coin: wallet.currency.code, transactions: txns })
         }
       }
     }

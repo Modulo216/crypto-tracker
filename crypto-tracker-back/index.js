@@ -7,10 +7,13 @@ import { typeDefs as scalarTypeDefs, resolvers as scalarResolvers } from 'graphq
 const { getTrxs, getMultiWalletTrxes, getCoinPrice } = require("./api/coinbase")
 const { order } = require('./api/binance')
 const getCoinHistory = require("./api/coingecko")
-import { formatISO, isAfter } from 'date-fns'
+const { getStockPrices } = require('./api/stockprice')
+const bodyParser = require('body-parser');
+import { formatISO, isAfter, parseISO } from 'date-fns'
 const app = express()
 const port = 5001
 
+app.use(bodyParser.json());
 app.use(cors());
 const server = new ApolloServer({ typeDefs: [...scalarTypeDefs, typeDefs], resolvers: { ...scalarResolvers, ...resolvers } })
 server.applyMiddleware({ app })
@@ -30,13 +33,18 @@ app.get('/coin-prices', async (req, res, next) => {
   }
 })
 
+// app.post('/post-test', (req, res) => {
+//   console.log('Got body:', req.body);
+//   res.send(req.body)
+// });
+
 app.get('/update-rows', async (req, res, next) => {
   await resolvers.Mutation.updateRows(null, {id: 1})
 })
 
 app.get('/update-history2', async (req, res, next) => {
   try {
-    let interests = await resolvers.Query.getInterests(null, { nickName: { $ne: '' } })
+    let interests = await resolvers.Query.getInterests(null, { $and: [{ nickName: { $ne: '' } }, { kind: 'Crypto' }]})
     let arr = []
     let pHistoryArr = []
     for (const interest of interests) {
@@ -62,14 +70,63 @@ app.get('/update-history2', async (req, res, next) => {
   }
 })
 
-app.get('/_health', async (req, res) => {
-  const healthcheck = { uptime: process.uptime(), message: 'OK', timestamp: Date.now() }
+// app.post('/update-stock-history', async (req, res) => {
+//   try {
+//     let stockHistoryArr = []
+//     let interests = await resolvers.Query.getInterests(null, { $and: [{ nickName: { $ne: '' } }, { kind: 'Stock' }]})
+    
+//     for (const interest of interests) {
+//       let results = await getStockPrices(interest.nickName)
+//       for (const priceObj of results) {
+//         if (req.body.dates.includes(new Date(priceObj.effectiveDate).getTime())) {
+//           continue
+//         }
+//         let stockHistory = { updatedAt: new Date(priceObj.effectiveDate), prices: [{ symbol: interest.name, price: priceObj.price }] }
+//         stockHistoryArr.push(stockHistory)
+//       }
+//     }
+//     resolvers.Mutation.addStockHistoryMany(null, stockHistoryArr)
+
+//     res.send(stockHistoryArr)
+//   } catch (error) {
+//     next(error)
+//   }
+// })
+
+app.post('/update-stock-history', async (req, res, next) => {
   try {
-    let interests = await resolvers.Query.getInterests(null, { nickName: { $ne: '' } })
-    healthcheck.interestscount = interests.length
-    res.send(healthcheck)
+    let stockHistoryArr = []
+    let arr = []
+    let interests = await resolvers.Query.getInterests(null, { $and: [{ nickName: { $ne: '' } }, { kind: 'Stock' }]})
+    
+    for (const interest of interests) {
+      let results = await getStockPrices(interest.nickName)
+      for (const priceObj of results) {
+        if (req.body.dates.includes(priceObj.effectiveDate)) {
+          continue
+        }
+        arr.push({date: priceObj.effectiveDate, price: priceObj.price, symbol: interest.name})
+      }
+    }
+
+    if(arr.length === 0 || arr.length % interests.length !== 0) {
+      res.send(stockHistoryArr)
+      return;
+    }
+
+    for (const uniqueDate of new Set(arr.map(a => a.date))) {
+      if (await resolvers.Query.findStockHistory(null, { updatedAt: { $gte: parseISO(uniqueDate).setHours(0,0,0,0), $lte: parseISO(uniqueDate).setHours(23,59,59,999) }}) !== null) {
+        continue
+      }
+      
+      let stockHistory = { updatedAt: new Date(uniqueDate), prices: [ ...arr.filter(a => a.date === uniqueDate).map(a => { return { symbol: a.symbol, price: a.price }}) ]  }
+      stockHistoryArr.push(stockHistory)
+    }
+    resolvers.Mutation.addStockHistoryMany(null, stockHistoryArr)
+
+    res.send(stockHistoryArr)
   } catch (error) {
-    res.status(503).send()
+    next(error)
   }
 })
 

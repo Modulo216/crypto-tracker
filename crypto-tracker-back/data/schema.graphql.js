@@ -51,6 +51,23 @@ export const typeDefs = gql`
     updatedAt: Date
     prices: [CoinPriceInput]
   }
+  type StockPrice {
+    symbol: String
+    price: Float
+  }
+  input StockPriceInput {
+    symbol: String
+    price: Float
+  }
+  type StockHistory {
+    id: ID
+    updatedAt: Date
+    prices: [StockPrice]
+  }
+  input StockHistoryInput {
+    updatedAt: Date
+    prices: [StockPriceInput]
+  }
   type Checking {
     id: ID
     date: DateTime
@@ -127,6 +144,24 @@ export const typeDefs = gql`
     value: String
     liquidation: Liquidation
   }
+  type StockInvestment {
+    id: ID
+    updatedAt: DateTime
+    kind: String
+    stockSymbol: String
+    spent: Float
+    match: Float
+    amount: Float
+  }
+  input StockInvestmentInput {
+    id: ID
+    updatedAt: DateTime
+    kind : String
+    stockSymbol: String
+    spent: Float
+    match: Float
+    amount: Float
+  }
   input InvestmentInput {
     id: ID
     exchangeId: String
@@ -175,6 +210,7 @@ export const typeDefs = gql`
     wallet: String
     isTax: Boolean
     isReward: Boolean
+    kind: String
   }
   input InterestInput {
     id: ID
@@ -185,6 +221,7 @@ export const typeDefs = gql`
     wallet: String
     isTax: Boolean
     isReward: Boolean
+    kind: String
   }
   type Query {
     getInterests: [Interest]
@@ -196,14 +233,18 @@ export const typeDefs = gql`
     rewardExists: Int
     getTaxes: [Tax]
     findPHistory(pHistory: PHistoryInput): [PHistory]
+    findStockHistory(stockHistory: StockHistoryInput): [StockHistory]
     getInvestments: [Investment]
+    getStockInvestments: [StockInvestment]
     getRewards: [Reward]
     getLiquidation: [Liquidation]
     getPHistory: [PHistory]
+    getStockHistory: [StockHistory]
   }
   type Mutation {
     addLiquidation(liquidation: LiquidationInput): Liquidation
     addChecking(checking: CheckingInput): Checking
+    addStockHistoryMany(StockHistory: [[Float]]): ID
     addPHistoryMany(pHistory: [[Float]]): ID
     updateChecking(checking: CheckingInput): Checking
     addInterest(interest: InterestInput): Interest
@@ -216,6 +257,7 @@ export const typeDefs = gql`
     addRewardImport(reward: RewardInput): Reward
     addTaxImport(tax: TaxInput): Tax
     addInvestment(investment: InvestmentInput): Investment
+    addStockInvestment(stockInvestment: StockInvestmentInput): StockInvestment
     addInvestmentImport(investment: InvestmentInput): Investment
     updateTax(tax: TaxInput): Tax
     delReward(id: ID): Reward

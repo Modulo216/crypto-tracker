@@ -21,5 +21,8 @@ exports.interestSchema = new mongoose.Schema({
   },
   isReward: {
     type: Boolean
-  }
+  },
+  kind: {
+    type: String
+  },
 })

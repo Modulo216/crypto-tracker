@@ -30,7 +30,8 @@ export default {
       { title: 'Rewards', icon: 'mdi-gift', route: '/rewards' },
       { title: 'Taxes', icon: 'mdi-currency-usd-off ', route: '/taxes' },
       { title: 'Spending', icon: 'mdi-cart', route: '/spending' },
-      { title: 'Investments', icon: 'mdi-treasure-chest', route: '/investments' },
+      { title: 'Crypto Investments', icon: 'mdi-treasure-chest', route: '/investments' },
+      { title: 'Stock Investments', icon: 'mdi-cash', route: '/stock-investments' },
       { title: 'Gains & Losses', icon: 'mdi-water', route: '/capital' },
       { title: 'Interests', icon: 'mdi-thumb-up', route: '/interests' }
     ],
@@ -42,6 +43,8 @@ export default {
     this.$store.dispatch('populateTaxes')
     this.$store.dispatch('populateInvestments')
     this.$store.dispatch('populateLiquidation')
+    this.$store.dispatch('populateStockInvestments')
+    this.$store.dispatch('populateStockHistory')
     this.buildPageTitle(this.$route)
   },
   watch: {

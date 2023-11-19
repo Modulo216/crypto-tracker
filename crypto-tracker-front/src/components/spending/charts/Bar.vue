@@ -109,37 +109,27 @@ export default {
           {
             label: 'Week 1',
             data: [],
-            backgroundColor: 'rgba(255, 99, 132, 0.5)',
-            borderColor: '#FF',
-            borderWidth: 1
+            backgroundColor: '#051923BB',
           },
           {
             label: 'Week 2',
             data: [],
-            backgroundColor: 'rgba(255, 159, 64, 0.2)',
-            borderColor: '#FF',
-            borderWidth: 1
+            backgroundColor: '#003554BB',
           },
           {
             label: 'Week 3',
             data: [],
-            backgroundColor: 'rgba(52, 47, 191, 0.5)',
-            borderColor: '#FF',
-            borderWidth: 1
+            backgroundColor: '#006494BB',
           },
           {
             label: 'Week 4',
             data: [],
-            backgroundColor: 'rgba(216, 105, 41, 0.5)',
-            borderColor: '#FF',
-            borderWidth: 1
+            backgroundColor: '#0582caBB',
           },
           {
             label: 'Week 5',
             data: [],
-            backgroundColor: '#FFA500',
-            borderColor: '#FF',
-            borderWidth: 1
+            backgroundColor: '#00a6fbBB',
           }
           
         ]

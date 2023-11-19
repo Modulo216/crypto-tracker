@@ -1,0 +1,5 @@
+query {
+  getStockInvestments {
+    id, updatedAt, kind, stockSymbol, spent, match, amount
+  }
+}

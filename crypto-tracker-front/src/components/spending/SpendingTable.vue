@@ -191,7 +191,7 @@ import { format, parseISO, formatISO } from 'date-fns'
         merchant: '',
         amount: 0,
         category: '',
-        cashRewardRate: 1.5
+        cashRewardRate: 3.0
       },
     }),
     computed: {

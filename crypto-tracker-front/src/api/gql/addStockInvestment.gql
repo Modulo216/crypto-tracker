@@ -1,0 +1,5 @@
+mutation addStockInvestment($stockInvestment: StockInvestmentInput!) {
+  addStockInvestment(stockInvestment: $stockInvestment) {
+    id, updatedAt, kind, stockSymbol, spent, match, amount
+  }
+}

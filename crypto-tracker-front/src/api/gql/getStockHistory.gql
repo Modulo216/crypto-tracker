@@ -1,0 +1,5 @@
+query {
+  getStockHistory {
+    updatedAt, prices { symbol, price }
+  }
+}

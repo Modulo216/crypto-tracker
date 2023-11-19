@@ -18,8 +18,11 @@ const getCheckingGql = require('./gql/getChecking.gql')
 const getTaxesGql = require('./gql/getTaxes.gql')
 const getRewardsGql = require('./gql/getRewards.gql')
 const getPHistoryGql = require('./gql/getPHistory.gql')
+const getStockHistoryGql = require('./gql/getStockHistory.gql')
 const getInvestmentsGql = require('./gql/getInvestments.gql')
 const addInvestmentGql = require('./gql/addInvestment.gql')
+const addStockInvestmentGql = require('./gql/addStockInvestment.gql')
+const getStockInvestmentsGql = require('./gql/getStockInvestment.gql')
 const delRewardGql = require('./gql/delReward.gql')
 const addLiquidationGql = require('./gql/addLiquidation.gql')
 const getLiquidationGql = require('./gql/getLiquidation.gql')
@@ -90,6 +93,14 @@ async function addInvestment(investment) {
   return result.data.addInvestment
 }
 
+async function addStockInvestment(stockInvestment) {
+  const result = await apolloClient.mutate({
+    mutation: addStockInvestmentGql,
+    variables: { stockInvestment }
+  })
+  return result.data.addStockInvestment
+}
+
 async function addLiquidation(liquidation) {
   if(liquidation.event === 'Sell') {
     delete liquidation.newCoin
@@ -145,9 +156,19 @@ async function getPHistory() {
   return res.data.getPHistory
 }
 
+async function getStockHistory() {
+  const res = await apolloClient.query({ query: getStockHistoryGql })
+  return res.data.getStockHistory
+}
+
 async function getInvestments() {
   const res = await apolloClient.query({ query: getInvestmentsGql })
   return res.data.getInvestments
+}
+
+async function getStockInvestments() {
+  const res = await apolloClient.query({ query: getStockInvestmentsGql })
+  return res.data.getStockInvestments
 }
 
 async function updateTrx(trx) {
@@ -199,4 +220,5 @@ async function deleteChecking(id) {
 }
 
 export { getInterests, addInterest, getTrxs, updateTrx, addTrx, deleteInterest, getRewards, getInvestments, addInvestment, getPHistory,
-  getLiquidation, addLiquidation, delReward, updateInterest, getChecking, addChecking, updateChecking, deleteChecking, getTaxes, updateTax, addTax }
+  getLiquidation, addLiquidation, delReward, updateInterest, getChecking, addChecking, updateChecking, deleteChecking, getTaxes, updateTax, addTax,
+  addStockInvestment, getStockInvestments, getStockHistory }

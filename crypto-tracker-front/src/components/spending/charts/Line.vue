@@ -122,14 +122,17 @@ export default {
       monthYears.forEach(m => {
         let startDate = new Date(m.year, m.month, 1)
         let totalSaved = (this.allLiquidations.filter(t => t.event === 'Sell' && isWithinInterval(new Date(t.updatedAt), { start: startDate, end: endOfMonth(startDate) })).map(item => item.usdAmount).reduce((prev, next) => prev + next, 0) +
+          this.allTrxs.filter(i => i.hasOwnProperty('cashRewardRate') && i.cashRewardRate !== 0 && isWithinInterval(new Date(i.updatedAt), { start: startDate, end: endOfMonth(startDate) })).map(item => item.amount * (item.cashRewardRate * .01)).reduce((prev, next) => prev + next, 0) + 
           this.allTaxes.filter(t => t.coin === 'USDC' && isWithinInterval(new Date(t.updatedAt), { start: startDate, end: endOfMonth(startDate) })).map(item => item.amount).reduce((prev, next) => prev + next, 0) +
           this.allChecking.filter(i => i.type === 'checkingIn' && isWithinInterval(new Date(i.date), { start: startDate, end: endOfMonth(startDate) })).map(item => item.amount).reduce((prev, next) => prev + next, 0)) -
           (this.allTrxs.filter(t => isWithinInterval(new Date(t.updatedAt), { start: startDate, end: endOfMonth(startDate) })).map(item => item.amount).reduce((prev, next) => prev + next, 0) +
           this.allChecking.filter(i => (i.type === 'checkingOut' || i.type === 'investments') && isWithinInterval(new Date(i.date), { start: startDate, end: endOfMonth(startDate) })).map(item => item.amount).reduce((prev, next) => prev + next, 0))  
         savedArr.push(totalSaved)
+        let totalIn = this.allChecking.filter(i => i.type === 'checkingIn' && isWithinInterval(new Date(i.date), { start: new Date(m.year,0,1), end: endOfMonth(startDate) })).map(item => item.amount).reduce((prev, next) => prev + next, 0)
 
         this.chartData.datasets[0].data.push(savedArr.reduce((prev, next) => prev + next, 0).toFixed(2))
         this.chartData.datasets[1].data.push(totalSaved.toFixed(2))
+        this.chartData.datasets[2].data.push(totalIn.toFixed(2))
         this.chartData.labels.push(this.$store.getters.getMonthNames[m.month])
       })
     }
@@ -140,25 +143,42 @@ export default {
         labels: [],
         datasets: [
           {
-            label: 'Value',
+            label: 'Total saved',
             data: [],
             borderColor: "black",
             backgroundColor: 'black',
             pointRadius: 2,
           },
           {
-            label: 'Value',
+            label: 'Monthly saved',
             data: [],
             borderColor: "blue",
             backgroundColor: 'blue',
+            pointRadius: 2,
+          },
+          {
+            label: 'Total in',
+            data: [],
+            borderColor: "red",
+            backgroundColor: 'red',
             pointRadius: 2,
           }
         ]
       },
       chartOptions: {
+        spanGaps: true,
+        normalized: true,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
         plugins: { legend: { display: false } },
         responsive: true,
-        maintainAspectRatio: false
+        maintainAspectRatio: false,
+        scales: {
+          x: { ticks: { color: 'white', autoSkip: true, maxTicksLimit: 50, maxRotation: 35 } },
+          y: { type: 'linear', ticks: { color: '#CE93D8' } },
+        }
       }
     }
   }

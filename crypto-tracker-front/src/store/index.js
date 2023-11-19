@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import parseISO from 'date-fns/parseISO';
-import { getInterests, getRewards, getTaxes, getInvestments, getLiquidation } from '../api/apollo'
+import { getInterests, getRewards, getTaxes, getInvestments, getLiquidation, getStockInvestments, getStockHistory } from '../api/apollo'
 import { getCoinPrice } from '../api/endpoints/coinbase'
 const { formatISO } = require('date-fns')
 Vue.use(Vuex)
@@ -25,14 +25,17 @@ const _monthNames = ['Jan', 'Feb', "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Se
 export default new Vuex.Store({
   state: {
     interests: [],
+    stocks: [],
     allRewards: [],
     allTaxes: [],
     allInvestments: [],
+    allStockInvestments: [],
     allLiquidation: [],
     historyChartData: [],
     spendingTrxs: [],
     spendingChecking: [],
-    coinPrices: []
+    coinPrices: [],
+    stockPrices: []
   },
   getters: {
     getMonthNames() {
@@ -84,13 +87,18 @@ export default new Vuex.Store({
       Object.assign(state.spendingTrxs[indexOf], item)
     },
     setInterests(state, items) {
-      state.interests = items
+      state.interests = items.filter(i => i.kind === 'Crypto')
+      state.stocks = items.filter(i => i.kind === 'Stock')
     },
     removeInterest(state, itemId) {
       state.interests.splice(state.interests.findIndex(i => i.id === itemId), 1)
     },
     addInterest(state, item) {
-      state.interests.push(item)
+      if(item.kind === 'Crypto') {
+        state.interests.push(item)
+      } else {
+        state.stocks.push(item)
+      }
     },
     updatedInterest(state, item) {
       let indexOf = state.interests.findIndex(i => i.id === item.id)
@@ -129,6 +137,17 @@ export default new Vuex.Store({
     },
     setRewards(state, items) {
       state.allRewards = items
+    },
+    setStockHistory(state, items) {
+      state.stockPrices = items
+    },
+    addStockHistory(state, item) {
+      state.stockPrices.push(item)
+    },
+    addStockHistoryMany(state, items) {
+      if(items.length > 0) {
+        state.stockPrices.push(...items)
+      }
     },
     setTaxes(state, items) {
       state.allTaxes = items
@@ -173,8 +192,14 @@ export default new Vuex.Store({
     setInvestments(state, items) {
       state.allInvestments = items
     },
+    setStockInvestments(state, items) {
+      state.allStockInvestments = items
+    },
     addInvestment(state, item) {
       state.allInvestments.push(item)
+    },
+    addStockInvestment(state, item) {
+      state.allStockInvestments.push(item)
     },
     addInvestments(state, items) {
       state.allInvestments.push(...items)
@@ -192,7 +217,9 @@ export default new Vuex.Store({
     populateRewards: (context) => getRewards().then(r => context.commit('setRewards', r)),
     populateTaxes: (context) => getTaxes().then(r => context.commit('setTaxes', r)),
     populateInvestments: (context) => getInvestments().then(r => context.commit('setInvestments', r)),
+    populateStockInvestments: (context) => getStockInvestments().then(r => context.commit('setStockInvestments', r)),
     populateLiquidation: (context) => getLiquidation().then(r => context.commit('setLiquidation', r)),
+    populateStockHistory: (context) => getStockHistory().then(r => context.commit('setStockHistory', r)),
     async getCoinPrice({ commit, state, getters }, coinName) {
       let latest = state.coinPrices.slice(-1)
       if(latest.length === 0 || (new Date() - latest[0].updatedAt) > (30*1000)) {

@@ -178,7 +178,7 @@ export default {
       return this.checkings.filter(i => i.type === 'checkingIn').map(item => item.amount).reduce((prev, next) => prev + next, 0) - this.getTotalSpent
     },
     getCashReward() {
-      return this.trxs.map(item => item.amount * (item.cashRewardRate * .01)).reduce((prev, next) => prev + next, 0)
+      return this.trxs.filter(i => i.hasOwnProperty('cashRewardRate') && i.cashRewardRate !== 0).map(item => item.amount * (item.cashRewardRate * .01)).reduce((prev, next) => prev + next, 0)
     }
   },
   watch: {

@@ -1,4 +1,4 @@
-import { Interest, Trx, Checking, Tax, Reward, Investment, Liquidation, PHistory } from "../db/dbConnector.js"
+import { Interest, Trx, Checking, Tax, Reward, Investment, Liquidation, PHistory, StockInvestment, StockHistory } from "../db/dbConnector.js"
 const { isBefore } = require('date-fns')
 const formatISO = require('date-fns/formatISO')
 
@@ -12,6 +12,9 @@ export const resolvers = {
     },
     findPHistory: async (root, query) => {
       return await PHistory.findOne({...query}).lean()
+    },
+    findStockHistory: async (root, query) => {
+      return await StockHistory.findOne({...query}).lean()
     },
     getTrxs: async (root) => {
       let trxs = await Trx.find()
@@ -45,6 +48,12 @@ export const resolvers = {
       
       return investments
     },
+    getStockInvestments: async (root) => {
+      let investments = await StockInvestment.find()
+      investments.sort((d1, d2) => new Date(d1.updatedAt).getTime() - new Date(d2.updatedAt).getTime())
+      
+      return investments
+    },
     getRewards: async (root) => {
       let rewards = await Reward.find().populate('liquidation')
       rewards.sort((d1, d2) => new Date(d1.updatedAt).getTime() - new Date(d2.updatedAt).getTime())
@@ -59,6 +68,12 @@ export const resolvers = {
     },
     getPHistory: async (root) => {
       let history = await PHistory.find().lean()
+      history.sort((d1, d2) => d1.updatedAt.getTime() - d2.updatedAt.getTime())
+
+      return history
+    },
+    getStockHistory: async (root) => {
+      let history = await StockHistory.find().lean()
       history.sort((d1, d2) => d1.updatedAt.getTime() - d2.updatedAt.getTime())
 
       return history
@@ -112,6 +127,11 @@ export const resolvers = {
         PHistory.insertMany(arr)
       }
     },
+    addStockHistoryMany: (root, arr) => {  
+      if(arr.length > 0) {
+        StockHistory.insertMany(arr)
+      }
+    },
     addRewardImport: async (root, { reward }) => {
       const { ...rest } = reward
       return await Reward.findOneAndUpdate({ exchangeId: reward.exchangeId }, { $setOnInsert: { ...rest } }, { upsert: true })
@@ -132,7 +152,7 @@ export const resolvers = {
       return await Checking.findByIdAndDelete(id)
     },
     updateInterest: async (root, { interest }) => {
-      if(interest.nickName === '') {
+      if(interest.nickName === '' && interest.kind === 'Crypto') {
         let phistories = await PHistory.find({ "prices.coin": interest.name })
         console.log("REMOVING PHISTORYY " + phistories.length)
         phistories.forEach(ph => {
@@ -165,6 +185,11 @@ export const resolvers = {
     addInvestment: async (root, { investment }) => {
       const { ...rest } = investment
       const newInvestment = new Investment({ ...rest })
+      return await newInvestment.save()
+    },
+    addStockInvestment: async (root, { stockInvestment }) => {
+      const { ...rest } = stockInvestment
+      const newInvestment = new StockInvestment({ ...rest })
       return await newInvestment.save()
     },
     updateTax: async (root, { tax }) => {

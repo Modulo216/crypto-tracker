@@ -7,6 +7,7 @@ const { rewardSchema } = require('./schema/rewardSchema')
 const { investmentSchema } = require('./schema/InvestmentSchema')
 const { pHistorySchema } = require('./schema/pHistorySchema')
 const { liquidationSchema } = require('./schema/liquidationSchema')
+const { stockInvestmentSchema } = require('./schema/stockInvestmentSchema')
 require('dotenv').config()
 
 mongoose.connect(`mongodb+srv://${process.env.mongo_user}:${process.env.mongo_pass}@cluster0.3cejibv.mongodb.net/my_db?retryWrites=true&w=majority`, {
@@ -53,6 +54,8 @@ const Tax = mongoose.model('Tax', taxSchema)
 const Reward = mongoose.model('Reward', rewardSchema)
 const Investment = mongoose.model('Investment', investmentSchema)
 const PHistory = mongoose.model('PHistory', pHistorySchema)
+const StockHistory = mongoose.model('StockHistory', pHistorySchema)
 const Liquidation = mongoose.model('Liquidation', liquidationSchema)
+const StockInvestment = mongoose.model('StockInvestment', stockInvestmentSchema)
 
-export { Interest, Trx, Checking, Tax, Reward, Investment, Liquidation, PHistory }
+export { Interest, Trx, Checking, Tax, Reward, Investment, Liquidation, PHistory, StockInvestment, StockHistory }

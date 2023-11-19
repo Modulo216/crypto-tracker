@@ -2,7 +2,7 @@
   <v-container>
     <v-row class="text-center">
       <v-col cols="12">
-        <v-data-table dense :headers="headers" :items="$store.state.interests" sort-by="name" class="elevation-10" dark hide-default-footer disable-pagination>
+        <v-data-table dense :headers="headers" :items="[...$store.state.interests, ...$store.state.stocks]" sort-by="name" class="elevation-10" dark hide-default-footer disable-pagination>
           <template v-slot:top>
             <v-toolbar flat>
               <v-toolbar-title>Interests</v-toolbar-title>
@@ -22,13 +22,16 @@
                     <v-container>
                       <v-row>
                         <v-col sm="12" md="6" lg="4">
-                          <v-text-field v-model="editedItem.name" label="Coin Name" />
+                          <v-text-field v-model="editedItem.name" label="Name" />
                         </v-col>
                         <v-col sm="12" md="6" lg="4">
                           <v-text-field v-model="editedItem.nickName" label="Nickname" />
                         </v-col>
+                        <v-col sm="12" md="6" lg="4">
+                          <v-select label="Kind" v-model="editedItem.kind" :items="['Crypto', 'Stock']" />
+                        </v-col>
                         <v-col sm="12" md="12" lg="4">
-                          <v-text-field v-model="editedItem.cbaseWalletId" label="Coinbase Wallet Id" />
+                          <v-text-field v-model="editedItem.cbaseWalletId" label="Wallet Id" />
                         </v-col>
                         <v-col cols="4">
                           <v-checkbox v-model="editedItem.isTax" label="Taxable?" />
@@ -87,6 +90,7 @@ import { addInterest, deleteInterest, updateInterest, delReward } from '../../ap
         name: '',
         nickName: '',
         currencyPair: '',
+        kind: 'Crypto',
         cbaseWalletId: '',
         wallet: '',
         isTax: false,
@@ -96,6 +100,7 @@ import { addInterest, deleteInterest, updateInterest, delReward } from '../../ap
         name: '',
         nickName: '',
         currencyPair: '',
+        kind: 'Crypto',
         cbaseWalletId: '',
         wallet: '',
         isTax: false,

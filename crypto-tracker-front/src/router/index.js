@@ -6,6 +6,7 @@ import SpendingView from '../views/SpendingView.vue'
 import TaxesView from '../views/TaxesView.vue'
 import RewardsView from '../views/RewardsView'
 import InvestmentsView from '../views/InvestmentsView'
+import StockInvestmentsView from '../views/StockInvestmentsView'
 import CapitalView from '../views/CapitalView'
 
 Vue.use(VueRouter)
@@ -40,6 +41,11 @@ const routes = [
     path: '/rewards',
     name: 'rewards',
     component: RewardsView
+  },
+  {
+    path: '/stock-investments',
+    name: 'stockInvestments',
+    component: StockInvestmentsView
   },
   {
     path: '/investments',
