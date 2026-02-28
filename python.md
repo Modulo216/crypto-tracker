@@ -10,15 +10,29 @@ def greet():
     print("Hello!")
 ```
 
+### Calling It
+```python
+greet()
+```
+
+Output:
+```
+Hello!
+```
+
+---
+
 ### Function with a Parameter
 ```python
 def greet(name):
     print("Hello " + name)
+
+greet("Ryan")
 ```
 
-### Calling the Function
-```python
-greet("Ryan")
+Output:
+```
+Hello Ryan
 ```
 
 ---
@@ -38,6 +52,11 @@ is_drummer = True     # bool
 print(type(age))
 ```
 
+Output:
+```
+<class 'int'>
+```
+
 ### Converting Between Types
 ```python
 num_str = "10"
@@ -51,6 +70,13 @@ print(num_float)
 print(num_string_again)
 ```
 
+Output:
+```
+10
+10.0
+10
+```
+
 ---
 
 ## 3️⃣ Capturing User Input
@@ -60,6 +86,13 @@ name = input("What is your name? ")
 print("Hello " + name)
 ```
 
+Example:
+
+```
+What is your name? Ryan
+Hello Ryan
+```
+
 ⚠️ `input()` always returns a string.
 
 If you need a number:
@@ -67,6 +100,12 @@ If you need a number:
 ```python
 age = int(input("How old are you? "))
 print(age + 1)
+```
+
+Example:
+```
+How old are you? 14
+15
 ```
 
 ---
@@ -81,6 +120,11 @@ full_name = first + " " + last
 print(full_name)
 ```
 
+Output:
+```
+Ryan Gabbard
+```
+
 ---
 
 ## 5️⃣ print() Function
@@ -88,6 +132,12 @@ print(full_name)
 ```python
 print("Hello world")
 print("Ryan is", 14, "years old")
+```
+
+Output:
+```
+Hello world
+Ryan is 14 years old
 ```
 
 ---
@@ -100,16 +150,47 @@ for i in range(5):
     print(i)
 ```
 
+Output:
+```
+0
+1
+2
+3
+4
+```
+
+---
+
 ### Start and End
 ```python
 for i in range(1, 6):
     print(i)
 ```
 
+Output:
+```
+1
+2
+3
+4
+5
+```
+
+---
+
 ### Start, End, Increment
 ```python
 for i in range(0, 10, 2):
     print(i)
+```
+
+Output:
+```
+0
+2
+4
+6
+8
 ```
 
 ---
@@ -125,6 +206,11 @@ elif score >= 80:
     print("B")
 else:
     print("Keep trying!")
+```
+
+Output:
+```
+B
 ```
 
 ---
@@ -151,6 +237,11 @@ else:
     print("Odd number")
 ```
 
+Output:
+```
+Even number
+```
+
 ---
 
 ## 9️⃣ While Loops
@@ -163,7 +254,16 @@ while count < 5:
     count += 1
 ```
 
-⚠️ Be careful — if the condition never becomes False, the loop runs forever:
+Output:
+```
+0
+1
+2
+3
+4
+```
+
+⚠️ If the condition never becomes False, the loop runs forever:
 
 ```python
 while True:
@@ -183,6 +283,12 @@ def check_even(number):
 
 user_input = int(input("Enter a number: "))
 check_even(user_input)
+```
+
+Example:
+```
+Enter a number: 7
+That number is odd!
 ```
 
 ---
